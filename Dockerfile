@@ -35,14 +35,17 @@ COPY . /var/www
 # Copy existing application directory permissions
 COPY --chown=www-data:www-data . /var/www
 
-# Change current user to www
-USER www-data
-
 # Install PHP dependencies
 RUN composer install --no-interaction --prefer-dist --optimize-autoloader --no-dev
 
 # Install Node dependencies and build assets
 RUN npm install && npm run build
+
+# Change ownership of the built files to www-data
+RUN chown -R www-data:www-data /var/www
+
+# Change current user to www
+USER www-data
 
 # Expose port 9000 and start php-fpm server
 EXPOSE 9000
