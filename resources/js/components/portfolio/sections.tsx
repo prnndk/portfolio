@@ -2,6 +2,7 @@
 
 import { motion } from 'framer-motion';
 import { type Activity, type Post, type Project } from '@/types';
+import { Link } from '@inertiajs/react';
 
 interface InfiniteTickerProps {
     items: string[];
@@ -65,7 +66,7 @@ export function TimelineItem({ activity, isLast = false }: TimelineItemProps) {
             {/* Timeline dot */}
             <div className="absolute left-0 top-2 h-6 w-6 rounded-full border-2 border-primary bg-background" />
 
-            <a href={`/activities/${activity.id}`} className="block pb-8">
+            <Link href={`/activities/${activity.id}`} className="block pb-8">
                 <div className="flex items-start justify-between">
                     <div>
                         <h3 className="font-heading text-lg font-semibold">{activity.title}</h3>
@@ -98,7 +99,7 @@ export function TimelineItem({ activity, isLast = false }: TimelineItemProps) {
                         ))}
                     </div>
                 )}
-            </a>
+            </Link>
         </motion.div>
     );
 }
@@ -118,34 +119,35 @@ export function BlogCard({ post }: BlogCardProps) {
     };
 
     return (
-        <motion.a
-            href={`/blog/${post.slug}`}
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            whileHover={{ y: -5 }}
-            className="group block overflow-hidden rounded-xl border border-border bg-card transition-colors hover:border-primary/50"
-        >
-            {post.featured_image && (
-                <div className="aspect-video overflow-hidden">
-                    <img
-                        src={`/storage/${post.featured_image}`}
-                        alt={post.title}
-                        className="h-full w-full object-cover transition-transform group-hover:scale-105"
-                    />
-                </div>
-            )}
-            <div className="p-4">
-                <p className="text-xs text-muted-foreground">{formatDate(post.published_at)}</p>
-                <h3 className="mt-1 font-heading text-lg font-semibold group-hover:text-primary">
-                    {post.title}
-                </h3>
-                {post.excerpt && (
-                    <p className="mt-2 line-clamp-2 text-sm text-muted-foreground">
-                        {post.excerpt}
-                    </p>
+        <Link href={`/blog/${post.slug}`}>
+            <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                whileHover={{ y: -5 }}
+                className="group block overflow-hidden rounded-xl border border-border bg-card transition-colors hover:border-primary/50"
+            >
+                {post.featured_image && (
+                    <div className="aspect-video overflow-hidden">
+                        <img
+                            src={`/storage/${post.featured_image}`}
+                            alt={post.title}
+                            className="h-full w-full object-cover transition-transform group-hover:scale-105"
+                        />
+                    </div>
                 )}
-            </div>
-        </motion.a>
+                <div className="p-4">
+                    <p className="text-xs text-muted-foreground">{formatDate(post.published_at)}</p>
+                    <h3 className="mt-1 font-heading text-lg font-semibold group-hover:text-primary">
+                        {post.title}
+                    </h3>
+                    {post.excerpt && (
+                        <p className="mt-2 line-clamp-2 text-sm text-muted-foreground">
+                            {post.excerpt}
+                        </p>
+                    )}
+                </div>
+            </motion.div>
+        </Link>
     );
 }

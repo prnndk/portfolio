@@ -3,6 +3,14 @@
 import { OrbitingCircles } from '@/components/ui/orbiting-circles';
 import { type TechStack } from '@/types';
 import * as SimpleIcons from 'simple-icons';
+import { Code2 } from 'lucide-react';
+import {
+    Empty,
+    EmptyHeader,
+    EmptyMedia,
+    EmptyTitle,
+    EmptyDescription,
+} from '@/components/ui/empty';
 
 interface TechStackOrbitProps {
     techStacks: TechStack[];
@@ -161,6 +169,25 @@ export function TechStackOrbit({ techStacks }: TechStackOrbitProps) {
     const orbitStacks = techStacks.filter(stack => stack.show_in_orbit !== false);
     const innerOrbit = orbitStacks.slice(0, 5);
     const outerOrbit = orbitStacks.slice(5, 11);
+
+    // Show empty state if no tech stacks for orbit
+    if (orbitStacks.length === 0) {
+        return (
+            <div className="flex h-[300px] w-full flex-col items-center justify-center">
+                <Empty>
+                    <EmptyHeader>
+                        <EmptyMedia variant="icon">
+                            <Code2 className="h-6 w-6" />
+                        </EmptyMedia>
+                        <EmptyTitle>No tech stack yet</EmptyTitle>
+                        <EmptyDescription>
+                            Technologies will appear here once added from dashboard.
+                        </EmptyDescription>
+                    </EmptyHeader>
+                </Empty>
+            </div>
+        );
+    }
 
     return (
         <div className="relative flex h-[500px] w-full flex-col items-center justify-center overflow-hidden">

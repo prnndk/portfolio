@@ -52,6 +52,9 @@ export default function GuestLayout({ children }: GuestLayoutProps) {
         { label: 'Contact', href: '#contact' },
     ];
 
+    // Helper to determine if link is internal (not a hash link)
+    const isInternalLink = (href: string) => href.startsWith('/') && !href.includes('#');
+
     return (
         <div className="min-h-screen bg-background">
             {/* Navbar */}
@@ -68,15 +71,25 @@ export default function GuestLayout({ children }: GuestLayoutProps) {
 
                     {/* Desktop Nav */}
                     <nav className="hidden items-center gap-6 md:flex">
-                        {navItems.map((item) => (
-                            <a
-                                key={item.label}
-                                href={item.href}
-                                className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
-                            >
-                                {item.label}
-                            </a>
-                        ))}
+                        {navItems.map((item) =>
+                            isInternalLink(item.href) ? (
+                                <Link
+                                    key={item.label}
+                                    href={item.href}
+                                    className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
+                                >
+                                    {item.label}
+                                </Link>
+                            ) : (
+                                <a
+                                    key={item.label}
+                                    href={item.href}
+                                    className="text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
+                                >
+                                    {item.label}
+                                </a>
+                            )
+                        )}
                         {mounted && <AnimatedThemeToggler className="ml-2" />}
                     </nav>
 
@@ -100,16 +113,27 @@ export default function GuestLayout({ children }: GuestLayoutProps) {
                     className="overflow-hidden md:hidden"
                 >
                     <div className="container mx-auto space-y-2 px-4 pb-4">
-                        {navItems.map((item) => (
-                            <a
-                                key={item.label}
-                                href={item.href}
-                                className="block py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
-                                onClick={() => setIsMenuOpen(false)}
-                            >
-                                {item.label}
-                            </a>
-                        ))}
+                        {navItems.map((item) =>
+                            isInternalLink(item.href) ? (
+                                <Link
+                                    key={item.label}
+                                    href={item.href}
+                                    className="block py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
+                                    onClick={() => setIsMenuOpen(false)}
+                                >
+                                    {item.label}
+                                </Link>
+                            ) : (
+                                <a
+                                    key={item.label}
+                                    href={item.href}
+                                    className="block py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
+                                    onClick={() => setIsMenuOpen(false)}
+                                >
+                                    {item.label}
+                                </a>
+                            )
+                        )}
                     </div>
                 </motion.nav>
             </motion.header>

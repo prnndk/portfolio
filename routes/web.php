@@ -28,6 +28,7 @@ Route::get('/', function () {
         'activities' => Activity::active()->ordered()->limit(5)->get(),
         'posts' => Post::active()->published()->orderBy('published_at', 'desc')->limit(3)->get(),
         'techStacks' => TechStack::active()->ordered()->get(),
+        'favorites' => Favorite::active()->ordered()->limit(6)->get(),
     ]);
 })->name('home');
 

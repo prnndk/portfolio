@@ -4,8 +4,30 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="author" content="Gading">
-    <meta name="keywords" content="portfolio, software engineer, laravel, react, golang, web development">
+    <meta name="author" content="Arya Gading Prinandika">
+    <meta name="keywords"
+        content="portfolio, arya gading, arya gading prinandika, gading, prinandika, gading prinandika,software engineer, laravel, react, golang, web development">
+    <meta name="description"
+        content="Portfolio of Arya Gading Prinandika - Software Engineer specializing in modern web development with Laravel, React, and Golang.">
+
+    {{-- Default OpenGraph Meta Tags (SSR) - These are essential for social media crawlers --}}
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="{{ config('app.name', 'Portfolio Gading') }}">
+    <meta property="og:title" content="{{ config('app.name', 'Portfolio Gading') }}">
+    <meta property="og:description"
+        content="Portfolio of Arya Gading Prinandika - Software Engineer specializing in modern web development with Laravel, React, and Golang.">
+    <meta property="og:image" content="{{ config('app.url') }}/opengraph.png">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:url" content="{{ config('app.url') }}">
+
+    {{-- Twitter Card Meta Tags --}}
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="{{ config('app.name', 'Portfolio Gading') }}">
+    <meta name="twitter:description"
+        content="Portfolio of Arya Gading Prinandika - Software Engineer specializing in modern web development.">
+    <meta name="twitter:image" content="{{ config('app.url') }}/opengraph.png">
+    <meta name="twitter:creator" content="@aryagading">
 
     {{-- Inline script to detect system dark mode preference and apply it immediately --}}
     <script>
@@ -38,6 +60,7 @@
     <link rel="icon" href="/favicon.ico" sizes="any">
     <link rel="icon" href="/favicon.svg" type="image/svg+xml">
     <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    <link rel="canonical" href="{{ url()->current() }}">
 
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=inter:400,500,600|space-grotesk:500,600,700" rel="stylesheet" />

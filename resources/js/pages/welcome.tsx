@@ -2,16 +2,17 @@
 
 import { useForm } from '@inertiajs/react';
 import { motion } from 'framer-motion';
-import { ArrowRight, Linkedin, Mail, Send, FileText } from 'lucide-react';
+import { ArrowRight, Linkedin, Mail, Send, FileText, FolderOpen, Code2, Briefcase, Star, Film, Music, BookOpen, Instagram } from 'lucide-react';
 import GuestLayout from '@/layouts/guest-layout';
 import { Spotlight } from '@/components/aceternity/spotlight';
 import { TextReveal, FadeIn } from '@/components/aceternity/text-reveal';
 import { ProjectCard } from '@/components/aceternity/card-hover';
 import { TimelineItem, BlogCard } from '@/components/portfolio/sections';
+import { Link } from '@inertiajs/react';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { type Activity, type Post, type Project, type TechStack } from '@/types';
+import { type Activity, type Post, type Project, type TechStack, type Favorite } from '@/types';
 import { type FormEvent } from 'react';
 import { toast } from 'sonner';
 import { Seo } from '@/components/seo';
@@ -32,16 +33,17 @@ interface Props {
     activities?: Activity[];
     posts?: Post[];
     techStacks?: TechStack[];
+    favorites?: Favorite[];
 }
 
-export default function Welcome({ projects = [], activities = [], posts = [], techStacks = [] }: Props) {
+export default function Welcome({ projects = [], activities = [], posts = [], techStacks = [], favorites = [] }: Props) {
     const { data, setData, post, processing, errors, reset } = useForm({
         name: '',
         email: '',
         message: '',
     });
 
-    const words = ["Web Applications", "Mobile Apps", "Software Application", "Infrastructure", "AI Integration"]
+    const words = ["Web Applications", "Mobile Apps", "Software Application", "Infrastructure", "AI Integration", "Business Solutions", "Database Solutions", "System Architecture"]
 
     const handleContactSubmit = (e: FormEvent) => {
         e.preventDefault();
@@ -109,10 +111,10 @@ export default function Welcome({ projects = [], activities = [], posts = [], te
                     <TextReveal delay={1}>
                         <div className="mt-8 flex flex-wrap justify-center gap-4">
                             <Button size="lg" asChild>
-                                <a href="/projects">
+                                <Link href="/projects">
                                     View My Work
                                     <ArrowRight className="ml-2 h-4 w-4" />
-                                </a>
+                                </Link>
                             </Button>
                             <Button size="lg" variant="outline" asChild>
                                 <a href="#contact">Get In Touch</a>
@@ -124,12 +126,17 @@ export default function Welcome({ projects = [], activities = [], posts = [], te
                         <div className="mt-8 flex gap-4">
                             <Button variant="ghost" size="icon" asChild>
                                 <a href="https://github.com/prnndk" target="_blank" rel="noopener noreferrer">
-                                    <svg className='size-5' role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><title>GitHub</title><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12" /></svg>
+                                    <svg className='size-5 dark:fill-white' role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><title>GitHub</title><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12" /></svg>
                                 </a>
                             </Button>
                             <Button variant="ghost" size="icon" asChild>
                                 <a href="https://linkedin.com/in/aryagading" target="_blank" rel="noopener noreferrer">
                                     <Linkedin className="h-5 w-5" />
+                                </a>
+                            </Button>
+                            <Button variant="ghost" size="icon" asChild>
+                                <a href="https://instagram.com/gadingprinandika" target="_blank" rel="noopener noreferrer">
+                                    <Instagram className="h-5 w-5" />
                                 </a>
                             </Button>
                             <Button variant="ghost" size="icon" asChild>
@@ -172,7 +179,7 @@ export default function Welcome({ projects = [], activities = [], posts = [], te
                         <div className="mt-12 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                             {projects.map((project, index) => (
                                 <FadeIn key={project.id} delay={index * 0.1}>
-                                    <a href={`/projects/${project.slug}`}>
+                                    <Link href={`/projects/${project.slug}`}>
                                         <ProjectCard
                                             title={project.title}
                                             description={project.description}
@@ -181,16 +188,26 @@ export default function Welcome({ projects = [], activities = [], posts = [], te
                                             url={project.url}
                                             githubUrl={project.github_url}
                                         />
-                                    </a>
+                                    </Link>
                                 </FadeIn>
                             ))}
                         </div>
                     ) : (
-                        <div className="mt-12 rounded-xl border border-dashed border-border p-12 text-center">
-                            <p className="text-muted-foreground">
-                                Projects will appear here once you add them from the admin dashboard.
-                            </p>
-                        </div>
+                        <FadeIn delay={0.2}>
+                            <div className="mt-12 rounded-2xl border border-dashed border-border/50 bg-card/50 p-12">
+                                <Empty>
+                                    <EmptyHeader>
+                                        <EmptyMedia variant="icon">
+                                            <FolderOpen className="h-6 w-6" />
+                                        </EmptyMedia>
+                                        <EmptyTitle>No projects yet</EmptyTitle>
+                                        <EmptyDescription>
+                                            Projects will appear here once added from the admin dashboard.
+                                        </EmptyDescription>
+                                    </EmptyHeader>
+                                </Empty>
+                            </div>
+                        </FadeIn>
                     )}
                 </div>
             </section>
@@ -209,12 +226,10 @@ export default function Welcome({ projects = [], activities = [], posts = [], te
                         </div>
                     </FadeIn>
 
-                    {/* Orbiting Circles */}
                     <FadeIn delay={0.2}>
                         <TechStackOrbit techStacks={techStacks} />
                     </FadeIn>
 
-                    {/* Card Grid with Glowing Effect */}
                     {techStacks.length > 0 && (
                         <FadeIn delay={0.3}>
                             <div className="mt-8">
@@ -228,7 +243,6 @@ export default function Welcome({ projects = [], activities = [], posts = [], te
                 </div>
             </section>
 
-            {/* Resume/Timeline Section */}
             < section id="resume" className="py-24" >
                 <div className="container mx-auto px-4">
                     <FadeIn>
@@ -251,16 +265,24 @@ export default function Welcome({ projects = [], activities = [], posts = [], te
                             ))}
                         </div>
                     ) : (
-                        <div className="mt-12 rounded-xl border border-dashed border-border p-12 text-center">
-                            <p className="text-muted-foreground">
-                                Activities and experience will appear here once you add them from the admin dashboard.
-                            </p>
-                        </div>
+                        <FadeIn delay={0.2}>
+                            <div className="mt-12 rounded-2xl border border-dashed border-border/50 bg-card/50 p-12">
+                                <Empty>
+                                    <EmptyHeader>
+                                        <EmptyMedia variant="icon">
+                                            <Briefcase className="h-6 w-6" />
+                                        </EmptyMedia>
+                                        <EmptyTitle>No activities yet</EmptyTitle>
+                                        <EmptyDescription>
+                                            Experience and activities will appear here once added from the dashboard.
+                                        </EmptyDescription>
+                                    </EmptyHeader>
+                                </Empty>
+                            </div>
+                        </FadeIn>
                     )}
                 </div>
             </section >
-
-            {/* Blog Section */}
             <section className="border-t border-border bg-card py-24">
                 <div className="container mx-auto px-4">
                     <FadeIn>
@@ -274,7 +296,7 @@ export default function Welcome({ projects = [], activities = [], posts = [], te
                                 </p>
                             </div>
                             <Button variant="outline" asChild>
-                                <a href="/blog">View All</a>
+                                <Link href="/blog">View All</Link>
                             </Button>
                         </div>
                     </FadeIn>
@@ -306,6 +328,99 @@ export default function Welcome({ projects = [], activities = [], posts = [], te
                     )}
                 </div>
             </section>
+
+            <section id="favorites" className="border-t border-border bg-card py-24">
+                <div className="container mx-auto px-4">
+                    <FadeIn>
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <h2 className="font-heading text-3xl font-bold md:text-4xl">
+                                    My Favorites
+                                </h2>
+                                <p className="mt-2 text-muted-foreground">
+                                    Movies, music, and books that inspire me
+                                </p>
+                            </div>
+                            <Button variant="outline" asChild>
+                                <Link href="/favorites">View All</Link>
+                            </Button>
+                        </div>
+                    </FadeIn>
+
+                    {favorites.length > 0 ? (
+                        <div className="mt-12 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                            {favorites.slice(0, 6).map((favorite, index) => (
+                                <FadeIn key={favorite.id} delay={index * 0.1}>
+                                    <Link href="/favorites" className="group block">
+                                        <div className="overflow-hidden rounded-xl border border-border bg-background transition-all hover:border-primary/50 hover:shadow-lg">
+                                            {favorite.image ? (
+                                                <div className="aspect-[4/3] overflow-hidden">
+                                                    <img
+                                                        src={`/storage/${favorite.image}`}
+                                                        alt={favorite.title}
+                                                        className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                                                    />
+                                                </div>
+                                            ) : (
+                                                <div className="flex aspect-[4/3] items-center justify-center bg-muted">
+                                                    {favorite.type === 'movie' && <Film className="h-12 w-12 text-muted-foreground" />}
+                                                    {favorite.type === 'music' && <Music className="h-12 w-12 text-muted-foreground" />}
+                                                    {favorite.type === 'book' && <BookOpen className="h-12 w-12 text-muted-foreground" />}
+                                                </div>
+                                            )}
+                                            <div className="p-4">
+                                                <div className="mb-2 flex items-center gap-2">
+                                                    <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ${favorite.type === 'movie' ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400' :
+                                                        favorite.type === 'music' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' :
+                                                            'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
+                                                        }`}>
+                                                        {favorite.type === 'movie' && <Film className="h-3 w-3" />}
+                                                        {favorite.type === 'music' && <Music className="h-3 w-3" />}
+                                                        {favorite.type === 'book' && <BookOpen className="h-3 w-3" />}
+                                                        {favorite.type.charAt(0).toUpperCase() + favorite.type.slice(1)}
+                                                    </span>
+                                                    {favorite.rating && (
+                                                        <span className="flex items-center gap-1 text-xs text-amber-500">
+                                                            <Star className="h-3 w-3 fill-current" />
+                                                            {favorite.rating}/10
+                                                        </span>
+                                                    )}
+                                                </div>
+                                                <h3 className="font-heading font-semibold line-clamp-1 group-hover:text-primary transition-colors">
+                                                    {favorite.title}
+                                                </h3>
+                                                {favorite.creator && (
+                                                    <p className="mt-1 text-sm text-muted-foreground line-clamp-1">
+                                                        {favorite.creator}
+                                                    </p>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </Link>
+                                </FadeIn>
+                            ))}
+                        </div>
+                    ) : (
+                        <FadeIn delay={0.2}>
+                            <div className="mt-12 rounded-2xl border border-dashed border-border/50 bg-background/50 p-12">
+                                <Empty>
+                                    <EmptyHeader>
+                                        <EmptyMedia variant="icon">
+                                            <Star className="h-6 w-6" />
+                                        </EmptyMedia>
+                                        <EmptyTitle>No favorites yet</EmptyTitle>
+                                        <EmptyDescription>
+                                            My favorite movies, music, and books will appear here soon.
+                                        </EmptyDescription>
+                                    </EmptyHeader>
+                                </Empty>
+                            </div>
+                        </FadeIn>
+                    )}
+                </div>
+            </section>
+
+
 
             {/* Contact Section */}
             <section id="contact" className="py-24">
