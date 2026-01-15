@@ -12,7 +12,9 @@ RUN apt-get update && apt-get install -y \
     libpq-dev \
     libjpeg62-turbo-dev \
     libfreetype6-dev \
-    libzip-dev
+    libzip-dev && \
+    curl -fsSL https://deb.nodesource.com/setup_20.x | bash - && \
+    apt-get install -y nodejs
 
 # Clear cache
 RUN apt-get clean && rm -rf /var/lib/apt/lists/*
@@ -35,6 +37,12 @@ COPY --chown=www-data:www-data . /var/www
 
 # Change current user to www
 USER www-data
+
+# Install PHP dependencies
+RUN composer install --no-interaction --prefer-dist --optimize-autoloader --no-dev
+
+# Install Node dependencies and build assets
+RUN npm install && npm run build
 
 # Expose port 9000 and start php-fpm server
 EXPOSE 9000
