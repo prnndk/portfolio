@@ -24,6 +24,8 @@ services:
       MYSQL_USER: ${DB_USERNAME:-laravel}
       SERVICE_TAGS: dev
       SERVICE_NAME: mysql
+    ports:
+      - "127.0.0.1:3378:3306"
     volumes:
       - dbdata:/var/lib/mysql
     networks:
@@ -34,7 +36,7 @@ services:
     container_name: portofolio-nginx
     restart: unless-stopped
     ports:
-      - "8000:80"
+      - "8878:80"
     volumes:
       - ./:/var/www
       - ./docker/nginx/conf.d:/etc/nginx/conf.d
