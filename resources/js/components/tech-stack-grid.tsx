@@ -149,8 +149,6 @@ function TechIcon({ stack }: { stack: TechStack }) {
     const iconData = getSimpleIcon(stack.name);
 
     if (iconData) {
-        // Handle dark icons in dark mode (e.g. GitHub, Vercel, Next.js are typically black)
-        // Check if hex is close to black
         const isDarkHex = ['000000', '181717', '1b1f23', '24292e'].includes(iconData.hex.toLowerCase());
         const color = (isDark && isDarkHex) ? '#ffffff' : `#${iconData.hex}`;
 
@@ -204,7 +202,7 @@ export function TechStackGrid({ techStacks, className }: TechStackGridProps) {
                         proximity={64}
                         inactiveZone={0.01}
                         borderWidth={2}
-                        variant="default" // Using default (colorful) for both modes as requested
+                        variant="default"
                     />
                     <div className="relative flex h-full flex-col items-center justify-center gap-3 rounded-2xl bg-card/80 backdrop-blur-sm p-4 transition-colors group">
                         <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-background p-2.5 shadow-sm ring-1 ring-border/50">

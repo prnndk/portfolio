@@ -49,9 +49,7 @@ class ShareSeoData
                 ->first();
 
             if ($post) {
-                $image = $post->featured_image
-                    ? "{$appUrl}/storage/{$post->featured_image}"
-                    : "{$appUrl}/og/blog/{$slug}";
+                $image = "{$appUrl}/og/blog/{$slug}";
 
                 return [
                     'title' => "{$post->title} | Blog",

@@ -58,143 +58,156 @@ class OpenGraphController extends Controller
         ?string $date = null,
         ?array $tags = null
     ) {
-        // Create image dimensions (standard OG size)
-        $width = 1200;
-        $height = 630;
+        try {
+            // Create image dimensions (standard OG size)
+            $width = 1200;
+            $height = 630;
 
-        // Create the image
-        $image = imagecreatetruecolor($width, $height);
+            // Create the image
+            $image = imagecreatetruecolor($width, $height);
 
-        // Enable anti-aliasing
-        imageantialias($image, true);
-
-        // Define colors
-        $colorTop = imagecolorallocate($image, 26, 42, 74);      // #1a2a4a
-        $colorBottom = imagecolorallocate($image, 13, 20, 33);   // #0d1421
-        $colorWhite = imagecolorallocate($image, 255, 255, 255);
-        $colorGray = imagecolorallocate($image, 148, 163, 184);  // Muted text
-        $colorAccent = imagecolorallocate($image, 96, 165, 250); // Blue accent
-
-        // Draw gradient background
-        for ($y = 0; $y < $height; $y++) {
-            $ratio = $y / $height;
-            $r = (int) (26 - (26 - 13) * $ratio);
-            $g = (int) (42 - (42 - 20) * $ratio);
-            $b = (int) (74 - (74 - 33) * $ratio);
-            $lineColor = imagecolorallocate($image, $r, $g, $b);
-            imageline($image, 0, $y, $width, $y, $lineColor);
-        }
-
-        // Add subtle accent circle in background
-        $accentCircle = imagecolorallocatealpha($image, 59, 130, 246, 120);
-        imagefilledellipse($image, 1000, 150, 400, 400, $accentCircle);
-        imagefilledellipse($image, 200, 550, 300, 300, $accentCircle);
-
-        // Load fonts
-        $fontBold = public_path('fonts/Inter-Bold.ttf');
-        $fontRegular = public_path('fonts/Inter-Regular.ttf');
-        $hasFonts = file_exists($fontBold) && file_exists($fontRegular);
-
-        // Wrap title text - max 26 chars per line
-        $titleLines = $this->wrapText($title, 26);
-
-        // Calculate vertical layout
-        $titleFontSize = 52;
-        $titleLineHeight = 70;
-        $subtitleFontSize = 22;
-
-        // Calculate total content height
-        $contentHeight = count($titleLines) * $titleLineHeight;
-        if ($subtitle || $date)
-            $contentHeight += 60;
-        if ($tags)
-            $contentHeight += 50;
-
-        // Start position (vertically centered)
-        $startY = ($height - $contentHeight) / 2 + 20;
-        $currentY = $startY;
-
-        // Draw title lines
-        foreach ($titleLines as $index => $line) {
-            if ($hasFonts) {
-                $bbox = imagettfbbox($titleFontSize, 0, $fontBold, $line);
-                $textWidth = $bbox[2] - $bbox[0];
-                $x = ($width - $textWidth) / 2;
-                imagettftext($image, $titleFontSize, 0, (int) $x, (int) $currentY, $colorWhite, $fontBold, $line);
-            } else {
-                $charWidth = imagefontwidth(5);
-                $x = ($width - strlen($line) * $charWidth) / 2;
-                imagestring($image, 5, (int) $x, (int) ($currentY - 20), $line, $colorWhite);
+            // Enable anti-aliasing if available
+            if (function_exists('imageantialias')) {
+                imageantialias($image, true);
             }
-            $currentY += $titleLineHeight;
-        }
 
-        // Add some spacing
-        $currentY += 15;
+            // Define colors
+            $colorTop = imagecolorallocate($image, 26, 42, 74);      // #1a2a4a
+            $colorBottom = imagecolorallocate($image, 13, 20, 33);   // #0d1421
+            $colorWhite = imagecolorallocate($image, 255, 255, 255);
+            $colorGray = imagecolorallocate($image, 148, 163, 184);  // Muted text
+            $colorAccent = imagecolorallocate($image, 96, 165, 250); // Blue accent
 
-        // Draw subtitle/date
-        if ($subtitle || $date) {
-            $subtitleText = $date ? ($subtitle ? "$subtitle  •  $date" : $date) : $subtitle;
-
-            if ($hasFonts) {
-                $bbox = imagettfbbox($subtitleFontSize, 0, $fontRegular, $subtitleText);
-                $textWidth = $bbox[2] - $bbox[0];
-                $x = ($width - $textWidth) / 2;
-                imagettftext($image, $subtitleFontSize, 0, (int) $x, (int) $currentY, $colorGray, $fontRegular, $subtitleText);
-            } else {
-                $charWidth = imagefontwidth(4);
-                $x = ($width - strlen($subtitleText) * $charWidth) / 2;
-                imagestring($image, 4, (int) $x, (int) ($currentY - 10), $subtitleText, $colorGray);
+            // Draw gradient background
+            for ($y = 0; $y < $height; $y++) {
+                $ratio = $y / $height;
+                $r = (int) (26 - (26 - 13) * $ratio);
+                $g = (int) (42 - (42 - 20) * $ratio);
+                $b = (int) (74 - (74 - 33) * $ratio);
+                $lineColor = imagecolorallocate($image, $r, $g, $b);
+                imageline($image, 0, $y, $width, $y, $lineColor);
             }
-            $currentY += 45;
-        }
 
-        // Draw tags
-        if ($tags && count($tags) > 0) {
-            $tagFontSize = 16;
-            $tagText = implode('  •  ', $tags);
+            // Add subtle accent circle in background
+            $accentCircle = imagecolorallocatealpha($image, 59, 130, 246, 120);
+            imagefilledellipse($image, 1000, 150, 400, 400, $accentCircle);
+            imagefilledellipse($image, 200, 550, 300, 300, $accentCircle);
 
+            // Load fonts
+            $fontBold = public_path('fonts/Inter-Bold.ttf');
+            $fontRegular = public_path('fonts/Inter-Regular.ttf');
+            $hasFonts = file_exists($fontBold) && file_exists($fontRegular);
+
+            if (!$hasFonts) {
+                \Illuminate\Support\Facades\Log::warning('OpenGraph fonts not found at: ' . $fontBold);
+            }
+
+            // Wrap title text - max 26 chars per line
+            $titleLines = $this->wrapText($title, 26);
+
+            // Calculate vertical layout
+            $titleFontSize = 52;
+            $titleLineHeight = 70;
+            $subtitleFontSize = 22;
+
+            // Calculate total content height
+            $contentHeight = count($titleLines) * $titleLineHeight;
+            if ($subtitle || $date)
+                $contentHeight += 60;
+            if ($tags)
+                $contentHeight += 50;
+
+            // Start position (vertically centered)
+            $startY = ($height - $contentHeight) / 2 + 20;
+            $currentY = $startY;
+
+            // Draw title lines
+            foreach ($titleLines as $index => $line) {
+                if ($hasFonts) {
+                    $bbox = imagettfbbox($titleFontSize, 0, $fontBold, $line);
+                    $textWidth = $bbox[2] - $bbox[0];
+                    $x = ($width - $textWidth) / 2;
+                    imagettftext($image, $titleFontSize, 0, (int) $x, (int) $currentY, $colorWhite, $fontBold, $line);
+                } else {
+                    $charWidth = imagefontwidth(5);
+                    $x = ($width - strlen($line) * $charWidth) / 2;
+                    imagestring($image, 5, (int) $x, (int) ($currentY - 20), $line, $colorWhite);
+                }
+                $currentY += $titleLineHeight;
+            }
+
+            // Add some spacing
+            $currentY += 15;
+
+            // Draw subtitle/date
+            if ($subtitle || $date) {
+                $subtitleText = $date ? ($subtitle ? "$subtitle  •  $date" : $date) : $subtitle;
+
+                if ($hasFonts) {
+                    $bbox = imagettfbbox($subtitleFontSize, 0, $fontRegular, $subtitleText);
+                    $textWidth = $bbox[2] - $bbox[0];
+                    $x = ($width - $textWidth) / 2;
+                    imagettftext($image, $subtitleFontSize, 0, (int) $x, (int) $currentY, $colorGray, $fontRegular, $subtitleText);
+                } else {
+                    $charWidth = imagefontwidth(4);
+                    $x = ($width - strlen($subtitleText) * $charWidth) / 2;
+                    imagestring($image, 4, (int) $x, (int) ($currentY - 10), $subtitleText, $colorGray);
+                }
+                $currentY += 45;
+            }
+
+            // Draw tags
+            if ($tags && count($tags) > 0) {
+                $tagFontSize = 16;
+                $tagText = implode('  •  ', $tags);
+
+                if ($hasFonts) {
+                    $bbox = imagettfbbox($tagFontSize, 0, $fontRegular, $tagText);
+                    $textWidth = $bbox[2] - $bbox[0];
+                    $x = ($width - $textWidth) / 2;
+                    imagettftext($image, $tagFontSize, 0, (int) $x, (int) $currentY, $colorAccent, $fontRegular, $tagText);
+                } else {
+                    $charWidth = imagefontwidth(3);
+                    $x = ($width - strlen($tagText) * $charWidth) / 2;
+                    imagestring($image, 3, (int) $x, (int) ($currentY - 8), $tagText, $colorAccent);
+                }
+            }
+
+            // Draw horizontal accent line
+            $lineY = $height - 80;
+            $lineWidth = 120;
+            $lineX = ($width - $lineWidth) / 2;
+            imagesetthickness($image, 3);
+            imageline($image, (int) $lineX, $lineY, (int) ($lineX + $lineWidth), $lineY, $colorAccent);
+
+            // Draw branding at bottom
+            $brandText = 'aryagading.com';
             if ($hasFonts) {
-                $bbox = imagettfbbox($tagFontSize, 0, $fontRegular, $tagText);
+                $bbox = imagettfbbox(18, 0, $fontRegular, $brandText);
                 $textWidth = $bbox[2] - $bbox[0];
-                $x = ($width - $textWidth) / 2;
-                imagettftext($image, $tagFontSize, 0, (int) $x, (int) $currentY, $colorAccent, $fontRegular, $tagText);
+                imagettftext($image, 18, 0, (int) (($width - $textWidth) / 2), $height - 35, $colorGray, $fontRegular, $brandText);
             } else {
                 $charWidth = imagefontwidth(3);
-                $x = ($width - strlen($tagText) * $charWidth) / 2;
-                imagestring($image, 3, (int) $x, (int) ($currentY - 8), $tagText, $colorAccent);
+                imagestring($image, 3, (int) (($width - strlen($brandText) * $charWidth) / 2), $height - 40, $brandText, $colorGray);
             }
+
+            // Output the image
+            ob_start();
+            imagepng($image);
+            $imageData = ob_get_clean();
+
+            // Free memory
+            imagedestroy($image);
+
+            return response($imageData)
+                ->header('Content-Type', 'image/png')
+                ->header('Cache-Control', 'public, max-age=86400');
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('OpenGraph generation failed: ' . $e->getMessage());
+
+            // Use default OpenGraph image on failure
+            return redirect(config('app.url') . '/opengraph.png');
         }
-
-        // Draw horizontal accent line
-        $lineY = $height - 80;
-        $lineWidth = 120;
-        $lineX = ($width - $lineWidth) / 2;
-        imagesetthickness($image, 3);
-        imageline($image, (int) $lineX, $lineY, (int) ($lineX + $lineWidth), $lineY, $colorAccent);
-
-        // Draw branding at bottom
-        $brandText = 'aryagading.com';
-        if ($hasFonts) {
-            $bbox = imagettfbbox(18, 0, $fontRegular, $brandText);
-            $textWidth = $bbox[2] - $bbox[0];
-            imagettftext($image, 18, 0, (int) (($width - $textWidth) / 2), $height - 35, $colorGray, $fontRegular, $brandText);
-        } else {
-            $charWidth = imagefontwidth(3);
-            imagestring($image, 3, (int) (($width - strlen($brandText) * $charWidth) / 2), $height - 40, $brandText, $colorGray);
-        }
-
-        // Output the image
-        ob_start();
-        imagepng($image);
-        $imageData = ob_get_clean();
-
-        // Free memory
-        imagedestroy($image);
-
-        return response($imageData)
-            ->header('Content-Type', 'image/png')
-            ->header('Cache-Control', 'public, max-age=86400');
     }
 
     /**

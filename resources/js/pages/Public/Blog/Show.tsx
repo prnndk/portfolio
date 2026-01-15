@@ -18,10 +18,8 @@ interface Props {
 export default function BlogShow({ post, relatedPosts = [] }: Props) {
     const appUrl = import.meta.env.VITE_APP_URL || 'https://aryagading.com';
     const postUrl = `${appUrl}/blog/${post.slug}`;
-    // Use featured image if available, otherwise use auto-generated OG image
-    const featuredImage = post.featured_image
-        ? `${appUrl}/storage/${post.featured_image}`
-        : `${appUrl}/og/blog/${post.slug}`;
+    // Always use auto-generated OG image as requested
+    const featuredImage = `${appUrl}/og/blog/${post.slug}`;
 
     const formatDate = (date: string | null) => {
         if (!date) return '';
@@ -86,9 +84,8 @@ export default function BlogShow({ post, relatedPosts = [] }: Props) {
 
     return (
         <GuestLayout>
-            {/* Enhanced SEO Head */}
             <Head>
-                <title>{`${post.title} | Blog`}</title>
+                <title>{`${post.title} | Gading Portfolio Blog`}</title>
                 <meta name="description" content={post.excerpt || post.content.substring(0, 160)} />
                 <meta name="author" content="Arya Gading Prinandika" />
                 <link rel="canonical" href={postUrl} />
