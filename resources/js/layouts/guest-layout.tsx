@@ -2,9 +2,9 @@
 
 import { cn } from '@/lib/utils';
 import { Link } from '@inertiajs/react';
-import { motion, useScroll, useTransform } from 'framer-motion';
+import { motion, useScroll, useMotionValueEvent } from 'framer-motion';
 import { Menu, X } from 'lucide-react';
-import { type ReactNode, useEffect, useState } from 'react';
+import { type ReactNode, useEffect, useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Toaster } from '@/components/ui/sonner';
 import { AnimatedThemeToggler } from '@/components/ui/animated-theme-toggler';
@@ -16,32 +16,36 @@ interface GuestLayoutProps {
 
 export default function GuestLayout({ children }: GuestLayoutProps) {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
-    const [mounted, setMounted] = useState(false);
+    const [isScrolled, setIsScrolled] = useState(false);
     const { scrollY } = useScroll();
     const { appearance } = useAppearance();
+    const initializedRef = useRef(false);
 
-    // Determine if dark mode
-    const isDark = appearance === 'dark' ||
-        (appearance === 'system' && typeof window !== 'undefined' &&
-            window.matchMedia('(prefers-color-scheme: dark)').matches);
-
-    const navBackground = useTransform(
-        scrollY,
-        [0, 100],
-        ['rgba(255, 255, 255, 0)', 'rgba(255, 255, 255, 0.9)']
-    );
-
-    const navBackgroundDark = useTransform(
-        scrollY,
-        [0, 100],
-        ['rgba(10, 22, 40, 0)', 'rgba(10, 22, 40, 0.9)']
-    );
-
-    // Initialize theme on mount to prevent flicker
+    // Initialize theme once on first render (not on every navigation)
     useEffect(() => {
-        initializeTheme();
-        setMounted(true);
+        if (!initializedRef.current) {
+            initializeTheme();
+            initializedRef.current = true;
+        }
     }, []);
+
+    // Track scroll position without causing layout shifts
+    useMotionValueEvent(scrollY, "change", (latest) => {
+        setIsScrolled(latest > 50);
+    });
+
+    // Check initial scroll position on mount
+    useEffect(() => {
+        if (typeof window !== 'undefined') {
+            setIsScrolled(window.scrollY > 50);
+        }
+    }, []);
+
+    // Determine if dark mode - safe for SSR
+    const isDark = typeof window !== 'undefined' && (
+        appearance === 'dark' ||
+        (appearance === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)
+    );
 
     const navItems = [
         { label: 'Home', href: '/' },
@@ -49,19 +53,29 @@ export default function GuestLayout({ children }: GuestLayoutProps) {
         { label: 'Activities', href: '/activities' },
         { label: 'Favorites', href: '/favorites' },
         { label: 'Blog', href: '/blog' },
-        { label: 'Contact', href: '#contact' },
+        { label: 'Contact', href: '/contact' },
     ];
 
     // Helper to determine if link is internal (not a hash link)
     const isInternalLink = (href: string) => href.startsWith('/') && !href.includes('#');
 
+    // Calculate background color based on scroll and theme
+    const getNavBackground = () => {
+        if (!isScrolled) {
+            return 'transparent';
+        }
+        return isDark ? 'rgba(10, 22, 40, 0.9)' : 'rgba(255, 255, 255, 0.9)';
+    };
+
     return (
         <div className="min-h-screen bg-background">
             {/* Navbar */}
-            <motion.header
-                className="fixed top-0 z-50 w-full backdrop-blur-md"
+            <header
+                className={cn(
+                    "fixed top-0 z-50 w-full backdrop-blur-md transition-colors duration-300",
+                )}
                 style={{
-                    backgroundColor: mounted && isDark ? navBackgroundDark : navBackground,
+                    backgroundColor: getNavBackground(),
                 }}
             >
                 <div className="container mx-auto flex h-16 items-center justify-between px-4">
@@ -90,12 +104,18 @@ export default function GuestLayout({ children }: GuestLayoutProps) {
                                 </a>
                             )
                         )}
-                        {mounted && <AnimatedThemeToggler className="ml-2" />}
+                        {/* Always render the theme toggler container to prevent layout shift */}
+                        <div className="ml-2 w-9 h-9 flex items-center justify-center">
+                            <AnimatedThemeToggler />
+                        </div>
                     </nav>
 
                     {/* Mobile Menu Button */}
                     <div className="flex items-center gap-2 md:hidden">
-                        {mounted && <AnimatedThemeToggler />}
+                        {/* Always render the theme toggler container to prevent layout shift */}
+                        <div className="w-9 h-9 flex items-center justify-center">
+                            <AnimatedThemeToggler />
+                        </div>
                         <Button
                             variant="ghost"
                             size="icon"
@@ -136,7 +156,7 @@ export default function GuestLayout({ children }: GuestLayoutProps) {
                         )}
                     </div>
                 </motion.nav>
-            </motion.header>
+            </header>
 
             {/* Main Content */}
             <main>{children}</main>

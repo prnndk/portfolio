@@ -2,9 +2,9 @@
 
 import { useForm } from '@inertiajs/react';
 import { motion } from 'framer-motion';
-import { ArrowRight, Linkedin, Mail, Send, FileText, FolderOpen, Code2, Briefcase, Star, Film, Music, BookOpen, Instagram } from 'lucide-react';
+import { ArrowRight, Linkedin, Mail, Send, FileText, FolderOpen, Code2, Briefcase, Star, Film, Music, BookOpen, Instagram, ChevronDown } from 'lucide-react';
 import GuestLayout from '@/layouts/guest-layout';
-import { Spotlight } from '@/components/aceternity/spotlight';
+import { Spotlight } from '@/components/ui/spotlight-new';
 import { TextReveal, FadeIn } from '@/components/aceternity/text-reveal';
 import { ProjectCard } from '@/components/aceternity/card-hover';
 import { TimelineItem, BlogCard } from '@/components/portfolio/sections';
@@ -20,6 +20,7 @@ import { FlipWords } from '@/components/ui/flip-words';
 import { TechStackGrid } from '@/components/tech-stack-grid';
 import { TechStackOrbit } from '@/components/tech-stack-orbit';
 import { Highlighter } from '@/components/ui/highlighter';
+import { getProjectImage } from '@/lib/project-utils';
 import {
     Empty,
     EmptyHeader,
@@ -83,7 +84,8 @@ export default function Welcome({ projects = [], activities = [], posts = [], te
             />
 
             <section id="hero" className="relative min-h-screen overflow-hidden">
-                <Spotlight className="dark:opacity-50" fill="rgb(96, 165, 250)" />
+                {/* New Spotlight Background */}
+                <Spotlight />
 
                 <div className="container mx-auto flex min-h-screen flex-col items-center justify-center px-4 text-center">
                     <TextReveal delay={0.2}>
@@ -117,7 +119,7 @@ export default function Welcome({ projects = [], activities = [], posts = [], te
                                 </Link>
                             </Button>
                             <Button size="lg" variant="outline" asChild>
-                                <a href="#contact">Get In Touch</a>
+                                <Link href="/contact">Get In Touch</Link>
                             </Button>
                         </div>
                     </TextReveal>
@@ -148,18 +150,22 @@ export default function Welcome({ projects = [], activities = [], posts = [], te
                     </TextReveal>
                 </div>
 
+                {/* Scroll Indicator */}
                 <motion.div
                     className="absolute bottom-8 left-1/2 -translate-x-1/2"
-                    animate={{ y: [0, 10, 0] }}
-                    transition={{ duration: 2, repeat: Infinity }}
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 1.5, duration: 0.5 }}
                 >
-                    <div className="h-14 w-8 rounded-full border-2 border-muted-foreground/30 p-1">
-                        <motion.div
-                            className="h-3 w-full rounded-full bg-primary"
-                            animate={{ y: [0, 20, 0] }}
-                            transition={{ duration: 2, repeat: Infinity }}
-                        />
-                    </div>
+                    <motion.a
+                        href="#projects"
+                        className="flex flex-col items-center gap-2 text-muted-foreground hover:text-primary transition-colors cursor-pointer"
+                        animate={{ y: [0, 8, 0] }}
+                        transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+                    >
+                        <span className="text-xs font-medium uppercase tracking-wider">Scroll</span>
+                        <ChevronDown className="h-5 w-5" />
+                    </motion.a>
                 </motion.div>
             </section>
 
@@ -183,7 +189,7 @@ export default function Welcome({ projects = [], activities = [], posts = [], te
                                         <ProjectCard
                                             title={project.title}
                                             description={project.description}
-                                            image={project.image ? `/storage/${project.image}` : undefined}
+                                            image={getProjectImage(project)}
                                             tags={project.tech_tags || []}
                                             url={project.url}
                                             githubUrl={project.github_url}
@@ -422,69 +428,25 @@ export default function Welcome({ projects = [], activities = [], posts = [], te
 
 
 
-            {/* Contact Section */}
-            <section id="contact" className="py-24">
+            {/* Contact CTA Section */}
+            <section className="py-24">
                 <div className="container mx-auto px-4">
                     <div className="mx-auto max-w-2xl text-center">
                         <FadeIn>
                             <h2 className="font-heading text-3xl font-bold md:text-4xl">
-                                Get In Touch
+                                Let's Work Together
                             </h2>
-                            <p className="mt-2 text-muted-foreground">
-                                Have a project in mind? Let's talk about it.
+                            <p className="mt-4 text-lg text-muted-foreground">
+                                Have a project in mind or want to discuss a new opportunity? I'd love to hear from you.
                             </p>
-                        </FadeIn>
-
-                        <FadeIn delay={0.2}>
-                            <form onSubmit={handleContactSubmit} className="mt-12 space-y-4 text-left">
-                                <div className="grid gap-4 sm:grid-cols-2">
-                                    <div>
-                                        <label htmlFor="name" className="mb-2 block text-sm font-medium">
-                                            Name
-                                        </label>
-                                        <Input
-                                            id="name"
-                                            value={data.name}
-                                            onChange={(e) => setData('name', e.target.value)}
-                                            placeholder="Your name"
-                                            required
-                                        />
-                                        {errors.name && <p className="mt-1 text-sm text-destructive">{errors.name}</p>}
-                                    </div>
-                                    <div>
-                                        <label htmlFor="email" className="mb-2 block text-sm font-medium">
-                                            Email
-                                        </label>
-                                        <Input
-                                            id="email"
-                                            type="email"
-                                            value={data.email}
-                                            onChange={(e) => setData('email', e.target.value)}
-                                            placeholder="your@email.com"
-                                            required
-                                        />
-                                    </div>
-                                </div>
-                                <div>
-                                    <label htmlFor="message" className="mb-2 block text-sm font-medium">
-                                        Message
-                                    </label>
-                                    <textarea
-                                        id="message"
-                                        value={data.message}
-                                        onChange={(e) => setData('message', e.target.value)}
-                                        placeholder="Tell me about your project..."
-                                        rows={5}
-                                        required
-                                        className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-                                    />
-                                    {errors.message && <p className="mt-1 text-sm text-destructive">{errors.message}</p>}
-                                </div>
-                                <Button type="submit" className="w-full" disabled={processing}>
-                                    <Send className="mr-2 h-4 w-4" />
-                                    {processing ? 'Sending...' : 'Send Message'}
+                            <div className="mt-8">
+                                <Button size="lg" asChild>
+                                    <Link href="/contact">
+                                        Get In Touch
+                                        <ArrowRight className="ml-2 h-4 w-4" />
+                                    </Link>
                                 </Button>
-                            </form>
+                            </div>
                         </FadeIn>
                     </div>
                 </div>

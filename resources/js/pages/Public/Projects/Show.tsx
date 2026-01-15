@@ -6,10 +6,12 @@ import { ArrowLeft, ExternalLink, Github, Calendar, ImageIcon } from 'lucide-rea
 import GuestLayout from '@/layouts/guest-layout';
 import { FadeIn } from '@/components/aceternity/text-reveal';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
+import { LinkPreview } from '@/components/ui/link-preview';
 import { type Project } from '@/types';
 import { Lightbox } from '@/components/ui/lightbox';
 import { useState } from 'react';
+import { getProjectImage, getProjectGallery } from '@/lib/project-utils';
 
 interface Props {
     project: Project;
@@ -22,9 +24,13 @@ export default function ProjectShow({ project }: Props) {
     const appUrl = import.meta.env.VITE_APP_URL || 'https://aryagading.com';
     const projectUrl = `${appUrl}/projects/${project.slug}`;
     // Use project image if available, otherwise use auto-generated OG image
-    const ogImage = project.image
-        ? `${appUrl}/storage/${project.image}`
+    const displayImage = getProjectImage(project);
+    const ogImage = displayImage
+        ? (displayImage.startsWith('http') ? displayImage : `${appUrl}${displayImage}`)
         : `${appUrl}/og/project/${project.slug}`;
+
+    // Get all gallery images (uploaded + URLs)
+    const allGallery = getProjectGallery(project);
 
     const openLightbox = (index: number) => {
         setCurrentImageIndex(index);
@@ -58,12 +64,12 @@ export default function ProjectShow({ project }: Props) {
                 <meta name="twitter:creator" content="@aryagading" />
             </Head>
 
-            <article className="min-h-screen pt-24">
-                <div className="container mx-auto px-4 py-12">
+            <article className="min-h-screen">
+                <div className="container mx-auto px-4 py-24">
                     <FadeIn>
                         <Link
-                            href="/#projects"
-                            className="mb-8 inline-flex items-center text-sm text-muted-foreground hover:text-primary"
+                            href="/projects"
+                            className="mb-8 inline-flex items-center text-sm text-muted-foreground hover:text-primary transition-colors"
                         >
                             <ArrowLeft className="mr-2 h-4 w-4" />
                             Back to Projects
@@ -74,9 +80,9 @@ export default function ProjectShow({ project }: Props) {
                         {/* Image */}
                         <FadeIn delay={0.1}>
                             <div className="overflow-hidden rounded-xl border border-border">
-                                {project.image ? (
+                                {displayImage ? (
                                     <img
-                                        src={`/storage/${project.image}`}
+                                        src={displayImage}
                                         alt={project.title}
                                         className="w-full object-cover"
                                     />
@@ -122,16 +128,10 @@ export default function ProjectShow({ project }: Props) {
 
                                 <div className="mt-8 flex flex-wrap gap-4">
                                     {project.url && (
-                                        <Button asChild>
-                                            <a
-                                                href={project.url}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                            >
-                                                <ExternalLink className="mr-2 h-4 w-4" />
-                                                View Live
-                                            </a>
-                                        </Button>
+                                        <LinkPreview url={project.url} className={buttonVariants({ variant: 'default' })}>
+                                            <ExternalLink className="mr-2 h-4 w-4" />
+                                            View Live
+                                        </LinkPreview>
                                     )}
                                     {project.github_url && (
                                         <Button variant="outline" asChild>
@@ -159,19 +159,19 @@ export default function ProjectShow({ project }: Props) {
                         </FadeIn>
                     </div>
 
-                    {project.gallery && project.gallery.length > 0 && (
+                    {allGallery.length > 0 && (
                         <FadeIn delay={0.3}>
                             <div className="mt-16">
                                 <h2 className="mb-6 font-heading text-2xl font-bold">Project Gallery</h2>
                                 <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3">
-                                    {project.gallery.map((image, index) => (
+                                    {allGallery.map((image, index) => (
                                         <div
                                             key={index}
                                             className="group relative aspect-video cursor-pointer overflow-hidden rounded-xl border border-border bg-muted transition-all hover:shadow-lg"
                                             onClick={() => openLightbox(index)}
                                         >
                                             <img
-                                                src={`/storage/${image}`}
+                                                src={image}
                                                 alt={`${project.title} gallery ${index + 1}`}
                                                 className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
                                             />
@@ -188,7 +188,7 @@ export default function ProjectShow({ project }: Props) {
                     <Lightbox
                         isOpen={lightboxOpen}
                         onClose={() => setLightboxOpen(false)}
-                        images={project.gallery || []}
+                        images={allGallery}
                         initialIndex={currentImageIndex}
                     />
 

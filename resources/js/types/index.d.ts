@@ -52,7 +52,9 @@ export interface Project {
     slug: string;
     description: string;
     image: string | null;
+    image_url: string | null;
     gallery?: string[];
+    gallery_urls?: string[];
     tech_tags: string[] | null;
     url: string | null;
     github_url: string | null;
@@ -61,6 +63,9 @@ export interface Project {
     is_active: boolean;
     created_at: string;
     updated_at: string;
+    // Computed attributes from backend
+    display_image?: string | null;
+    all_gallery?: string[];
 }
 
 export interface Activity {

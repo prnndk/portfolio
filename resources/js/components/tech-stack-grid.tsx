@@ -2,8 +2,9 @@
 
 import { type TechStack } from '@/types';
 import * as SimpleIcons from 'simple-icons';
-import { GlowingCard } from '@/components/ui/glowing-effect';
+import { GlowingEffect } from '@/components/ui/glowing-effect';
 import { cn } from '@/lib/utils';
+import { useAppearance } from '@/hooks/use-appearance';
 
 interface TechStackGridProps {
     techStacks: TechStack[];
@@ -143,24 +144,33 @@ function getSimpleIcon(name: string): { svg: string; hex: string } | null {
 }
 
 function TechIcon({ stack }: { stack: TechStack }) {
+    const { appearance } = useAppearance();
+    const isDark = appearance === 'dark';
     const iconData = getSimpleIcon(stack.name);
 
     if (iconData) {
+        // Handle dark icons in dark mode (e.g. GitHub, Vercel, Next.js are typically black)
+        // Check if hex is close to black
+        const isDarkHex = ['000000', '181717', '1b1f23', '24292e'].includes(iconData.hex.toLowerCase());
+        const color = (isDark && isDarkHex) ? '#ffffff' : `#${iconData.hex}`;
+
         return (
             <div
-                className="h-5 w-5 flex items-center justify-center"
-                style={{ color: `#${iconData.hex}` }}
+                className="h-8 w-8 flex items-center justify-center transition-transform group-hover:scale-110 dark:fill-white"
+                style={{ color: color }}
                 dangerouslySetInnerHTML={{ __html: iconData.svg }}
             />
         );
     }
+
+    const commonClasses = "h-8 w-8 object-contain transition-transform group-hover:scale-110";
 
     if (stack.icon) {
         return (
             <img
                 src={`/storage/${stack.icon}`}
                 alt={stack.name}
-                className="h-5 w-5 object-contain"
+                className={commonClasses}
             />
         );
     }
@@ -170,13 +180,13 @@ function TechIcon({ stack }: { stack: TechStack }) {
             <img
                 src={stack.icon_url}
                 alt={stack.name}
-                className="h-5 w-5 object-contain"
+                className={commonClasses}
             />
         );
     }
 
     return (
-        <span className="text-xs font-bold text-muted-foreground">
+        <span className="text-sm font-bold text-muted-foreground group-hover:text-foreground">
             {stack.name.slice(0, 2).toUpperCase()}
         </span>
     );
@@ -184,22 +194,27 @@ function TechIcon({ stack }: { stack: TechStack }) {
 
 export function TechStackGrid({ techStacks, className }: TechStackGridProps) {
     return (
-        <div className={cn('grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8', className)}>
+        <div className={cn('flex flex-wrap justify-center gap-6', className)}>
             {techStacks.map((stack, i) => (
-                <GlowingCard
-                    key={i}
-                    containerClassName="group"
-                    glowColor="rgba(59, 130, 246, 0.4)"
-                >
-                    <div className="flex flex-col items-center justify-center gap-1.5 rounded-xl border border-border/50 bg-background p-3 transition-all duration-300 group-hover:border-primary/50 group-hover:bg-muted/50">
-                        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white p-1.5 shadow-sm ring-1 ring-black/5 transition-transform group-hover:scale-110 dark:bg-white/90">
+                <div key={i} className="relative h-32 w-40 rounded-2xl p-[1px]">
+                    <GlowingEffect
+                        spread={40}
+                        glow={true}
+                        disabled={false}
+                        proximity={64}
+                        inactiveZone={0.01}
+                        borderWidth={2}
+                        variant="default" // Using default (colorful) for both modes as requested
+                    />
+                    <div className="relative flex h-full flex-col items-center justify-center gap-3 rounded-2xl bg-card/80 backdrop-blur-sm p-4 transition-colors group">
+                        <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-background p-2.5 shadow-sm ring-1 ring-border/50">
                             <TechIcon stack={stack} />
                         </div>
-                        <span className="text-[10px] font-medium text-center text-muted-foreground group-hover:text-foreground transition-colors line-clamp-1">
+                        <span className="text-sm font-medium text-center text-muted-foreground group-hover:text-foreground transition-colors line-clamp-1">
                             {stack.name}
                         </span>
                     </div>
-                </GlowingCard>
+                </div>
             ))}
         </div>
     );

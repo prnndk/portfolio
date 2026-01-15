@@ -84,7 +84,7 @@ export function Lightbox({ images, initialIndex, isOpen, onClose }: LightboxProp
                         animate={{ opacity: 1, scale: 1 }}
                         exit={{ opacity: 0, scale: 0.9 }}
                         transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-                        src={`/storage/${images[currentIndex]}`}
+                        src={images[currentIndex]}
                         alt={`Gallery image ${currentIndex + 1}`}
                         className="max-h-[90vh] max-w-[90vw] object-contain"
                         onClick={(e) => e.stopPropagation()}

@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { type BreadcrumbItem, type Project } from '@/types';
 import { Head, Link, router } from '@inertiajs/react';
 import { Plus, Pencil, Trash2, ExternalLink, Github, Star } from 'lucide-react';
+import { getProjectImage } from '@/lib/project-utils';
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Dashboard', href: '/dashboard' },
@@ -70,10 +71,10 @@ export default function ProjectsIndex({ projects }: Props) {
                     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
                         {projects.data.map((project) => (
                             <Card key={project.id} className="group relative overflow-hidden">
-                                {project.image && (
+                                {getProjectImage(project) && (
                                     <div className="aspect-video overflow-hidden">
                                         <img
-                                            src={`/storage/${project.image}`}
+                                            src={getProjectImage(project)}
                                             alt={project.title}
                                             className="h-full w-full object-cover transition-transform group-hover:scale-105"
                                         />

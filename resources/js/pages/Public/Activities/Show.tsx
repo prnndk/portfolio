@@ -39,12 +39,12 @@ export default function ActivityShow({ activity }: Props) {
                 image={activity.gallery && activity.gallery.length > 0 ? `/storage/${activity.gallery[0]}` : undefined}
             />
 
-            <article className="min-h-screen pt-24">
-                <div className="container mx-auto px-4 py-12">
+            <article className="min-h-screen">
+                <div className="container mx-auto px-4 py-24">
                     <FadeIn>
                         <Link
                             href="/activities"
-                            className="mb-8 inline-flex items-center text-sm text-muted-foreground hover:text-primary"
+                            className="mb-8 inline-flex items-center text-sm text-muted-foreground hover:text-primary transition-colors"
                         >
                             <ArrowLeft className="mr-2 h-4 w-4" />
                             Back to Activities
@@ -125,7 +125,7 @@ export default function ActivityShow({ activity }: Props) {
 
             {activity.gallery && (
                 <Lightbox
-                    images={activity.gallery}
+                    images={activity.gallery.map(img => `/storage/${img}`)}
                     initialIndex={currentImageIndex}
                     isOpen={lightboxOpen}
                     onClose={() => setLightboxOpen(false)}

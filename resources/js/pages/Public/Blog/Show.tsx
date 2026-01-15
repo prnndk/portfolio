@@ -123,8 +123,8 @@ export default function BlogShow({ post, relatedPosts = [] }: Props) {
                 </script>
             </Head>
 
-            <article className="min-h-screen pt-24">
-                <div className="container mx-auto px-4 py-12">
+            <article className="min-h-screen">
+                <div className="container mx-auto px-4 py-24">
                     <FadeIn>
                         <Link
                             href="/blog"

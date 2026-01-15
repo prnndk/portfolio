@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { type Project } from '@/types';
 import { Head, Link } from '@inertiajs/react';
 import { ArrowLeft, ArrowRight, FolderOpen } from 'lucide-react';
+import { getProjectImage } from '@/lib/project-utils';
 import {
     Empty,
     EmptyHeader,
@@ -38,7 +39,7 @@ export default function ProjectsIndex({ projects }: Props) {
                     <div className="mb-12">
                         <Link
                             href="/"
-                            className="mb-4 inline-flex items-center text-sm text-muted-foreground hover:text-primary"
+                            className="mb-4 inline-flex items-center text-sm text-muted-foreground hover:text-primary transition-colors"
                         >
                             <ArrowLeft className="mr-2 h-4 w-4" />
                             Back to Home
@@ -61,7 +62,7 @@ export default function ProjectsIndex({ projects }: Props) {
                                         <ProjectCard
                                             title={project.title}
                                             description={project.description}
-                                            image={project.image ? `/storage/${project.image}` : undefined}
+                                            image={getProjectImage(project)}
                                             tags={project.tech_tags || []}
                                             url={project.url}
                                             githubUrl={project.github_url}

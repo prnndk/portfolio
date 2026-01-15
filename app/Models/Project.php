@@ -12,7 +12,9 @@ class Project extends Model
         'slug',
         'description',
         'image',
+        'image_url',
         'gallery',
+        'gallery_urls',
         'tech_tags',
         'url',
         'github_url',
@@ -23,10 +25,42 @@ class Project extends Model
 
     protected $casts = [
         'gallery' => 'array',
+        'gallery_urls' => 'array',
         'tech_tags' => 'array',
         'featured' => 'boolean',
         'is_active' => 'boolean',
     ];
+
+    /**
+     * Get the display image URL (prefers uploaded file, falls back to external URL)
+     */
+    public function getDisplayImageAttribute(): ?string
+    {
+        if ($this->image) {
+            return "/storage/{$this->image}";
+        }
+        return $this->image_url;
+    }
+
+    /**
+     * Get all gallery images (combines uploaded files and external URLs)
+     */
+    public function getAllGalleryAttribute(): array
+    {
+        $gallery = [];
+
+        if ($this->gallery) {
+            foreach ($this->gallery as $img) {
+                $gallery[] = "/storage/{$img}";
+            }
+        }
+
+        if ($this->gallery_urls) {
+            $gallery = array_merge($gallery, $this->gallery_urls);
+        }
+
+        return $gallery;
+    }
 
     protected static function boot()
     {

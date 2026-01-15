@@ -42,7 +42,7 @@ export default function ActivitiesIndex({ activities }: Props) {
                     <div className="mb-12">
                         <Link
                             href="/"
-                            className="mb-4 inline-flex items-center text-sm text-muted-foreground hover:text-primary"
+                            className="mb-4 inline-flex items-center text-sm text-muted-foreground hover:text-primary transition-colors"
                         >
                             <ArrowLeft className="mr-2 h-4 w-4" />
                             Back to Home

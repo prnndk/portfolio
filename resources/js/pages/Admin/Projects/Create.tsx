@@ -3,10 +3,11 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link, useForm } from '@inertiajs/react';
-import { ArrowLeft, Save, Folder, Link as LinkIcon, Image, Settings } from 'lucide-react';
+import { ArrowLeft, Save, Folder, Link as LinkIcon, Image, Settings, Plus, X } from 'lucide-react';
 import { type FormEvent, useState } from 'react';
 import { FileUploader } from '@/components/ui/file-uploader';
 import { InputField, TextareaField, SwitchField, TagInput } from '@/components/ui/form-components';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Dashboard', href: '/dashboard' },
@@ -15,11 +16,17 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 export default function ProjectsCreate() {
+    const [imageTab, setImageTab] = useState<'upload' | 'url'>('upload');
+    const [galleryTab, setGalleryTab] = useState<'upload' | 'url'>('upload');
+    const [newGalleryUrl, setNewGalleryUrl] = useState('');
+
     const { data, setData, post, processing, errors } = useForm({
         title: '',
         description: '',
         image: null as File | null,
+        image_url: '',
         gallery: [] as File[],
+        gallery_urls: [] as string[],
         tech_tags: [] as string[],
         url: '',
         github_url: '',
@@ -31,6 +38,27 @@ export default function ProjectsCreate() {
     const handleSubmit = (e: FormEvent) => {
         e.preventDefault();
         post('/admin/projects');
+    };
+
+    const addGalleryUrl = () => {
+        if (newGalleryUrl && !data.gallery_urls.includes(newGalleryUrl)) {
+            setData('gallery_urls', [...data.gallery_urls, newGalleryUrl]);
+            setNewGalleryUrl('');
+        }
+    };
+
+    const removeGalleryUrl = (url: string) => {
+        setData('gallery_urls', data.gallery_urls.filter((u) => u !== url));
+    };
+
+    const getPreviewImage = () => {
+        if (data.image) {
+            return URL.createObjectURL(data.image);
+        }
+        if (data.image_url) {
+            return data.image_url;
+        }
+        return null;
     };
 
     return (
@@ -114,7 +142,7 @@ export default function ProjectsCreate() {
                                         <LinkIcon className="h-5 w-5 text-primary" />
                                         <CardTitle>Project Links</CardTitle>
                                     </div>
-                                    <CardDescription>Where can people view or access this project?</CardDescription>
+                                    <CardDescription>Where can people view or access this project? (Optional - leave empty for private projects)</CardDescription>
                                 </CardHeader>
                                 <CardContent>
                                     <div className="grid gap-4 sm:grid-cols-2">
@@ -136,6 +164,7 @@ export default function ProjectsCreate() {
                                             onChange={(e) => setData('github_url', e.target.value)}
                                             placeholder="https://github.com/username/repo"
                                             error={errors.github_url}
+                                            description="Leave empty if private"
                                         />
                                     </div>
                                 </CardContent>
@@ -151,27 +180,99 @@ export default function ProjectsCreate() {
                                     <CardDescription>Add images to showcase your project</CardDescription>
                                 </CardHeader>
                                 <CardContent className="space-y-6">
+                                    {/* Featured Image */}
                                     <div className="space-y-2">
                                         <label className="text-sm font-medium">Featured Image</label>
-                                        <FileUploader
-                                            value={data.image ? [data.image] : []}
-                                            onValueChange={(files) => setData('image', files[0] || null)}
-                                            maxFiles={1}
-                                            description="Main image displayed in project cards (recommended: 1200x630px)"
-                                        />
+                                        <Tabs value={imageTab} onValueChange={(v) => setImageTab(v as 'upload' | 'url')}>
+                                            <TabsList className="mb-2">
+                                                <TabsTrigger value="upload">Upload File</TabsTrigger>
+                                                <TabsTrigger value="url">Use URL</TabsTrigger>
+                                            </TabsList>
+                                            <TabsContent value="upload">
+                                                <FileUploader
+                                                    value={data.image ? [data.image] : []}
+                                                    onValueChange={(files) => {
+                                                        setData('image', files[0] || null);
+                                                        if (files[0]) setData('image_url', '');
+                                                    }}
+                                                    maxFiles={1}
+                                                    description="Main image displayed in project cards (recommended: 1200x630px)"
+                                                />
+                                            </TabsContent>
+                                            <TabsContent value="url">
+                                                <InputField
+                                                    id="image_url"
+                                                    label=""
+                                                    type="url"
+                                                    value={data.image_url}
+                                                    onChange={(e) => {
+                                                        setData('image_url', e.target.value);
+                                                        if (e.target.value) setData('image', null);
+                                                    }}
+                                                    placeholder="https://example.com/image.jpg"
+                                                    error={errors.image_url}
+                                                    description="Enter a direct URL to an image"
+                                                />
+                                            </TabsContent>
+                                        </Tabs>
                                         {errors.image && (
                                             <p className="text-sm text-destructive">{errors.image}</p>
                                         )}
                                     </div>
 
+                                    {/* Gallery */}
                                     <div className="space-y-2">
                                         <label className="text-sm font-medium">Project Gallery</label>
-                                        <FileUploader
-                                            value={data.gallery}
-                                            onValueChange={(files) => setData('gallery', files)}
-                                            multiple
-                                            description="Additional screenshots and images (up to 10)"
-                                        />
+                                        <Tabs value={galleryTab} onValueChange={(v) => setGalleryTab(v as 'upload' | 'url')}>
+                                            <TabsList className="mb-2">
+                                                <TabsTrigger value="upload">Upload Files</TabsTrigger>
+                                                <TabsTrigger value="url">Use URLs</TabsTrigger>
+                                            </TabsList>
+                                            <TabsContent value="upload">
+                                                <FileUploader
+                                                    value={data.gallery}
+                                                    onValueChange={(files) => setData('gallery', files)}
+                                                    multiple
+                                                    description="Additional screenshots and images (up to 10)"
+                                                />
+                                            </TabsContent>
+                                            <TabsContent value="url">
+                                                <div className="space-y-3">
+                                                    <div className="flex gap-2">
+                                                        <InputField
+                                                            id="new_gallery_url"
+                                                            label=""
+                                                            type="url"
+                                                            value={newGalleryUrl}
+                                                            onChange={(e) => setNewGalleryUrl(e.target.value)}
+                                                            placeholder="https://example.com/screenshot.jpg"
+                                                            className="flex-1"
+                                                        />
+                                                        <Button type="button" onClick={addGalleryUrl} variant="outline" className="mt-auto">
+                                                            <Plus className="h-4 w-4" />
+                                                        </Button>
+                                                    </div>
+                                                    {data.gallery_urls.length > 0 && (
+                                                        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
+                                                            {data.gallery_urls.map((url, i) => (
+                                                                <div key={i} className="group relative aspect-video overflow-hidden rounded-lg border border-border bg-muted">
+                                                                    <img src={url} alt={`Gallery ${i + 1}`} className="h-full w-full object-cover" onError={(e) => e.currentTarget.style.display = 'none'} />
+                                                                    <Button
+                                                                        type="button"
+                                                                        variant="destructive"
+                                                                        size="icon"
+                                                                        className="absolute right-1 top-1 h-6 w-6 opacity-0 transition-opacity group-hover:opacity-100"
+                                                                        onClick={() => removeGalleryUrl(url)}
+                                                                    >
+                                                                        <X className="h-3 w-3" />
+                                                                    </Button>
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </TabsContent>
+                                        </Tabs>
                                         {errors.gallery && (
                                             <p className="text-sm text-destructive">{errors.gallery}</p>
                                         )}
@@ -226,9 +327,9 @@ export default function ProjectsCreate() {
                                 <CardContent>
                                     <div className="overflow-hidden rounded-lg border border-border bg-background">
                                         <div className="aspect-video bg-muted flex items-center justify-center">
-                                            {data.image ? (
+                                            {getPreviewImage() ? (
                                                 <img
-                                                    src={URL.createObjectURL(data.image)}
+                                                    src={getPreviewImage()!}
                                                     alt="Preview"
                                                     className="h-full w-full object-cover"
                                                 />

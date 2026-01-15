@@ -44,6 +44,10 @@ Route::get('/activities', function () {
     ]);
 })->name('activities.index');
 
+Route::get('/contact', function () {
+    return Inertia::render('Public/Contact/Index');
+})->name('contact.index');
+
 Route::post('/contact', [ContactController::class, 'store'])->name('contact.store');
 
 Route::get('/projects/{project:slug}', function (Project $project) {

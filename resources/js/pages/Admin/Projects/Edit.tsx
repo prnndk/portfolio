@@ -3,10 +3,11 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { type BreadcrumbItem, type Project } from '@/types';
 import { Head, Link, useForm } from '@inertiajs/react';
-import { ArrowLeft, Save, Folder, Link as LinkIcon, Image, Settings, ExternalLink, X } from 'lucide-react';
+import { ArrowLeft, Save, Folder, Link as LinkIcon, Image, Settings, ExternalLink, X, Plus } from 'lucide-react';
 import { type FormEvent, useState } from 'react';
 import { FileUploader } from '@/components/ui/file-uploader';
 import { InputField, TextareaField, SwitchField, TagInput } from '@/components/ui/form-components';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 interface Props {
     project: Project;
@@ -20,14 +21,21 @@ export default function ProjectsEdit({ project }: Props) {
     ];
 
     const [existingGallery, setExistingGallery] = useState(project.gallery || []);
+    const [existingGalleryUrls, setExistingGalleryUrls] = useState(project.gallery_urls || []);
+    const [imageTab, setImageTab] = useState<'upload' | 'url'>(project.image_url ? 'url' : 'upload');
+    const [galleryTab, setGalleryTab] = useState<'upload' | 'url'>('upload');
+    const [newGalleryUrl, setNewGalleryUrl] = useState('');
 
     const { data, setData, post, processing, errors } = useForm({
         _method: 'PUT',
         title: project.title,
         description: project.description,
         image: null as File | null,
+        image_url: project.image_url || '',
         gallery: [] as File[],
+        gallery_urls: [] as string[],
         remove_gallery: [] as string[],
+        remove_gallery_urls: [] as string[],
         tech_tags: project.tech_tags || [],
         url: project.url || '',
         github_url: project.github_url || '',
@@ -44,6 +52,48 @@ export default function ProjectsEdit({ project }: Props) {
     const removeExistingImage = (path: string) => {
         setExistingGallery(existingGallery.filter((p) => p !== path));
         setData('remove_gallery', [...data.remove_gallery, path]);
+    };
+
+    const removeExistingGalleryUrl = (url: string) => {
+        setExistingGalleryUrls(existingGalleryUrls.filter((u) => u !== url));
+        setData('remove_gallery_urls', [...data.remove_gallery_urls, url]);
+    };
+
+    const addGalleryUrl = () => {
+        if (newGalleryUrl && !data.gallery_urls.includes(newGalleryUrl)) {
+            setData('gallery_urls', [...data.gallery_urls, newGalleryUrl]);
+            setNewGalleryUrl('');
+        }
+    };
+
+    const removeNewGalleryUrl = (url: string) => {
+        setData('gallery_urls', data.gallery_urls.filter((u) => u !== url));
+    };
+
+    const getPreviewImage = () => {
+        if (data.image) {
+            return URL.createObjectURL(data.image);
+        }
+        if (data.image_url) {
+            return data.image_url;
+        }
+        if (project.image) {
+            return `/storage/${project.image}`;
+        }
+        if (project.image_url) {
+            return project.image_url;
+        }
+        return null;
+    };
+
+    const getCurrentImageDisplay = () => {
+        if (project.image) {
+            return `/storage/${project.image}`;
+        }
+        if (project.image_url) {
+            return project.image_url;
+        }
+        return null;
     };
 
     return (
@@ -135,6 +185,7 @@ export default function ProjectsEdit({ project }: Props) {
                                         <LinkIcon className="h-5 w-5 text-primary" />
                                         <CardTitle>Project Links</CardTitle>
                                     </div>
+                                    <CardDescription>Where can people view or access this project? (Optional - leave empty for private projects)</CardDescription>
                                 </CardHeader>
                                 <CardContent>
                                     <div className="grid gap-4 sm:grid-cols-2">
@@ -156,6 +207,7 @@ export default function ProjectsEdit({ project }: Props) {
                                             onChange={(e) => setData('github_url', e.target.value)}
                                             placeholder="https://github.com/username/repo"
                                             error={errors.github_url}
+                                            description="Leave empty if private"
                                         />
                                     </div>
                                 </CardContent>
@@ -172,36 +224,66 @@ export default function ProjectsEdit({ project }: Props) {
                                 </CardHeader>
                                 <CardContent className="space-y-6">
                                     {/* Current Featured Image */}
-                                    {project.image && (
+                                    {getCurrentImageDisplay() && (
                                         <div className="space-y-2">
                                             <label className="text-sm font-medium">Current Featured Image</label>
                                             <div className="overflow-hidden rounded-lg border border-border">
                                                 <img
-                                                    src={`/storage/${project.image}`}
+                                                    src={getCurrentImageDisplay()!}
                                                     alt={project.title}
                                                     className="max-h-48 w-full object-cover"
                                                 />
                                             </div>
+                                            {project.image_url && (
+                                                <p className="text-xs text-muted-foreground">Using external URL</p>
+                                            )}
                                         </div>
                                     )}
 
+                                    {/* Replace Featured Image */}
                                     <div className="space-y-2">
                                         <label className="text-sm font-medium">Replace Featured Image</label>
-                                        <FileUploader
-                                            value={data.image ? [data.image] : []}
-                                            onValueChange={(files) => setData('image', files[0] || null)}
-                                            maxFiles={1}
-                                            description="Upload a new featured image"
-                                        />
+                                        <Tabs value={imageTab} onValueChange={(v) => setImageTab(v as 'upload' | 'url')}>
+                                            <TabsList className="mb-2">
+                                                <TabsTrigger value="upload">Upload File</TabsTrigger>
+                                                <TabsTrigger value="url">Use URL</TabsTrigger>
+                                            </TabsList>
+                                            <TabsContent value="upload">
+                                                <FileUploader
+                                                    value={data.image ? [data.image] : []}
+                                                    onValueChange={(files) => {
+                                                        setData('image', files[0] || null);
+                                                        if (files[0]) setData('image_url', '');
+                                                    }}
+                                                    maxFiles={1}
+                                                    description="Upload a new featured image"
+                                                />
+                                            </TabsContent>
+                                            <TabsContent value="url">
+                                                <InputField
+                                                    id="image_url"
+                                                    label=""
+                                                    type="url"
+                                                    value={data.image_url}
+                                                    onChange={(e) => {
+                                                        setData('image_url', e.target.value);
+                                                        if (e.target.value) setData('image', null);
+                                                    }}
+                                                    placeholder="https://example.com/image.jpg"
+                                                    error={errors.image_url}
+                                                    description="Enter a direct URL to an image"
+                                                />
+                                            </TabsContent>
+                                        </Tabs>
                                         {errors.image && (
                                             <p className="text-sm text-destructive">{errors.image}</p>
                                         )}
                                     </div>
 
-                                    {/* Existing Gallery */}
+                                    {/* Existing Gallery (Uploaded Files) */}
                                     {existingGallery.length > 0 && (
                                         <div className="space-y-2">
-                                            <label className="text-sm font-medium">Current Gallery ({existingGallery.length} images)</label>
+                                            <label className="text-sm font-medium">Current Gallery - Uploaded ({existingGallery.length} images)</label>
                                             <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
                                                 {existingGallery.map((img, i) => (
                                                     <div key={i} className="group relative aspect-video overflow-hidden rounded-lg border border-border">
@@ -221,14 +303,82 @@ export default function ProjectsEdit({ project }: Props) {
                                         </div>
                                     )}
 
+                                    {/* Existing Gallery URLs */}
+                                    {existingGalleryUrls.length > 0 && (
+                                        <div className="space-y-2">
+                                            <label className="text-sm font-medium">Current Gallery - URLs ({existingGalleryUrls.length} images)</label>
+                                            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+                                                {existingGalleryUrls.map((url, i) => (
+                                                    <div key={i} className="group relative aspect-video overflow-hidden rounded-lg border border-border">
+                                                        <img src={url} alt={`Gallery URL ${i + 1}`} className="h-full w-full object-cover" onError={(e) => e.currentTarget.style.display = 'none'} />
+                                                        <Button
+                                                            type="button"
+                                                            variant="destructive"
+                                                            size="icon"
+                                                            className="absolute right-2 top-2 h-7 w-7 opacity-0 transition-opacity group-hover:opacity-100"
+                                                            onClick={() => removeExistingGalleryUrl(url)}
+                                                        >
+                                                            <X className="h-4 w-4" />
+                                                        </Button>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* Add to Gallery */}
                                     <div className="space-y-2">
                                         <label className="text-sm font-medium">Add to Gallery</label>
-                                        <FileUploader
-                                            value={data.gallery}
-                                            onValueChange={(files) => setData('gallery', files)}
-                                            multiple
-                                            description="Upload additional images"
-                                        />
+                                        <Tabs value={galleryTab} onValueChange={(v) => setGalleryTab(v as 'upload' | 'url')}>
+                                            <TabsList className="mb-2">
+                                                <TabsTrigger value="upload">Upload Files</TabsTrigger>
+                                                <TabsTrigger value="url">Use URLs</TabsTrigger>
+                                            </TabsList>
+                                            <TabsContent value="upload">
+                                                <FileUploader
+                                                    value={data.gallery}
+                                                    onValueChange={(files) => setData('gallery', files)}
+                                                    multiple
+                                                    description="Upload additional images"
+                                                />
+                                            </TabsContent>
+                                            <TabsContent value="url">
+                                                <div className="space-y-3">
+                                                    <div className="flex gap-2">
+                                                        <InputField
+                                                            id="new_gallery_url"
+                                                            label=""
+                                                            type="url"
+                                                            value={newGalleryUrl}
+                                                            onChange={(e) => setNewGalleryUrl(e.target.value)}
+                                                            placeholder="https://example.com/screenshot.jpg"
+                                                            className="flex-1"
+                                                        />
+                                                        <Button type="button" onClick={addGalleryUrl} variant="outline" className="mt-auto">
+                                                            <Plus className="h-4 w-4" />
+                                                        </Button>
+                                                    </div>
+                                                    {data.gallery_urls.length > 0 && (
+                                                        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
+                                                            {data.gallery_urls.map((url, i) => (
+                                                                <div key={i} className="group relative aspect-video overflow-hidden rounded-lg border border-border bg-muted">
+                                                                    <img src={url} alt={`New Gallery ${i + 1}`} className="h-full w-full object-cover" onError={(e) => e.currentTarget.style.display = 'none'} />
+                                                                    <Button
+                                                                        type="button"
+                                                                        variant="destructive"
+                                                                        size="icon"
+                                                                        className="absolute right-1 top-1 h-6 w-6 opacity-0 transition-opacity group-hover:opacity-100"
+                                                                        onClick={() => removeNewGalleryUrl(url)}
+                                                                    >
+                                                                        <X className="h-3 w-3" />
+                                                                    </Button>
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </TabsContent>
+                                        </Tabs>
                                         {errors.gallery && (
                                             <p className="text-sm text-destructive">{errors.gallery}</p>
                                         )}
@@ -283,15 +433,9 @@ export default function ProjectsEdit({ project }: Props) {
                                 <CardContent>
                                     <div className="overflow-hidden rounded-lg border border-border bg-background">
                                         <div className="aspect-video bg-muted flex items-center justify-center">
-                                            {data.image ? (
+                                            {getPreviewImage() ? (
                                                 <img
-                                                    src={URL.createObjectURL(data.image)}
-                                                    alt="Preview"
-                                                    className="h-full w-full object-cover"
-                                                />
-                                            ) : project.image ? (
-                                                <img
-                                                    src={`/storage/${project.image}`}
+                                                    src={getPreviewImage()!}
                                                     alt="Preview"
                                                     className="h-full w-full object-cover"
                                                 />
