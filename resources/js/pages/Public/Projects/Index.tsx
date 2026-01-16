@@ -64,8 +64,7 @@ export default function ProjectsIndex({ projects }: Props) {
                                             description={project.description}
                                             image={getProjectImage(project)}
                                             tags={project.tech_tags || []}
-                                            url={project.url}
-                                            githubUrl={project.github_url}
+
                                         />
                                     </Link>
                                 </FadeIn>

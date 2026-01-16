@@ -17,7 +17,7 @@ import {
     FileText,
     Calendar,
     Star,
-    TrendingUp,
+
     Plus,
     ArrowRight,
     Eye,

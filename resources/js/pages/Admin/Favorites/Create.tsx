@@ -6,7 +6,7 @@ import { Head, Link, useForm } from '@inertiajs/react';
 import { ArrowLeft, Save, Star, Link as LinkIcon, Image, Settings, Film, Music, BookOpen } from 'lucide-react';
 import { type FormEvent } from 'react';
 import { FileUploader } from '@/components/ui/file-uploader';
-import { InputField, TextareaField, SwitchField, SelectField } from '@/components/ui/form-components';
+import { InputField, TextareaField, SwitchField } from '@/components/ui/form-components';
 import { Label } from '@/components/ui/label';
 import {
     Select,
@@ -115,8 +115,8 @@ export default function FavoritesCreate() {
                                                     type="button"
                                                     onClick={() => setData('type', option.value as 'movie' | 'music' | 'book')}
                                                     className={`flex flex-col items-center gap-2 rounded-lg border-2 p-4 transition-all ${data.type === option.value
-                                                            ? 'border-primary bg-primary/5'
-                                                            : 'border-border hover:border-primary/50'
+                                                        ? 'border-primary bg-primary/5'
+                                                        : 'border-border hover:border-primary/50'
                                                         }`}
                                                 >
                                                     <option.icon className={`h-6 w-6 ${data.type === option.value ? 'text-primary' : 'text-muted-foreground'

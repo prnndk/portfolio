@@ -87,7 +87,7 @@ function InlineCode({ children }: { children?: React.ReactNode }) {
 export function MDXContent({ content, className = '' }: MDXContentProps) {
     const components: Components = {
         // Code blocks
-        code({ className, children, ...props }) {
+        code({ className, children }) {
             const match = /language-(\w+)/.exec(className || '');
             const value = String(children).replace(/\n$/, '');
             const isMultiLine = value.includes('\n');

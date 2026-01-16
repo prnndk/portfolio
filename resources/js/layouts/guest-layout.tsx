@@ -104,15 +104,12 @@ export default function GuestLayout({ children }: GuestLayoutProps) {
                                 </a>
                             )
                         )}
-                        {/* Always render the theme toggler container to prevent layout shift */}
                         <div className="ml-2 w-9 h-9 flex items-center justify-center">
                             <AnimatedThemeToggler />
                         </div>
                     </nav>
 
-                    {/* Mobile Menu Button */}
                     <div className="flex items-center gap-2 md:hidden">
-                        {/* Always render the theme toggler container to prevent layout shift */}
                         <div className="w-9 h-9 flex items-center justify-center">
                             <AnimatedThemeToggler />
                         </div>
@@ -158,10 +155,8 @@ export default function GuestLayout({ children }: GuestLayoutProps) {
                 </motion.nav>
             </header>
 
-            {/* Main Content */}
             <main>{children}</main>
 
-            {/* Footer */}
             <footer className="border-t border-border bg-card py-12">
                 <div className="container mx-auto px-4 text-center">
                     <p className="text-sm text-muted-foreground">

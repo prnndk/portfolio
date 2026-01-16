@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link, router } from '@inertiajs/react';
-import { Mail, Trash2, ArrowLeft, Calendar, User, MessageSquare } from 'lucide-react';
+import { Mail, Trash2, ArrowLeft, User, MessageSquare } from 'lucide-react';
 
 interface Contact {
     id: number;

@@ -1,6 +1,6 @@
 import AppLayout from '@/layouts/app-layout';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { type BreadcrumbItem, type Activity } from '@/types';
 import { Head, Link, router } from '@inertiajs/react';
 import { Plus, Pencil, Trash2, Calendar, Building2, ImageIcon } from 'lucide-react';

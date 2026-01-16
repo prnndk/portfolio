@@ -2,7 +2,7 @@
 
 import { OrbitingCircles } from '@/components/ui/orbiting-circles';
 import { type TechStack } from '@/types';
-import * as SimpleIcons from 'simple-icons';
+import { techIcons, techToSimpleIconSlug } from '@/lib/tech-icons';
 import { Code2 } from 'lucide-react';
 import {
     Empty,
@@ -16,133 +16,29 @@ interface TechStackOrbitProps {
     techStacks: TechStack[];
 }
 
-const techToSimpleIconSlug: Record<string, string> = {
-    laravel: 'laravel',
-    react: 'react',
-    typescript: 'typescript',
-    golang: 'go',
-    go: 'go',
-    php: 'php',
-    postgresql: 'postgresql',
-    postgres: 'postgresql',
-    mysql: 'mysql',
-    docker: 'docker',
-    javascript: 'javascript',
-    js: 'javascript',
-    nodejs: 'nodedotjs',
-    node: 'nodedotjs',
-    git: 'git',
-    tailwindcss: 'tailwindcss',
-    tailwind: 'tailwindcss',
-    redis: 'redis',
-    linux: 'linux',
-    aws: 'amazonwebservices',
-    kubernetes: 'kubernetes',
-    k8s: 'kubernetes',
-    vue: 'vuedotjs',
-    vuejs: 'vuedotjs',
-    angular: 'angular',
-    python: 'python',
-    java: 'java',
-    rust: 'rust',
-    swift: 'swift',
-    kotlin: 'kotlin',
-    flutter: 'flutter',
-    dart: 'dart',
-    nextjs: 'nextdotjs',
-    next: 'nextdotjs',
-    nuxt: 'nuxtdotjs',
-    nuxtjs: 'nuxtdotjs',
-    mongodb: 'mongodb',
-    mongo: 'mongodb',
-    graphql: 'graphql',
-    sass: 'sass',
-    scss: 'sass',
-    css: 'css3',
-    html: 'html5',
-    nginx: 'nginx',
-    apache: 'apache',
-    figma: 'figma',
-    github: 'github',
-    gitlab: 'gitlab',
-    bitbucket: 'bitbucket',
-    vscode: 'visualstudiocode',
-    vim: 'vim',
-    neovim: 'neovim',
-    ubuntu: 'ubuntu',
-    debian: 'debian',
-    centos: 'centos',
-    alpine: 'alpinelinux',
-    terraform: 'terraform',
-    ansible: 'ansible',
-    jenkins: 'jenkins',
-    vercel: 'vercel',
-    netlify: 'netlify',
-    cloudflare: 'cloudflare',
-    digitalocean: 'digitalocean',
-    heroku: 'heroku',
-    firebase: 'firebase',
-    supabase: 'supabase',
-    prisma: 'prisma',
-    express: 'express',
-    fastify: 'fastify',
-    nestjs: 'nestjs',
-    django: 'django',
-    flask: 'flask',
-    rails: 'rubyonrails',
-    ruby: 'ruby',
-    spring: 'spring',
-    dotnet: 'dotnet',
-    csharp: 'csharp',
-    electron: 'electron',
-    tauri: 'tauri',
-    reactnative: 'react',
-    expo: 'expo',
-    webpack: 'webpack',
-    vite: 'vite',
-    rollup: 'rollupdotjs',
-    esbuild: 'esbuild',
-    bun: 'bun',
-    deno: 'deno',
-    pnpm: 'pnpm',
-    npm: 'npm',
-    yarn: 'yarn',
-    jest: 'jest',
-    vitest: 'vitest',
-    playwright: 'playwright',
-    cypress: 'cypress',
-    storybook: 'storybook',
-    stripe: 'stripe',
-    twilio: 'twilio',
-    slack: 'slack',
-    discord: 'discord',
-    telegram: 'telegram',
-    wordpress: 'wordpress',
-    shopify: 'shopify',
-    magento: 'magento',
-    inertia: 'inertia',
-    livewire: 'livewire',
-    filament: 'filament',
-};
-
 function getSimpleIcon(name: string): { svg: string; hex: string } | null {
     const lowerName = name.toLowerCase().replace(/[.\s-]/g, '');
 
-    let iconSlug: string | undefined;
-    for (const [key, slug] of Object.entries(techToSimpleIconSlug)) {
-        if (lowerName.includes(key) || key.includes(lowerName)) {
-            iconSlug = slug;
-            break;
+    // Try direct lookup first (e.g. "nextjs" -> "nextdotjs")
+    let iconSlug = techToSimpleIconSlug[lowerName];
+
+    // If not found, try to find a key that is contained in the name, but prioritize longer keys to avoid "js" matching "nextjs"
+    if (!iconSlug) {
+        const sortedKeys = Object.keys(techToSimpleIconSlug).sort((a, b) => b.length - a.length);
+        for (const key of sortedKeys) {
+            if (lowerName.includes(key)) {
+                iconSlug = techToSimpleIconSlug[key];
+                break;
+            }
         }
     }
 
     if (!iconSlug) return null;
 
-    const iconKey = `si${iconSlug.charAt(0).toUpperCase()}${iconSlug.slice(1)}` as keyof typeof SimpleIcons;
-    const icon = SimpleIcons[iconKey];
+    const icon = techIcons[iconSlug];
 
-    if (icon && typeof icon === 'object' && 'svg' in icon && 'hex' in icon) {
-        return { svg: icon.svg as string, hex: icon.hex as string };
+    if (icon) {
+        return { svg: icon.svg, hex: icon.hex };
     }
 
     return null;
@@ -152,7 +48,7 @@ function SimpleIconSvg({ name }: { name: string }) {
     const iconData = getSimpleIcon(name);
 
     if (!iconData) {
-        return <span className="text-xs font-bold text-neutral-600">{name.slice(0, 2).toUpperCase()}</span>;
+        return <span className="text-xs font-bold text-neutral-600 dark:text-neutral-400">{name.slice(0, 2).toUpperCase()}</span>;
     }
 
     return (
@@ -196,6 +92,9 @@ export function TechStackOrbit({ techStacks }: TechStackOrbitProps) {
                     src="/memoji.png"
                     alt="Tech Stack"
                     className="h-full w-full object-cover"
+                    loading="lazy"
+                    width={112}
+                    height={112}
                 />
             </div>
 
@@ -206,7 +105,7 @@ export function TechStackOrbit({ techStacks }: TechStackOrbitProps) {
                     return (
                         <div
                             key={i}
-                            className="flex h-full w-full items-center justify-center rounded-full bg-white p-2 shadow-lg ring-1 ring-black/5 dark:bg-white/90"
+                            className="flex h-full w-full items-center justify-center rounded-full bg-white p-2 shadow-lg ring-1 ring-black/5 dark:bg-zinc-900 dark:ring-white/10"
                             title={stack.name}
                         >
                             {iconData ? (
@@ -216,15 +115,17 @@ export function TechStackOrbit({ techStacks }: TechStackOrbitProps) {
                                     src={`/storage/${stack.icon}`}
                                     alt={stack.name}
                                     className="h-full w-full object-contain"
+                                    loading="lazy"
                                 />
                             ) : stack.icon_url ? (
                                 <img
                                     src={stack.icon_url}
                                     alt={stack.name}
                                     className="h-full w-full object-contain"
+                                    loading="lazy"
                                 />
                             ) : (
-                                <span className="text-xs font-bold text-neutral-600">{stack.name.slice(0, 2).toUpperCase()}</span>
+                                <span className="text-xs font-bold text-neutral-600 dark:text-neutral-400">{stack.name.slice(0, 2).toUpperCase()}</span>
                             )}
                         </div>
                     );
@@ -238,7 +139,7 @@ export function TechStackOrbit({ techStacks }: TechStackOrbitProps) {
                         return (
                             <div
                                 key={i}
-                                className="flex h-full w-full items-center justify-center rounded-full bg-white p-2 shadow-lg ring-1 ring-black/5 dark:bg-white/90"
+                                className="flex h-full w-full items-center justify-center rounded-full bg-white p-2 shadow-lg ring-1 ring-black/5 dark:bg-zinc-900 dark:ring-white/10"
                                 title={stack.name}
                             >
                                 {iconData ? (
@@ -248,15 +149,17 @@ export function TechStackOrbit({ techStacks }: TechStackOrbitProps) {
                                         src={`/storage/${stack.icon}`}
                                         alt={stack.name}
                                         className="h-full w-full object-contain"
+                                        loading="lazy"
                                     />
                                 ) : stack.icon_url ? (
                                     <img
                                         src={stack.icon_url}
                                         alt={stack.name}
                                         className="h-full w-full object-contain"
+                                        loading="lazy"
                                     />
                                 ) : (
-                                    <span className="text-xs font-bold text-neutral-600">{stack.name.slice(0, 2).toUpperCase()}</span>
+                                    <span className="text-xs font-bold text-neutral-600 dark:text-neutral-400">{stack.name.slice(0, 2).toUpperCase()}</span>
                                 )}
                             </div>
                         );

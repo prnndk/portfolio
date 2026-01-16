@@ -54,8 +54,6 @@ interface ProjectCardProps {
     description: string;
     image?: string | null;
     tags?: string[];
-    url?: string | null;
-    githubUrl?: string | null;
     onClick?: () => void;
 }
 
@@ -64,8 +62,6 @@ export function ProjectCard({
     description,
     image,
     tags = [],
-    url,
-    githubUrl,
     onClick,
 }: ProjectCardProps) {
     return (

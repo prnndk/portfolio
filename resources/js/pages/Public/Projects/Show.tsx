@@ -1,7 +1,7 @@
 'use client';
 
 import { Head, Link } from '@inertiajs/react';
-import { motion } from 'framer-motion';
+
 import { ArrowLeft, ExternalLink, Github, Calendar, ImageIcon } from 'lucide-react';
 import GuestLayout from '@/layouts/guest-layout';
 import { FadeIn } from '@/components/aceternity/text-reveal';
@@ -41,7 +41,7 @@ export default function ProjectShow({ project }: Props) {
         <GuestLayout>
             {/* Enhanced SEO Head */}
             <Head>
-                <title>{`${project.title} | Projects`}</title>
+                <title>{`${project.title} | Gading Portfolio Projects`}</title>
                 <meta name="description" content={project.description} />
                 <meta name="author" content="Arya Gading Prinandika" />
                 <link rel="canonical" href={projectUrl} />
@@ -113,7 +113,7 @@ export default function ProjectShow({ project }: Props) {
 
                                 {project.tech_tags && project.tech_tags.length > 0 && (
                                     <div className="mt-6">
-                                        <h3 className="mb-2 text-sm font-semibold uppercase text-muted-foreground">
+                                        <h3 className="mb-2 text-sm font-semibold text-muted-foreground">
                                             Tech Stack
                                         </h3>
                                         <div className="flex flex-wrap gap-2">

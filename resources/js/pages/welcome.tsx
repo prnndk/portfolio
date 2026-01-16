@@ -1,8 +1,8 @@
 'use client';
 
-import { useForm } from '@inertiajs/react';
+
 import { motion } from 'framer-motion';
-import { ArrowRight, Linkedin, Mail, Send, FileText, FolderOpen, Code2, Briefcase, Star, Film, Music, BookOpen, Instagram, ChevronDown } from 'lucide-react';
+import { ArrowRight, Linkedin, Mail, FileText, FolderOpen, Briefcase, Star, Film, Music, BookOpen, Instagram, ChevronDown } from 'lucide-react';
 import GuestLayout from '@/layouts/guest-layout';
 import { Spotlight } from '@/components/ui/spotlight-new';
 import { TextReveal, FadeIn } from '@/components/aceternity/text-reveal';
@@ -11,10 +11,7 @@ import { TimelineItem, BlogCard } from '@/components/portfolio/sections';
 import { Link } from '@inertiajs/react';
 
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { type Activity, type Post, type Project, type TechStack, type Favorite } from '@/types';
-import { type FormEvent } from 'react';
-import { toast } from 'sonner';
 import { Seo } from '@/components/seo';
 import { FlipWords } from '@/components/ui/flip-words';
 import { TechStackGrid } from '@/components/tech-stack-grid';
@@ -38,31 +35,8 @@ interface Props {
 }
 
 export default function Welcome({ projects = [], activities = [], posts = [], techStacks = [], favorites = [] }: Props) {
-    const { data, setData, post, processing, errors, reset } = useForm({
-        name: '',
-        email: '',
-        message: '',
-    });
-
+    // Removed unused form logic
     const words = ["Web Applications", "Mobile Apps", "Software Application", "Infrastructure", "AI Integration", "Business Solutions", "Database Solutions", "System Architecture"]
-
-    const handleContactSubmit = (e: FormEvent) => {
-        e.preventDefault();
-        post('/contact', {
-            preserveScroll: true,
-            onSuccess: () => {
-                reset();
-                toast.success('Message sent successfully!', {
-                    description: 'Thank you for reaching out. I will get back to you soon.',
-                });
-            },
-            onError: () => {
-                toast.error('Failed to send message', {
-                    description: 'Please check the form for errors and try again.',
-                });
-            },
-        });
-    };
 
     return (
         <GuestLayout>
@@ -191,8 +165,6 @@ export default function Welcome({ projects = [], activities = [], posts = [], te
                                             description={project.description}
                                             image={getProjectImage(project)}
                                             tags={project.tech_tags || []}
-                                            url={project.url}
-                                            githubUrl={project.github_url}
                                         />
                                     </Link>
                                 </FadeIn>

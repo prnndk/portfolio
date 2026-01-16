@@ -94,7 +94,6 @@ export function Highlighter({
 
     return () => {
       clearTimeout(showTimeout)
-      const element = elementRef.current
       if (element) {
         annotate(element, { type: action }).remove()
       }

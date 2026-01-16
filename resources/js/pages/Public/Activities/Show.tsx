@@ -1,6 +1,6 @@
 'use client';
 
-import { Head, Link } from '@inertiajs/react';
+import { Link } from '@inertiajs/react';
 import { motion } from 'framer-motion';
 import { ArrowLeft, Calendar, Building2, ImageIcon } from 'lucide-react';
 import GuestLayout from '@/layouts/guest-layout';

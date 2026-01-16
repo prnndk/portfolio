@@ -29,7 +29,7 @@ export default function TechStacksIndex({ techStacks }: Props) {
         }
     };
 
-    const categories = [...new Set(techStacks.map(t => t.category).filter(Boolean))];
+
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>

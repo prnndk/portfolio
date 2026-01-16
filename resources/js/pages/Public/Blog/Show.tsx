@@ -1,8 +1,7 @@
 'use client';
 
 import { Head, Link } from '@inertiajs/react';
-import { motion } from 'framer-motion';
-import { ArrowLeft, Calendar, Clock, Share2, Twitter, Facebook, Linkedin, Link as LinkIcon } from 'lucide-react';
+import { ArrowLeft, Calendar, Clock, Twitter, Facebook, Linkedin, Link as LinkIcon } from 'lucide-react';
 import GuestLayout from '@/layouts/guest-layout';
 import { FadeIn } from '@/components/aceternity/text-reveal';
 import { type Post } from '@/types';

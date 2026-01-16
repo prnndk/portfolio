@@ -1,4 +1,4 @@
-import { Head, usePage } from '@inertiajs/react';
+import { Head } from '@inertiajs/react';
 
 interface SeoProps {
     title: string;
@@ -19,7 +19,7 @@ export function Seo({
     publishedTime,
     author
 }: SeoProps) {
-    const { props } = usePage();
+
     const appName = import.meta.env.VITE_APP_NAME || 'Portfolio Arya Gading Prinandika';
     const appUrl = import.meta.env.VITE_APP_URL || 'https://aryagading.com';
 

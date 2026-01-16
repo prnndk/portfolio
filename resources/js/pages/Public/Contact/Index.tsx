@@ -5,7 +5,7 @@ import { FadeIn } from '@/components/aceternity/text-reveal';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Head, useForm, Link } from '@inertiajs/react';
-import { ArrowLeft, Send, Mail, MapPin, Phone } from 'lucide-react';
+import { ArrowLeft, Send, Mail, MapPin } from 'lucide-react';
 import { toast } from 'sonner';
 import { FormEventHandler } from 'react';
 

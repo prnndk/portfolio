@@ -3,12 +3,12 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { type BreadcrumbItem } from '@/types';
 import { Head, Link, useForm } from '@inertiajs/react';
-import { ArrowLeft, Save, Eye, FileText, Settings, Calendar } from 'lucide-react';
+import { ArrowLeft, Save, Eye, FileText, Settings } from 'lucide-react';
 import { type FormEvent } from 'react';
 import { FileUploader } from '@/components/ui/file-uploader';
 import MDEditor from '@uiw/react-md-editor';
 import { useAppearance } from '@/hooks/use-appearance';
-import { FormSection, InputField, TextareaField, SelectField, SwitchField } from '@/components/ui/form-components';
+import { InputField, TextareaField, SelectField, SwitchField } from '@/components/ui/form-components';
 
 const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Dashboard', href: '/dashboard' },

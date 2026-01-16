@@ -1,7 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { type Activity, type Post, type Project } from '@/types';
+import { type Activity, type Post } from '@/types';
 import { Link } from '@inertiajs/react';
 
 interface InfiniteTickerProps {
