@@ -2,8 +2,9 @@
 
 
 import { motion } from 'framer-motion';
-import { ArrowRight, Linkedin, Mail, FileText, FolderOpen, Briefcase, Star, Film, Music, BookOpen, Instagram, ChevronDown } from 'lucide-react';
+import { ArrowRight, Linkedin, Mail, FileText, FolderOpen, Briefcase, Star, Film, Music, BookOpen, Instagram, ChevronDown, MessageSquare, Sparkles } from 'lucide-react';
 import GuestLayout from '@/layouts/guest-layout';
+import { Floating, FloatingElement } from '@/components/ui/parallax-floating';
 import { Spotlight } from '@/components/ui/spotlight-new';
 import { TextReveal, FadeIn } from '@/components/aceternity/text-reveal';
 import { ProjectCard } from '@/components/aceternity/card-hover';
@@ -411,13 +412,80 @@ export default function Welcome({ projects = [], activities = [], posts = [], te
                             <p className="mt-4 text-lg text-muted-foreground">
                                 Have a project in mind or want to discuss a new opportunity? I'd love to hear from you.
                             </p>
-                            <div className="mt-8">
-                                <Button size="lg" asChild>
-                                    <Link href="/contact">
-                                        Get In Touch
-                                        <ArrowRight className="ml-2 h-4 w-4" />
-                                    </Link>
-                                </Button>
+                            <div className="mt-8 flex justify-center w-full">
+                                <Floating sensitivity={-0.5} className="h-60 w-full max-w-2xl flex items-center justify-center relative">
+                                    {/* 1. Image: Tech (Top Left) */}
+                                    <FloatingElement depth={0.5} className="absolute top-0 left-[15%]">
+                                        <div className="h-14 w-14 overflow-hidden rounded-2xl shadow-lg rotate-[-6deg] opacity-90 grayscale hover:grayscale-0 transition-all duration-500 border border-white/10">
+                                            <img
+                                                src="https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=100&h=100&fit=crop&q=80"
+                                                alt="Tech"
+                                                className="h-full w-full object-cover"
+                                            />
+                                        </div>
+                                    </FloatingElement>
+
+                                    {/* 2. Icon: Mail (Top Center-Right) */}
+                                    <FloatingElement depth={1} className="absolute -top-4 right-[30%]">
+                                        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/10 backdrop-blur-md shadow-lg border border-white/20 rotate-[12deg]">
+                                            <Mail className="h-6 w-6 text-blue-500" />
+                                        </div>
+                                    </FloatingElement>
+
+                                    {/* 3. Image: Abstract (Right) */}
+                                    <FloatingElement depth={2} className="absolute top-8 right-[10%]">
+                                        <div className="h-16 w-16 overflow-hidden rounded-2xl shadow-lg rotate-[6deg] opacity-90 grayscale hover:grayscale-0 transition-all duration-500 border border-white/10">
+                                            <img
+                                                src="https://images.unsplash.com/photo-1534972195531-d756b9bfa9f2?w=100&h=100&fit=crop&q=80"
+                                                alt="Abstract"
+                                                className="h-full w-full object-cover"
+                                            />
+                                        </div>
+                                    </FloatingElement>
+
+                                    {/* 4. Icon: Message (Bottom Left) */}
+                                    <FloatingElement depth={1.5} className="absolute bottom-2 left-[20%]">
+                                        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/10 backdrop-blur-md shadow-lg border border-white/20 rotate-[-12deg]">
+                                            <MessageSquare className="h-5 w-5 text-purple-500" />
+                                        </div>
+                                    </FloatingElement>
+
+                                    {/* 5. Image: Matrix (Bottom Right) */}
+                                    <FloatingElement depth={0.8} className="absolute bottom-0 right-[20%]">
+                                        <div className="h-20 w-20 overflow-hidden rounded-2xl shadow-lg rotate-[-3deg] opacity-90 grayscale hover:grayscale-0 transition-all duration-500 border border-white/10">
+                                            <img
+                                                src="https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=100&h=100&fit=crop&q=80"
+                                                alt="Matrix"
+                                                className="h-full w-full object-cover"
+                                            />
+                                        </div>
+                                    </FloatingElement>
+
+                                    {/* 6. Image: Fluid (Left) */}
+                                    <FloatingElement depth={2.5} className="absolute top-1/2 left-[5%] -translate-y-1/2">
+                                        <div className="h-12 w-12 overflow-hidden rounded-xl shadow-lg rotate-[15deg] opacity-80 grayscale hover:grayscale-0 transition-all duration-500 border border-white/10">
+                                            <img
+                                                src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=100&h=100&fit=crop&q=80"
+                                                alt="Fluid"
+                                                className="h-full w-full object-cover"
+                                            />
+                                        </div>
+                                    </FloatingElement>
+
+                                    {/* 7. Icon: Sparkles (Top Left scattered) */}
+                                    <FloatingElement depth={0.3} className="absolute top-10 left-[25%] opacity-50">
+                                        <Sparkles className="h-6 w-6 text-amber-400 rotate-12" />
+                                    </FloatingElement>
+
+                                    <FloatingElement depth={0.2} className="relative z-10">
+                                        <Button size="lg" className="px-10 py-6 text-lg rounded-xl shadow-2xl hover:shadow-primary/30 hover:-translate-y-1 transition-all" asChild>
+                                            <Link href="/contact">
+                                                Get In Touch
+                                                <ArrowRight className="ml-2 h-5 w-5" />
+                                            </Link>
+                                        </Button>
+                                    </FloatingElement>
+                                </Floating>
                             </div>
                         </FadeIn>
                     </div>

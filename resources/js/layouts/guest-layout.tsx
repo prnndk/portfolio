@@ -49,6 +49,7 @@ export default function GuestLayout({ children }: GuestLayoutProps) {
 
     const navItems = [
         { label: 'Home', href: '/' },
+        { label: 'About', href: '/about' },
         { label: 'Projects', href: '/projects' },
         { label: 'Activities', href: '/activities' },
         { label: 'Favorites', href: '/favorites' },

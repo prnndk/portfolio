@@ -5,16 +5,19 @@ use App\Http\Controllers\Admin\FavoriteController;
 use App\Http\Controllers\Admin\PostController;
 use App\Http\Controllers\Admin\ProjectController;
 use App\Http\Controllers\Admin\TechStackController;
+use App\Http\Controllers\Admin\ShortLinkController;
 use App\Models\Activity;
 use App\Models\Favorite;
 use App\Models\Post;
 use App\Models\Project;
 use App\Models\TechStack;
+use App\Models\ShortLink;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\OpenGraphController;
+use App\Http\Controllers\ShortLinkRedirectController;
 
 // OpenGraph Image Generation Routes
 Route::get('/og/blog/{slug}', [OpenGraphController::class, 'blog'])->name('og.blog');
@@ -31,6 +34,10 @@ Route::get('/', function () {
         'favorites' => Favorite::active()->ordered()->limit(6)->get(),
     ]);
 })->name('home');
+
+Route::get('/about', function () {
+    return Inertia::render('Public/About/Index');
+})->name('about');
 
 Route::get('/projects', function () {
     return Inertia::render('Public/Projects/Index', [
@@ -130,6 +137,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
                     'total' => Favorite::count(),
                     'active' => Favorite::active()->count(),
                 ],
+                'shortLinks' => [
+                    'total' => ShortLink::count(),
+                    'active' => ShortLink::active()->count(),
+                    'clicks' => ShortLink::sum('clicks'),
+                ],
             ],
             'recentPosts' => Post::orderBy('created_at', 'desc')->limit(5)->get(),
         ]);
@@ -143,8 +155,18 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::resource('tech-stacks', TechStackController::class);
         Route::resource('favorites', FavoriteController::class)->except(['show']);
         Route::resource('contacts', ContactController::class)->only(['index', 'show', 'destroy']);
+        Route::resource('short-links', ShortLinkController::class)->except(['show']);
+
+        // Image upload for blog posts
+        Route::post('upload/image', [App\Http\Controllers\Admin\UploadController::class, 'uploadImage'])->name('upload.image');
+        Route::delete('upload/image', [App\Http\Controllers\Admin\UploadController::class, 'deleteImage'])->name('upload.image.delete');
     });
 });
 
 require __DIR__ . '/settings.php';
 require __DIR__ . '/auth.php';
+
+// Short link redirect - MUST be at the very end to not conflict with other routes
+Route::get('/{code}', ShortLinkRedirectController::class)
+    ->where('code', '[a-zA-Z0-9\-_]+')
+    ->name('short-link.redirect');

@@ -8,6 +8,7 @@ import { type Post } from '@/types';
 import { MDXContent } from '@/components/mdx-content';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
+import { TableOfContents } from '@/components/table-of-contents';
 
 interface Props {
     post: Post;
@@ -119,6 +120,9 @@ export default function BlogShow({ post, relatedPosts = [] }: Props) {
                 </script>
             </Head>
 
+            {/* Table of Contents - Floating sidebar */}
+            <TableOfContents content={post.content} />
+
             <article className="min-h-screen">
                 <div className="container mx-auto px-4 py-24">
                     <FadeIn>
@@ -195,11 +199,11 @@ export default function BlogShow({ post, relatedPosts = [] }: Props) {
                         </header>
                     </FadeIn>
 
-                    {post.featured_image && (
+                    {(post.featured_image || post.featured_image_url) && (
                         <FadeIn delay={0.2}>
                             <div className="mx-auto mt-10 max-w-4xl overflow-hidden rounded-xl border border-border">
                                 <img
-                                    src={`/storage/${post.featured_image}`}
+                                    src={post.featured_image ? `/storage/${post.featured_image}` : post.featured_image_url!}
                                     alt={post.title}
                                     className="w-full object-cover"
                                 />

@@ -53,7 +53,7 @@ function SimpleIconSvg({ name }: { name: string }) {
 
     return (
         <div
-            className="h-full w-full flex items-center justify-center"
+            className="h-full w-full flex items-center justify-center [&>svg]:h-full [&>svg]:w-full [&>svg]:fill-current dark:!text-white"
             style={{ color: `#${iconData.hex}` }}
             dangerouslySetInnerHTML={{ __html: iconData.svg }}
         />

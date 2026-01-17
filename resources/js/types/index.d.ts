@@ -77,6 +77,7 @@ export interface Activity {
     start_date: string | null;
     end_date: string | null;
     gallery: string[] | null;
+    gallery_urls: string[] | null;
     sort_order: number;
     is_active: boolean;
     created_at: string;
@@ -90,6 +91,7 @@ export interface Post {
     content: string;
     excerpt: string | null;
     featured_image: string | null;
+    featured_image_url: string | null;
     published_at: string | null;
     status: 'draft' | 'published' | 'archived';
     is_active: boolean;
@@ -131,3 +133,14 @@ export interface Favorite {
     updated_at: string;
 }
 
+export interface ShortLink {
+    id: number;
+    code: string;
+    original_url: string;
+    title: string | null;
+    clicks: number;
+    is_active: boolean;
+    short_url?: string;
+    created_at: string;
+    updated_at: string;
+}

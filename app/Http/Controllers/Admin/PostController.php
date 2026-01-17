@@ -32,6 +32,8 @@ class PostController extends Controller
             'content' => 'required|string',
             'excerpt' => 'nullable|string|max:500',
             'featured_image' => 'nullable|image|max:2048',
+            'featured_image_url' => 'nullable|url|max:2048',
+            'image_source' => 'required|in:upload,url',
             'status' => 'required|in:draft,published,archived',
             'published_at' => 'nullable|date',
             'is_active' => 'boolean',
@@ -39,9 +41,21 @@ class PostController extends Controller
 
         $validated['slug'] = Str::slug($validated['title']);
 
-        if ($request->hasFile('featured_image')) {
+        // Handle featured image based on source type
+        if ($validated['image_source'] === 'upload' && $request->hasFile('featured_image')) {
             $validated['featured_image'] = $request->file('featured_image')->store('posts', 'public');
+            $validated['featured_image_url'] = null;
+        } elseif ($validated['image_source'] === 'url' && !empty($validated['featured_image_url'])) {
+            // Validate URL is from allowed domains or is a valid image URL
+            $validated['featured_image'] = null;
+            // featured_image_url is already set
+        } else {
+            $validated['featured_image'] = null;
+            $validated['featured_image_url'] = null;
         }
+
+        // Remove image_source from validated data before creating
+        unset($validated['image_source']);
 
         // Auto-set published_at if status is published and not set
         if ($validated['status'] === 'published' && empty($validated['published_at'])) {
@@ -68,20 +82,36 @@ class PostController extends Controller
             'content' => 'required|string',
             'excerpt' => 'nullable|string|max:500',
             'featured_image' => 'nullable|image|max:2048',
+            'featured_image_url' => 'nullable|url|max:2048',
+            'image_source' => 'required|in:upload,url',
             'status' => 'required|in:draft,published,archived',
             'published_at' => 'nullable|date',
             'is_active' => 'boolean',
         ]);
 
-        if ($request->hasFile('featured_image')) {
-            // Delete old image
+        // Handle featured image based on source type
+        if ($validated['image_source'] === 'upload' && $request->hasFile('featured_image')) {
+            // Delete old uploaded image if exists
             if ($post->featured_image) {
                 Storage::disk('public')->delete($post->featured_image);
             }
             $validated['featured_image'] = $request->file('featured_image')->store('posts', 'public');
+            $validated['featured_image_url'] = null;
+        } elseif ($validated['image_source'] === 'url' && !empty($validated['featured_image_url'])) {
+            // Using external URL, clear uploaded image if any
+            if ($post->featured_image) {
+                Storage::disk('public')->delete($post->featured_image);
+            }
+            $validated['featured_image'] = null;
+            // featured_image_url is already set
         } else {
+            // Keep existing images if no new one is provided
             unset($validated['featured_image']);
+            unset($validated['featured_image_url']);
         }
+
+        // Remove image_source from validated data before updating
+        unset($validated['image_source']);
 
         // Auto-set published_at if status is published and not set
         if ($validated['status'] === 'published' && empty($validated['published_at']) && empty($post->published_at)) {

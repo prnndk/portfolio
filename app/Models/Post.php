@@ -13,6 +13,7 @@ class Post extends Model
         'content',
         'excerpt',
         'featured_image',
+        'featured_image_url',
         'published_at',
         'status',
         'is_active',

@@ -10,9 +10,14 @@ interface AppLayoutProps {
     breadcrumbs?: BreadcrumbItem[];
 }
 
+interface PageProps extends SharedData {
+    errors?: Record<string, string>;
+}
+
 export default function AppLayout({ children, breadcrumbs, ...props }: AppLayoutProps) {
-    const { props: inertiaProps } = usePage<SharedData>();
+    const { props: inertiaProps } = usePage<PageProps>();
     const flash = inertiaProps.flash;
+    const errors = inertiaProps.errors;
 
     useEffect(() => {
         if (flash?.success) {
@@ -22,6 +27,22 @@ export default function AppLayout({ children, breadcrumbs, ...props }: AppLayout
             toast.error(flash.error);
         }
     }, [flash]);
+
+    // Handle validation errors - show toast when there are errors
+    useEffect(() => {
+        if (errors && Object.keys(errors).length > 0) {
+            const errorMessages = Object.values(errors);
+            const errorCount = errorMessages.length;
+
+            if (errorCount === 1) {
+                toast.error(errorMessages[0]);
+            } else {
+                toast.error(`Validation failed with ${errorCount} errors`, {
+                    description: errorMessages.slice(0, 3).join(', ') + (errorCount > 3 ? '...' : ''),
+                });
+            }
+        }
+    }, [errors]);
 
     return (
         <AppLayoutTemplate breadcrumbs={breadcrumbs} {...props}>

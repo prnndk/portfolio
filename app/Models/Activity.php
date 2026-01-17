@@ -14,12 +14,14 @@ class Activity extends Model
         'start_date',
         'end_date',
         'gallery',
+        'gallery_urls',
         'sort_order',
         'is_active',
     ];
 
     protected $casts = [
         'gallery' => 'array',
+        'gallery_urls' => 'array',
         'start_date' => 'date',
         'end_date' => 'date',
         'is_active' => 'boolean',

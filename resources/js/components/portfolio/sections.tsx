@@ -127,10 +127,10 @@ export function BlogCard({ post }: BlogCardProps) {
                 whileHover={{ y: -5 }}
                 className="group block overflow-hidden rounded-xl border border-border bg-card transition-colors hover:border-primary/50"
             >
-                {post.featured_image && (
+                {(post.featured_image || post.featured_image_url) && (
                     <div className="aspect-video overflow-hidden">
                         <img
-                            src={`/storage/${post.featured_image}`}
+                            src={post.featured_image ? `/storage/${post.featured_image}` : post.featured_image_url!}
                             alt={post.title}
                             className="h-full w-full object-cover transition-transform group-hover:scale-105"
                         />

@@ -26,9 +26,9 @@ function CodeBlock({ language, value }: { language: string; value: string }) {
     };
 
     return (
-        <div className="group relative my-6 overflow-hidden rounded-lg border border-border bg-muted/50">
+        <div className="group relative my-6 overflow-hidden rounded-lg border border-border bg-slate-50 dark:bg-slate-900/50">
             {/* Header with language label and copy button */}
-            <div className="flex items-center justify-between border-b border-border bg-muted/80 px-4 py-2">
+            <div className="flex items-center justify-between border-b border-border bg-slate-100 dark:bg-slate-900/80 px-4 py-2">
                 <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
                     {language || 'code'}
                 </span>
@@ -78,7 +78,7 @@ function CodeBlock({ language, value }: { language: string; value: string }) {
 // Inline code component
 function InlineCode({ children }: { children?: React.ReactNode }) {
     return (
-        <code className="rounded-md bg-muted px-1.5 py-0.5 font-mono text-sm text-foreground">
+        <code className="rounded-md bg-primary/10 dark:bg-primary/15 px-1.5 py-0.5 font-mono text-sm text-primary dark:text-primary">
             {children}
         </code>
     );

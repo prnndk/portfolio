@@ -17,7 +17,7 @@ import {
     FileText,
     Calendar,
     Star,
-
+    Link2,
     Plus,
     ArrowRight,
     Eye,
@@ -35,6 +35,7 @@ interface Stats {
     posts: { total: number; active: number; published: number };
     activities: { total: number; active: number };
     favorites: { total: number; active: number };
+    shortLinks: { total: number; active: number; clicks: number };
 }
 
 interface Props {
@@ -49,6 +50,7 @@ const StatCard = ({
     active,
     href,
     color,
+    activeLabel = 'active',
 }: {
     title: string;
     icon: React.ComponentType<{ className?: string }>;
@@ -56,6 +58,7 @@ const StatCard = ({
     active: number;
     href: string;
     color: string;
+    activeLabel?: string;
 }) => (
     <Card className="group hover:shadow-lg transition-all duration-300">
         <CardHeader className="flex flex-row items-center justify-between pb-2">
@@ -68,7 +71,7 @@ const StatCard = ({
             <div className="text-3xl font-bold">{total}</div>
             <div className="mt-1 flex items-center justify-between">
                 <p className="text-xs text-muted-foreground">
-                    <span className="text-green-500 font-medium">{active}</span> active
+                    <span className="text-green-500 font-medium">{active}</span> {activeLabel}
                 </p>
                 <Link
                     href={href}
@@ -115,7 +118,7 @@ export default function Dashboard({ stats, recentPosts }: Props) {
                 </div>
 
                 {/* Stats Grid */}
-                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
                     <StatCard
                         title="Projects"
                         icon={FolderKanban}
@@ -147,6 +150,15 @@ export default function Dashboard({ stats, recentPosts }: Props) {
                         active={stats.favorites.active}
                         href="/admin/favorites"
                         color="bg-pink-100 text-pink-600 dark:bg-pink-900/30 dark:text-pink-400"
+                    />
+                    <StatCard
+                        title="Short Links"
+                        icon={Link2}
+                        total={stats.shortLinks.total}
+                        active={stats.shortLinks.clicks}
+                        activeLabel="clicks"
+                        href="/admin/short-links"
+                        color="bg-cyan-100 text-cyan-600 dark:bg-cyan-900/30 dark:text-cyan-400"
                     />
                 </div>
 
@@ -279,6 +291,15 @@ export default function Dashboard({ stats, recentPosts }: Props) {
                                         <div className="text-left">
                                             <div className="font-medium">New Favorite</div>
                                             <div className="text-xs text-muted-foreground">Add movie, music or book</div>
+                                        </div>
+                                    </Link>
+                                </Button>
+                                <Button variant="outline" className="justify-start h-auto py-4" asChild>
+                                    <Link href="/admin/short-links/create">
+                                        <Link2 className="mr-3 h-5 w-5 text-cyan-500" />
+                                        <div className="text-left">
+                                            <div className="font-medium">New Short Link</div>
+                                            <div className="text-xs text-muted-foreground">Shorten a URL</div>
                                         </div>
                                     </Link>
                                 </Button>

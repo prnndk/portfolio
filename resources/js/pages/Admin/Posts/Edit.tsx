@@ -3,21 +3,24 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { type BreadcrumbItem, type Post } from '@/types';
 import { Head, Link, useForm } from '@inertiajs/react';
-import { ArrowLeft, Save, Eye, FileText, Settings, ExternalLink } from 'lucide-react';
-import { type FormEvent } from 'react';
+import { ArrowLeft, Save, Eye, FileText, Settings, ExternalLink, Upload, Link as LinkIcon, ImagePlus, Trash2 } from 'lucide-react';
+import { type FormEvent, useState, useCallback } from 'react';
 import { FileUploader } from '@/components/ui/file-uploader';
-import MDEditor from '@uiw/react-md-editor';
+import MDEditor, { commands } from '@uiw/react-md-editor';
 import { useAppearance } from '@/hooks/use-appearance';
 import { InputField, TextareaField, SelectField, SwitchField } from '@/components/ui/form-components';
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 interface Props {
     post: Post;
 }
 
 const statusOptions = [
-    { value: 'draft', label: '📝 Draft' },
-    { value: 'published', label: '🌐 Published' },
-    { value: 'archived', label: '📦 Archived' },
+    { value: 'draft', label: 'Draft' },
+    { value: 'published', label: 'Published' },
+    { value: 'archived', label: 'Archived' },
 ];
 
 export default function PostsEdit({ post }: Props) {
@@ -28,12 +31,19 @@ export default function PostsEdit({ post }: Props) {
         { title: 'Edit', href: `/admin/posts/${post.id}/edit` },
     ];
 
+    // Determine initial image source based on existing data
+    const initialImageSource = post.featured_image_url ? 'url' : 'upload';
+    const [imageSource, setImageSource] = useState<'upload' | 'url'>(initialImageSource);
+    const [isUploading, setIsUploading] = useState(false);
+
     const { data, setData, post: submitPost, processing, errors } = useForm({
         _method: 'PUT',
         title: post.title,
         content: post.content,
         excerpt: post.excerpt || '',
         featured_image: null as File | null,
+        featured_image_url: post.featured_image_url || '',
+        image_source: initialImageSource as 'upload' | 'url',
         status: post.status,
         published_at: post.published_at ? post.published_at.slice(0, 16) : '',
         is_active: post.is_active,
@@ -44,9 +54,82 @@ export default function PostsEdit({ post }: Props) {
         submitPost(`/admin/posts/${post.id}`);
     };
 
+    // Handle image upload for markdown editor
+    const handleImageUpload = useCallback(async (file: File): Promise<string> => {
+        const formData = new FormData();
+        formData.append('image', file);
+
+        const response = await fetch('/admin/upload/image', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '',
+            },
+        });
+
+        if (!response.ok) {
+            throw new Error('Upload failed');
+        }
+
+        const result = await response.json();
+        return result.url;
+    }, []);
+
+    // Custom image upload command for MDEditor
+    const imageUploadCommand = {
+        name: 'image-upload',
+        keyCommand: 'image-upload',
+        buttonProps: { 'aria-label': 'Upload image' },
+        icon: <ImagePlus className="h-4 w-4" />,
+        execute: async (_state: unknown, api: { replaceSelection: (text: string) => void }) => {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = 'image/*';
+            input.onchange = async (e) => {
+                const file = (e.target as HTMLInputElement).files?.[0];
+                if (!file) return;
+
+                setIsUploading(true);
+                try {
+                    const url = await handleImageUpload(file);
+                    api.replaceSelection(`![${file.name}](${url})`);
+                } catch {
+                    alert('Failed to upload image. Please try again.');
+                } finally {
+                    setIsUploading(false);
+                }
+            };
+            input.click();
+        },
+    };
+
     // Word count for content
     const wordCount = data.content.trim() ? data.content.trim().split(/\s+/).length : 0;
     const readingTime = Math.ceil(wordCount / 200);
+
+    const handleImageSourceChange = (source: 'upload' | 'url') => {
+        setImageSource(source);
+        setData('image_source', source);
+        // Clear the other source when switching
+        if (source === 'upload') {
+            setData('featured_image_url', '');
+        } else {
+            setData('featured_image', null);
+        }
+    };
+
+    // Get the current featured image URL for display
+    const getCurrentFeaturedImage = () => {
+        if (post.featured_image) {
+            return `/storage/${post.featured_image}`;
+        }
+        if (post.featured_image_url) {
+            return post.featured_image_url;
+        }
+        return null;
+    };
+
+    const currentFeaturedImage = getCurrentFeaturedImage();
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -77,7 +160,7 @@ export default function PostsEdit({ post }: Props) {
                         <Button variant="outline" asChild>
                             <Link href="/admin/posts">Cancel</Link>
                         </Button>
-                        <Button onClick={handleSubmit} disabled={processing}>
+                        <Button onClick={handleSubmit} disabled={processing || isUploading}>
                             <Save className="mr-2 h-4 w-4" />
                             {processing ? 'Saving...' : 'Update Post'}
                         </Button>
@@ -115,6 +198,7 @@ export default function PostsEdit({ post }: Props) {
                                                 Content <span className="text-destructive">*</span>
                                             </label>
                                             <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                                                {isUploading && <span className="text-primary">Uploading...</span>}
                                                 <span>{wordCount} words</span>
                                                 <span>~{readingTime} min read</span>
                                             </div>
@@ -125,8 +209,16 @@ export default function PostsEdit({ post }: Props) {
                                                 onChange={(val) => setData('content', val || '')}
                                                 height={500}
                                                 preview="edit"
+                                                commands={[
+                                                    ...commands.getCommands(),
+                                                    commands.divider,
+                                                    imageUploadCommand,
+                                                ]}
                                             />
                                         </div>
+                                        <p className="text-xs text-muted-foreground">
+                                            Tip: Use the image upload button in the toolbar to add images directly to your content.
+                                        </p>
                                         {errors.content && (
                                             <p className="text-sm text-destructive">{errors.content}</p>
                                         )}
@@ -173,7 +265,7 @@ export default function PostsEdit({ post }: Props) {
                         {/* Sidebar */}
                         <div className="space-y-6">
                             {/* Current Featured Image */}
-                            {post.featured_image && (
+                            {currentFeaturedImage && (
                                 <Card>
                                     <CardHeader className="pb-2">
                                         <CardTitle className="text-sm text-muted-foreground">Current Image</CardTitle>
@@ -181,11 +273,17 @@ export default function PostsEdit({ post }: Props) {
                                     <CardContent>
                                         <div className="overflow-hidden rounded-lg border border-border">
                                             <img
-                                                src={`/storage/${post.featured_image}`}
+                                                src={currentFeaturedImage}
                                                 alt={post.title}
                                                 className="w-full object-cover"
                                             />
                                         </div>
+                                        {post.featured_image_url && (
+                                            <p className="mt-2 text-xs text-muted-foreground flex items-center gap-1">
+                                                <LinkIcon className="h-3 w-3" />
+                                                External URL
+                                            </p>
+                                        )}
                                     </CardContent>
                                 </Card>
                             )}
@@ -229,15 +327,59 @@ export default function PostsEdit({ post }: Props) {
                             <Card>
                                 <CardHeader className="pb-4">
                                     <CardTitle className="text-lg">Replace Image</CardTitle>
-                                    <CardDescription>Upload a new featured image</CardDescription>
+                                    <CardDescription>Upload a new featured image or use an external URL</CardDescription>
                                 </CardHeader>
-                                <CardContent>
-                                    <FileUploader
-                                        value={data.featured_image ? [data.featured_image] : []}
-                                        onValueChange={(files) => setData('featured_image', files[0] || null)}
-                                        maxFiles={1}
-                                        description="Drag & drop or click to upload"
-                                    />
+                                <CardContent className="space-y-4">
+                                    <Tabs value={imageSource} onValueChange={(v) => handleImageSourceChange(v as 'upload' | 'url')}>
+                                        <TabsList className="grid w-full grid-cols-2">
+                                            <TabsTrigger value="upload" className="flex items-center gap-2">
+                                                <Upload className="h-4 w-4" />
+                                                Upload
+                                            </TabsTrigger>
+                                            <TabsTrigger value="url" className="flex items-center gap-2">
+                                                <LinkIcon className="h-4 w-4" />
+                                                URL
+                                            </TabsTrigger>
+                                        </TabsList>
+                                        <TabsContent value="upload" className="space-y-2">
+                                            <FileUploader
+                                                value={data.featured_image ? [data.featured_image] : []}
+                                                onValueChange={(files) => setData('featured_image', files[0] || null)}
+                                                maxFiles={1}
+                                                description="Drag & drop or click to upload"
+                                            />
+                                        </TabsContent>
+                                        <TabsContent value="url" className="space-y-2">
+                                            <Label htmlFor="featured_image_url">Image URL</Label>
+                                            <Input
+                                                id="featured_image_url"
+                                                value={data.featured_image_url}
+                                                onChange={(e) => setData('featured_image_url', e.target.value)}
+                                                placeholder="https://example.com/image.jpg"
+                                            />
+                                            {data.featured_image_url && (
+                                                <div className="mt-2 overflow-hidden rounded-lg border border-border">
+                                                    <img
+                                                        src={data.featured_image_url}
+                                                        alt="Preview"
+                                                        className="w-full object-cover"
+                                                        onError={(e) => {
+                                                            (e.target as HTMLImageElement).style.display = 'none';
+                                                        }}
+                                                    />
+                                                </div>
+                                            )}
+                                        </TabsContent>
+                                    </Tabs>
+                                    <p className="text-xs text-muted-foreground">
+                                        Leave empty to keep the current image
+                                    </p>
+                                    {errors.featured_image && (
+                                        <p className="text-sm text-destructive">{errors.featured_image}</p>
+                                    )}
+                                    {errors.featured_image_url && (
+                                        <p className="text-sm text-destructive">{errors.featured_image_url}</p>
+                                    )}
                                 </CardContent>
                             </Card>
                         </div>

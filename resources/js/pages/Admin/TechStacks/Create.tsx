@@ -15,21 +15,21 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 const categoryOptions = [
-    { value: 'Frontend', label: '🎨 Frontend' },
-    { value: 'Backend', label: '⚙️ Backend' },
-    { value: 'Database', label: '🗄️ Database' },
-    { value: 'DevOps', label: '🚀 DevOps' },
-    { value: 'Mobile', label: '📱 Mobile' },
-    { value: 'Tools', label: '🔧 Tools' },
-    { value: 'Cloud', label: '☁️ Cloud' },
-    { value: 'Other', label: '📦 Other' },
+    { value: 'Frontend', label: 'Frontend' },
+    { value: 'Backend', label: 'Backend' },
+    { value: 'Database', label: 'Database' },
+    { value: 'DevOps', label: 'DevOps' },
+    { value: 'Mobile', label: 'Mobile' },
+    { value: 'Tools', label: 'Tools' },
+    { value: 'Cloud', label: 'Cloud' },
+    { value: 'Other', label: 'Other' },
 ];
 
 const proficiencyOptions = [
-    { value: 'Expert', label: '⭐ Expert' },
-    { value: 'Advanced', label: '🔥 Advanced' },
-    { value: 'Intermediate', label: '📈 Intermediate' },
-    { value: 'Beginner', label: '🌱 Beginner' },
+    { value: 'Expert', label: 'Expert' },
+    { value: 'Advanced', label: 'Advanced' },
+    { value: 'Intermediate', label: 'Intermediate' },
+    { value: 'Beginner', label: 'Beginner' },
 ];
 
 export default function TechStacksCreate() {

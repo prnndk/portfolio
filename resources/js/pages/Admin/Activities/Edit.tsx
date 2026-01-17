@@ -3,10 +3,11 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { type BreadcrumbItem, type Activity } from '@/types';
 import { Head, Link, useForm } from '@inertiajs/react';
-import { ArrowLeft, Save, Briefcase, Calendar, Image, Settings, ExternalLink, X } from 'lucide-react';
+import { ArrowLeft, Save, Briefcase, Calendar, Image, Settings, ExternalLink, X, Plus, Link as LinkIcon, Upload } from 'lucide-react';
 import { type FormEvent, useState } from 'react';
 import { FileUploader } from '@/components/ui/file-uploader';
 import { InputField, TextareaField, SwitchField, FormRow } from '@/components/ui/form-components';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
 
 interface Props {
@@ -21,6 +22,9 @@ export default function ActivitiesEdit({ activity }: Props) {
     ];
 
     const [existingGallery, setExistingGallery] = useState(activity.gallery || []);
+    const [existingGalleryUrls, setExistingGalleryUrls] = useState(activity.gallery_urls || []);
+    const [galleryTab, setGalleryTab] = useState<'upload' | 'url'>('upload');
+    const [newGalleryUrl, setNewGalleryUrl] = useState('');
 
     const { data, setData, post, processing, errors } = useForm({
         _method: 'PUT',
@@ -31,7 +35,9 @@ export default function ActivitiesEdit({ activity }: Props) {
         start_date: activity.start_date ? activity.start_date.split('T')[0] : '',
         end_date: activity.end_date ? activity.end_date.split('T')[0] : '',
         gallery: [] as File[],
+        gallery_urls: [] as string[],
         remove_gallery: [] as string[],
+        remove_gallery_urls: [] as string[],
         sort_order: activity.sort_order,
         is_active: activity.is_active,
     });
@@ -41,17 +47,44 @@ export default function ActivitiesEdit({ activity }: Props) {
         setData('remove_gallery', [...data.remove_gallery, path]);
     };
 
+    const removeExistingGalleryUrl = (url: string) => {
+        setExistingGalleryUrls(existingGalleryUrls.filter((u) => u !== url));
+        setData('remove_gallery_urls', [...data.remove_gallery_urls, url]);
+    };
+
+    const isValidUrl = (string: string) => {
+        try {
+            const url = new URL(string);
+            return url.protocol === 'http:' || url.protocol === 'https:';
+        } catch {
+            return false;
+        }
+    };
+
+    const addGalleryUrl = () => {
+        if (!newGalleryUrl) {
+            toast.error('Please enter a URL');
+            return;
+        }
+        if (!isValidUrl(newGalleryUrl)) {
+            toast.error('Please enter a valid URL (must start with http:// or https://)');
+            return;
+        }
+        if (data.gallery_urls.includes(newGalleryUrl)) {
+            toast.error('This URL is already in the gallery');
+            return;
+        }
+        setData('gallery_urls', [...data.gallery_urls, newGalleryUrl]);
+        setNewGalleryUrl('');
+    };
+
+    const removeNewGalleryUrl = (url: string) => {
+        setData('gallery_urls', data.gallery_urls.filter((u) => u !== url));
+    };
+
     const handleSubmit = (e: FormEvent) => {
         e.preventDefault();
-        post(`/admin/activities/${activity.id}`, {
-            onError: (errors) => {
-                if (Object.keys(errors).some(key => key.startsWith('gallery.'))) {
-                    toast.error('Image upload failed. Each image must not be greater than 2 MB.');
-                } else {
-                    toast.error('Please fix the errors in the form.');
-                }
-            },
-        });
+        post(`/admin/activities/${activity.id}`);
     };
 
     return (
@@ -201,10 +234,10 @@ export default function ActivitiesEdit({ activity }: Props) {
                                     <CardDescription>Manage photos from this activity</CardDescription>
                                 </CardHeader>
                                 <CardContent className="space-y-6">
-                                    {/* Existing Gallery */}
+                                    {/* Existing Gallery (Uploaded Files) */}
                                     {existingGallery.length > 0 && (
                                         <div className="space-y-2">
-                                            <label className="text-sm font-medium">Current Gallery ({existingGallery.length} images)</label>
+                                            <label className="text-sm font-medium">Current Gallery - Uploaded ({existingGallery.length} images)</label>
                                             <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
                                                 {existingGallery.map((img, i) => (
                                                     <div key={i} className="group relative aspect-video overflow-hidden rounded-lg border border-border">
@@ -224,17 +257,95 @@ export default function ActivitiesEdit({ activity }: Props) {
                                         </div>
                                     )}
 
+                                    {/* Existing Gallery URLs */}
+                                    {existingGalleryUrls.length > 0 && (
+                                        <div className="space-y-2">
+                                            <label className="text-sm font-medium">Current Gallery - URLs ({existingGalleryUrls.length} images)</label>
+                                            <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+                                                {existingGalleryUrls.map((url, i) => (
+                                                    <div key={i} className="group relative aspect-video overflow-hidden rounded-lg border border-border">
+                                                        <img src={url} alt={`Gallery URL ${i + 1}`} className="h-full w-full object-cover" onError={(e) => e.currentTarget.style.display = 'none'} />
+                                                        <Button
+                                                            type="button"
+                                                            variant="destructive"
+                                                            size="icon"
+                                                            className="absolute right-2 top-2 h-7 w-7 opacity-0 transition-opacity group-hover:opacity-100"
+                                                            onClick={() => removeExistingGalleryUrl(url)}
+                                                        >
+                                                            <X className="h-4 w-4" />
+                                                        </Button>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* Add to Gallery */}
                                     <div className="space-y-2">
-                                        <label className="text-sm font-medium">Add Images</label>
-                                        <FileUploader
-                                            value={data.gallery}
-                                            onValueChange={(files) => setData('gallery', files)}
-                                            multiple
-                                            description="Drag & drop images or click to upload (max 2MB each)"
-                                        />
+                                        <label className="text-sm font-medium">Add to Gallery</label>
+                                        <Tabs value={galleryTab} onValueChange={(v) => setGalleryTab(v as 'upload' | 'url')}>
+                                            <TabsList className="mb-2">
+                                                <TabsTrigger value="upload" className="flex items-center gap-2">
+                                                    <Upload className="h-4 w-4" />
+                                                    Upload Files
+                                                </TabsTrigger>
+                                                <TabsTrigger value="url" className="flex items-center gap-2">
+                                                    <LinkIcon className="h-4 w-4" />
+                                                    Use URLs
+                                                </TabsTrigger>
+                                            </TabsList>
+                                            <TabsContent value="upload">
+                                                <FileUploader
+                                                    value={data.gallery}
+                                                    onValueChange={(files) => setData('gallery', files)}
+                                                    multiple
+                                                    description="Drag & drop images or click to upload (max 2MB each)"
+                                                />
+                                            </TabsContent>
+                                            <TabsContent value="url">
+                                                <div className="space-y-3">
+                                                    <div className="flex gap-2">
+                                                        <InputField
+                                                            id="new_gallery_url"
+                                                            label=""
+                                                            type="url"
+                                                            value={newGalleryUrl}
+                                                            onChange={(e) => setNewGalleryUrl(e.target.value)}
+                                                            placeholder="https://example.com/image.jpg"
+                                                            className="flex-1"
+                                                        />
+                                                        <Button type="button" onClick={addGalleryUrl} variant="outline" className="mt-auto">
+                                                            <Plus className="h-4 w-4" />
+                                                        </Button>
+                                                    </div>
+                                                    {data.gallery_urls.length > 0 && (
+                                                        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
+                                                            {data.gallery_urls.map((url, i) => (
+                                                                <div key={i} className="group relative aspect-video overflow-hidden rounded-lg border border-border bg-muted">
+                                                                    <img src={url} alt={`New Gallery ${i + 1}`} className="h-full w-full object-cover" onError={(e) => e.currentTarget.style.display = 'none'} />
+                                                                    <Button
+                                                                        type="button"
+                                                                        variant="destructive"
+                                                                        size="icon"
+                                                                        className="absolute right-1 top-1 h-6 w-6 opacity-0 transition-opacity group-hover:opacity-100"
+                                                                        onClick={() => removeNewGalleryUrl(url)}
+                                                                    >
+                                                                        <X className="h-3 w-3" />
+                                                                    </Button>
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </TabsContent>
+                                        </Tabs>
                                         {errors.gallery && (
                                             <p className="text-sm text-destructive">{errors.gallery}</p>
                                         )}
+                                        {/* Display gallery URL errors */}
+                                        {Object.keys(errors).filter(k => k.startsWith('gallery_urls')).map((key) => (
+                                            <p key={key} className="text-sm text-destructive">{(errors as Record<string, string>)[key]}</p>
+                                        ))}
                                     </div>
                                 </CardContent>
                             </Card>

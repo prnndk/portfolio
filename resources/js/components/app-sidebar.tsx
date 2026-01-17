@@ -4,7 +4,7 @@ import { NavUser } from '@/components/nav-user';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from '@/components/ui/sidebar';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/react';
-import { BookOpen, Cpu, FolderKanban, Mail, LayoutGrid, Calendar, FileText, Folder, Star } from 'lucide-react';
+import { BookOpen, Cpu, FolderKanban, Mail, LayoutGrid, Calendar, FileText, Folder, Star, Link2 } from 'lucide-react';
 import AppLogo from './app-logo';
 
 const mainNavItems: NavItem[] = [
@@ -37,6 +37,11 @@ const mainNavItems: NavItem[] = [
         title: 'Favorites',
         href: '/admin/favorites',
         icon: Star,
+    },
+    {
+        title: 'Short Links',
+        href: '/admin/short-links',
+        icon: Link2,
     },
     {
         title: 'Contacts',

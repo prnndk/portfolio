@@ -8,6 +8,7 @@ import { type FormEvent, useState } from 'react';
 import { FileUploader } from '@/components/ui/file-uploader';
 import { InputField, TextareaField, SwitchField, TagInput } from '@/components/ui/form-components';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { toast } from 'sonner';
 
 interface Props {
     project: Project;
@@ -59,11 +60,30 @@ export default function ProjectsEdit({ project }: Props) {
         setData('remove_gallery_urls', [...data.remove_gallery_urls, url]);
     };
 
-    const addGalleryUrl = () => {
-        if (newGalleryUrl && !data.gallery_urls.includes(newGalleryUrl)) {
-            setData('gallery_urls', [...data.gallery_urls, newGalleryUrl]);
-            setNewGalleryUrl('');
+    const isValidUrl = (string: string) => {
+        try {
+            const url = new URL(string);
+            return url.protocol === 'http:' || url.protocol === 'https:';
+        } catch {
+            return false;
         }
+    };
+
+    const addGalleryUrl = () => {
+        if (!newGalleryUrl) {
+            toast.error('Please enter a URL');
+            return;
+        }
+        if (!isValidUrl(newGalleryUrl)) {
+            toast.error('Please enter a valid URL (must start with http:// or https://)');
+            return;
+        }
+        if (data.gallery_urls.includes(newGalleryUrl)) {
+            toast.error('This URL is already in the gallery');
+            return;
+        }
+        setData('gallery_urls', [...data.gallery_urls, newGalleryUrl]);
+        setNewGalleryUrl('');
     };
 
     const removeNewGalleryUrl = (url: string) => {
@@ -382,6 +402,10 @@ export default function ProjectsEdit({ project }: Props) {
                                         {errors.gallery && (
                                             <p className="text-sm text-destructive">{errors.gallery}</p>
                                         )}
+                                        {/* Display gallery URL errors */}
+                                        {Object.keys(errors).filter(k => k.startsWith('gallery_urls')).map((key) => (
+                                            <p key={key} className="text-sm text-destructive">{(errors as Record<string, string>)[key]}</p>
+                                        ))}
                                     </div>
                                 </CardContent>
                             </Card>

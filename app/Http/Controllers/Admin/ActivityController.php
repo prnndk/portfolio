@@ -35,6 +35,8 @@ class ActivityController extends Controller
             'end_date' => 'nullable|date|after_or_equal:start_date',
             'gallery' => 'nullable|array',
             'gallery.*' => 'image|max:2048',
+            'gallery_urls' => 'nullable|array',
+            'gallery_urls.*' => 'url|max:500',
             'sort_order' => 'integer',
             'is_active' => 'boolean',
         ]);
@@ -72,12 +74,17 @@ class ActivityController extends Controller
             'end_date' => 'nullable|date|after_or_equal:start_date',
             'gallery' => 'nullable|array',
             'gallery.*' => 'image|max:2048',
+            'gallery_urls' => 'nullable|array',
+            'gallery_urls.*' => 'url|max:500',
             'remove_gallery' => 'nullable|array',
             'remove_gallery.*' => 'string',
+            'remove_gallery_urls' => 'nullable|array',
+            'remove_gallery_urls.*' => 'url',
             'sort_order' => 'integer',
             'is_active' => 'boolean',
         ]);
 
+        // Handle uploaded gallery
         $currentGallery = $activity->gallery ?? [];
 
         // Handle gallery removals
@@ -99,6 +106,28 @@ class ActivityController extends Controller
         }
 
         $validated['gallery'] = $currentGallery;
+
+        // Handle gallery URLs
+        $currentGalleryUrls = $activity->gallery_urls ?? [];
+
+        // Handle gallery URL removals
+        if ($request->has('remove_gallery_urls')) {
+            foreach ($request->input('remove_gallery_urls') as $url) {
+                if (($key = array_search($url, $currentGalleryUrls)) !== false) {
+                    unset($currentGalleryUrls[$key]);
+                }
+            }
+            $currentGalleryUrls = array_values($currentGalleryUrls);
+        }
+
+        // Handle new gallery URLs (Append)
+        if ($request->has('gallery_urls') && is_array($request->input('gallery_urls'))) {
+            $currentGalleryUrls = array_merge($currentGalleryUrls, $request->input('gallery_urls'));
+            $currentGalleryUrls = array_unique($currentGalleryUrls);
+            $currentGalleryUrls = array_values($currentGalleryUrls);
+        }
+
+        $validated['gallery_urls'] = $currentGalleryUrls;
 
         $activity->update($validated);
 
