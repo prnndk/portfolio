@@ -92,6 +92,7 @@ export default function BlogShow({ post, relatedPosts = [] }: Props) {
 
                 {/* Open Graph / Facebook */}
                 <meta property="og:type" content="article" />
+                <meta property="og:locale" content="en_US" />
                 <meta property="og:title" content={post.title} />
                 <meta property="og:description" content={post.excerpt || post.content.substring(0, 160)} />
                 <meta property="og:image" content={featuredImage} />

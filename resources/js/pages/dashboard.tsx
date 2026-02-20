@@ -21,6 +21,7 @@ import {
     Plus,
     ArrowRight,
     Eye,
+    Map,
 } from 'lucide-react';
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -34,6 +35,7 @@ interface Stats {
     projects: { total: number; active: number };
     posts: { total: number; active: number; published: number };
     activities: { total: number; active: number };
+    journeys: { total: number; active: number };
     favorites: { total: number; active: number };
     shortLinks: { total: number; active: number; clicks: number };
 }
@@ -142,6 +144,14 @@ export default function Dashboard({ stats, recentPosts }: Props) {
                         active={stats.activities.active}
                         href="/admin/activities"
                         color="bg-orange-100 text-orange-600 dark:bg-orange-900/30 dark:text-orange-400"
+                    />
+                    <StatCard
+                        title="My Journey"
+                        icon={Map}
+                        total={stats.journeys?.total || 0}
+                        active={stats.journeys?.active || 0}
+                        href="/admin/journeys"
+                        color="bg-teal-100 text-teal-600 dark:bg-teal-900/30 dark:text-teal-400"
                     />
                     <StatCard
                         title="Favorites"
@@ -291,6 +301,15 @@ export default function Dashboard({ stats, recentPosts }: Props) {
                                         <div className="text-left">
                                             <div className="font-medium">New Favorite</div>
                                             <div className="text-xs text-muted-foreground">Add movie, music or book</div>
+                                        </div>
+                                    </Link>
+                                </Button>
+                                <Button variant="outline" className="justify-start h-auto py-4" asChild>
+                                    <Link href="/admin/journeys/create">
+                                        <Map className="mr-3 h-5 w-5 text-teal-500" />
+                                        <div className="text-left">
+                                            <div className="font-medium">New Journey</div>
+                                            <div className="text-xs text-muted-foreground">Add timeline milestone</div>
                                         </div>
                                     </Link>
                                 </Button>

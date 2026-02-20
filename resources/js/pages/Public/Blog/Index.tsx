@@ -7,6 +7,7 @@ import { FadeIn } from '@/components/aceternity/text-reveal';
 import { BlogCard } from '@/components/portfolio/sections';
 import { Button } from '@/components/ui/button';
 import { type Post } from '@/types';
+import { Seo } from '@/components/seo';
 import {
     Empty,
     EmptyHeader,
@@ -37,7 +38,12 @@ interface Props {
 export default function BlogIndex({ posts }: Props) {
     return (
         <GuestLayout>
-            <Head title="Blog" />
+            <Seo
+                title="Blog | Arya Gading Prinandika"
+                description="Thoughts, tutorials, and insights on software development."
+                url="/blog"
+            />
+
 
             <div className="container mx-auto px-4 py-24">
                 <FadeIn>

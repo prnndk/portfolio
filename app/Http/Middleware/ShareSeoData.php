@@ -20,6 +20,10 @@ class ShareSeoData
         // Share SEO data with all views
         view()->share('seo', $seo);
 
+        // Share JSON-LD structured data
+        $jsonLd = $this->getJsonLdForRoute($request, $seo);
+        view()->share('jsonLd', $jsonLd);
+
         return $next($request);
     }
 
@@ -30,8 +34,8 @@ class ShareSeoData
     {
         $appUrl = config('app.url');
         $defaultSeo = [
-            'title' => config('app.name', 'Portfolio Gading'),
-            'description' => 'Portfolio of Arya Gading Prinandika - Software Engineer specializing in modern web development with Laravel, React, and Golang.',
+            'title' => config('app.name', 'Portfolio of Arya Gading Prinandika'),
+            'description' => 'Digital Portfolio of Arya Gading Prinandika - Software Engineer specializing in modern web development with Laravel, React, and Golang.',
             'image' => "{$appUrl}/opengraph.png",
             'url' => $request->url(),
             'type' => 'website',
@@ -153,6 +157,198 @@ class ShareSeoData
             ];
         }
 
+        // About page
+        if ($path === 'about') {
+            return [
+                'title' => 'About | ' . config('app.name'),
+                'description' => 'Learn more about Arya Gading Prinandika — a software engineer passionate about building scalable ecosystems from code to cloud.',
+                'image' => $defaultSeo['image'],
+                'url' => "{$appUrl}/about",
+                'type' => 'profile',
+            ];
+        }
+
+        // Contact page
+        if ($path === 'contact') {
+            return [
+                'title' => 'Contact | ' . config('app.name'),
+                'description' => 'Get in touch with Arya Gading Prinandika. Have a project in mind or just want to chat?',
+                'image' => $defaultSeo['image'],
+                'url' => "{$appUrl}/contact",
+                'type' => 'website',
+            ];
+        }
+
+        // Tools index
+        if ($path === 'tools') {
+            return [
+                'title' => 'Tools | ' . config('app.name'),
+                'description' => 'Free online tools by Arya Gading Prinandika — image compression and more.',
+                'image' => $defaultSeo['image'],
+                'url' => "{$appUrl}/tools",
+                'type' => 'website',
+            ];
+        }
+
+        // Image compress tool
+        if ($path === 'tools/image-compress') {
+            return [
+                'title' => 'Image Compressor | ' . config('app.name'),
+                'description' => 'Free online image compression tool. Reduce image file size while maintaining quality.',
+                'image' => $defaultSeo['image'],
+                'url' => "{$appUrl}/tools/image-compress",
+                'type' => 'website',
+            ];
+        }
+
         return $defaultSeo;
+    }
+
+    /**
+     * Get JSON-LD structured data based on the current route
+     */
+    private function getJsonLdForRoute(Request $request, array $seo): array
+    {
+        $appUrl = config('app.url');
+        $path = $request->path();
+
+        // Default: WebSite + Person schema (for homepage and general pages)
+        $defaultJsonLd = [
+            [
+                '@context' => 'https://schema.org',
+                '@type' => 'WebSite',
+                'name' => config('app.name', 'Portfolio Arya Gading Prinandika'),
+                'url' => $appUrl,
+                'description' => $seo['description'],
+                'author' => [
+                    '@type' => 'Person',
+                    'name' => 'Arya Gading Prinandika',
+                    'url' => $appUrl,
+                ],
+            ],
+            [
+                '@context' => 'https://schema.org',
+                '@type' => 'Person',
+                'name' => 'Arya Gading Prinandika',
+                'url' => $appUrl,
+                'jobTitle' => 'Software Engineer',
+                'sameAs' => [
+                    'https://github.com/prfrfrn',
+                    'https://twitter.com/aryagading',
+                ],
+            ],
+        ];
+
+        // Blog post — BlogPosting schema
+        if (preg_match('#^blog/([^/]+)$#', $path, $matches)) {
+            $slug = $matches[1];
+            $post = \App\Models\Post::where('slug', $slug)
+                ->where('status', 'published')
+                ->where('is_active', true)
+                ->first();
+
+            if ($post) {
+                return [
+                    [
+                        '@context' => 'https://schema.org',
+                        '@type' => 'BlogPosting',
+                        'headline' => $post->title,
+                        'description' => $post->excerpt ?: substr(strip_tags($post->content), 0, 160),
+                        'image' => $seo['image'],
+                        'datePublished' => $post->published_at?->toIso8601String(),
+                        'dateModified' => $post->updated_at?->toIso8601String(),
+                        'author' => [
+                            '@type' => 'Person',
+                            'name' => 'Arya Gading Prinandika',
+                            'url' => $appUrl,
+                        ],
+                        'publisher' => [
+                            '@type' => 'Person',
+                            'name' => 'Arya Gading Prinandika',
+                            'url' => $appUrl,
+                        ],
+                        'mainEntityOfPage' => [
+                            '@type' => 'WebPage',
+                            '@id' => "{$appUrl}/blog/{$slug}",
+                        ],
+                        'wordCount' => str_word_count(strip_tags($post->content)),
+                    ]
+                ];
+            }
+        }
+
+        // Project page — CreativeWork schema
+        if (preg_match('#^projects/([^/]+)$#', $path, $matches)) {
+            $slug = $matches[1];
+            $project = \App\Models\Project::where('slug', $slug)
+                ->where('is_active', true)
+                ->first();
+
+            if ($project) {
+                $projectLd = [
+                    '@context' => 'https://schema.org',
+                    '@type' => 'CreativeWork',
+                    'name' => $project->title,
+                    'description' => substr(strip_tags($project->description), 0, 300),
+                    'image' => $seo['image'],
+                    'author' => [
+                        '@type' => 'Person',
+                        'name' => 'Arya Gading Prinandika',
+                        'url' => $appUrl,
+                    ],
+                    'url' => "{$appUrl}/projects/{$slug}",
+                ];
+
+                if ($project->url) {
+                    $projectLd['mainEntityOfPage'] = $project->url;
+                }
+                if ($project->github_url) {
+                    $projectLd['codeRepository'] = $project->github_url;
+                }
+                if ($project->tech_tags) {
+                    $projectLd['keywords'] = implode(', ', $project->tech_tags);
+                }
+
+                return [$projectLd];
+            }
+        }
+
+        // Blog index — CollectionPage schema
+        if ($path === 'blog') {
+            return [
+                [
+                    '@context' => 'https://schema.org',
+                    '@type' => 'CollectionPage',
+                    'name' => 'Blog',
+                    'description' => $seo['description'],
+                    'url' => "{$appUrl}/blog",
+                    'isPartOf' => [
+                        '@type' => 'WebSite',
+                        'name' => config('app.name'),
+                        'url' => $appUrl,
+                    ],
+                ]
+            ];
+        }
+
+        // Contact — ContactPage schema
+        if ($path === 'contact') {
+            return [
+                [
+                    '@context' => 'https://schema.org',
+                    '@type' => 'ContactPage',
+                    'name' => 'Contact',
+                    'description' => $seo['description'],
+                    'url' => "{$appUrl}/contact",
+                    'isPartOf' => [
+                        '@type' => 'WebSite',
+                        'name' => config('app.name'),
+                        'url' => $appUrl,
+                    ],
+                ]
+            ];
+        }
+
+        return $defaultJsonLd;
     }
 }

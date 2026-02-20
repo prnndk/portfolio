@@ -1,5 +1,5 @@
 import { Head, useForm } from '@inertiajs/react';
-import { LoaderCircle } from 'lucide-react';
+import { LoaderCircle, Mail, Lock, User, ArrowRight } from 'lucide-react';
 import { FormEventHandler } from 'react';
 
 import InputError from '@/components/input-error';
@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import AuthLayout from '@/layouts/auth-layout';
+import { cn } from '@/lib/utils';
 
 type RegisterForm = {
     name: string;
@@ -32,12 +33,17 @@ export default function Register() {
     };
 
     return (
-        <AuthLayout title="Create an account" description="Enter your details below to create your account">
+        <AuthLayout title="Create an account" description="Enter your details to get started">
             <Head title="Register" />
-            <form className="flex flex-col gap-6" onSubmit={submit}>
-                <div className="grid gap-6">
-                    <div className="grid gap-2">
-                        <Label htmlFor="name">Name</Label>
+
+            <form className="space-y-5" onSubmit={submit}>
+                {/* Name Field */}
+                <div className="space-y-2">
+                    <Label htmlFor="name" className="text-sm font-medium text-foreground">
+                        Full name
+                    </Label>
+                    <div className="relative">
+                        <User className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground/60" />
                         <Input
                             id="name"
                             type="text"
@@ -48,13 +54,23 @@ export default function Register() {
                             value={data.name}
                             onChange={(e) => setData('name', e.target.value)}
                             disabled={processing}
-                            placeholder="Full name"
+                            placeholder="John Doe"
+                            className={cn(
+                                "h-11 pl-10 bg-background border-input/60 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all placeholder:text-muted-foreground/50",
+                                errors.name && "border-destructive focus:border-destructive focus:ring-destructive/20"
+                            )}
                         />
-                        <InputError message={errors.name} className="mt-2" />
                     </div>
+                    <InputError message={errors.name} />
+                </div>
 
-                    <div className="grid gap-2">
-                        <Label htmlFor="email">Email address</Label>
+                {/* Email Field */}
+                <div className="space-y-2">
+                    <Label htmlFor="email" className="text-sm font-medium text-foreground">
+                        Email
+                    </Label>
+                    <div className="relative">
+                        <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground/60" />
                         <Input
                             id="email"
                             type="email"
@@ -64,13 +80,23 @@ export default function Register() {
                             value={data.email}
                             onChange={(e) => setData('email', e.target.value)}
                             disabled={processing}
-                            placeholder="email@example.com"
+                            placeholder="you@example.com"
+                            className={cn(
+                                "h-11 pl-10 bg-background border-input/60 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all placeholder:text-muted-foreground/50",
+                                errors.email && "border-destructive focus:border-destructive focus:ring-destructive/20"
+                            )}
                         />
-                        <InputError message={errors.email} />
                     </div>
+                    <InputError message={errors.email} />
+                </div>
 
-                    <div className="grid gap-2">
-                        <Label htmlFor="password">Password</Label>
+                {/* Password Field */}
+                <div className="space-y-2">
+                    <Label htmlFor="password" className="text-sm font-medium text-foreground">
+                        Password
+                    </Label>
+                    <div className="relative">
+                        <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground/60" />
                         <Input
                             id="password"
                             type="password"
@@ -80,13 +106,23 @@ export default function Register() {
                             value={data.password}
                             onChange={(e) => setData('password', e.target.value)}
                             disabled={processing}
-                            placeholder="Password"
+                            placeholder="Create a password"
+                            className={cn(
+                                "h-11 pl-10 bg-background border-input/60 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all placeholder:text-muted-foreground/50",
+                                errors.password && "border-destructive focus:border-destructive focus:ring-destructive/20"
+                            )}
                         />
-                        <InputError message={errors.password} />
                     </div>
+                    <InputError message={errors.password} />
+                </div>
 
-                    <div className="grid gap-2">
-                        <Label htmlFor="password_confirmation">Confirm password</Label>
+                {/* Confirm Password Field */}
+                <div className="space-y-2">
+                    <Label htmlFor="password_confirmation" className="text-sm font-medium text-foreground">
+                        Confirm password
+                    </Label>
+                    <div className="relative">
+                        <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground/60" />
                         <Input
                             id="password_confirmation"
                             type="password"
@@ -96,21 +132,45 @@ export default function Register() {
                             value={data.password_confirmation}
                             onChange={(e) => setData('password_confirmation', e.target.value)}
                             disabled={processing}
-                            placeholder="Confirm password"
+                            placeholder="Confirm your password"
+                            className={cn(
+                                "h-11 pl-10 bg-background border-input/60 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all placeholder:text-muted-foreground/50",
+                                errors.password_confirmation && "border-destructive focus:border-destructive focus:ring-destructive/20"
+                            )}
                         />
-                        <InputError message={errors.password_confirmation} />
                     </div>
-
-                    <Button type="submit" className="mt-2 w-full" tabIndex={5} disabled={processing}>
-                        {processing && <LoaderCircle className="h-4 w-4 animate-spin" />}
-                        Create account
-                    </Button>
+                    <InputError message={errors.password_confirmation} />
                 </div>
 
-                <div className="text-center text-sm text-muted-foreground">
+                {/* Submit Button */}
+                <Button
+                    type="submit"
+                    className="h-11 w-full font-medium text-sm gap-2 transition-all"
+                    tabIndex={5}
+                    disabled={processing}
+                >
+                    {processing ? (
+                        <>
+                            <LoaderCircle className="h-4 w-4 animate-spin" />
+                            Creating account...
+                        </>
+                    ) : (
+                        <>
+                            Create account
+                            <ArrowRight className="h-4 w-4" />
+                        </>
+                    )}
+                </Button>
+
+                {/* Login Link */}
+                <div className="pt-2 text-center text-sm text-muted-foreground">
                     Already have an account?{' '}
-                    <TextLink href={route('login')} tabIndex={6}>
-                        Log in
+                    <TextLink
+                        href={route('login')}
+                        tabIndex={6}
+                        className="font-medium text-primary hover:text-primary/80 transition-colors"
+                    >
+                        Sign in
                     </TextLink>
                 </div>
             </form>

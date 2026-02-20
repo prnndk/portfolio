@@ -12,6 +12,7 @@ import {
 import { type Favorite } from '@/types';
 import { Head, Link } from '@inertiajs/react';
 import { ArrowLeft, ArrowRight, Film, Music, BookOpen, Star, Sparkles } from 'lucide-react';
+import { Seo } from '@/components/seo';
 
 interface Props {
     favorites: {
@@ -61,7 +62,12 @@ export default function FavoritesIndex({ favorites, currentType }: Props) {
 
     return (
         <GuestLayout>
-            <Head title="Favorites" />
+            <Seo
+                title="Favorites | Arya Gading Prinandika"
+                description="A curated collection of movies, music, and books that have inspired and entertained me."
+                url="/favorites"
+            />
+
 
             <div className="container mx-auto px-4 py-24">
                 <FadeIn>
@@ -92,8 +98,8 @@ export default function FavoritesIndex({ favorites, currentType }: Props) {
                                     key={filter.label}
                                     href={filter.value ? `/favorites?type=${filter.value}` : '/favorites'}
                                     className={`group inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition-all ${isActive
-                                            ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/25'
-                                            : 'bg-card border border-border hover:border-primary/50 hover:bg-primary/5 text-muted-foreground hover:text-foreground'
+                                        ? 'bg-primary text-primary-foreground shadow-lg shadow-primary/25'
+                                        : 'bg-card border border-border hover:border-primary/50 hover:bg-primary/5 text-muted-foreground hover:text-foreground'
                                         }`}
                                 >
                                     <filter.icon className={`h-4 w-4 ${isActive ? '' : 'group-hover:text-primary'}`} />

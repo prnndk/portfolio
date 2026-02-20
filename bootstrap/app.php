@@ -28,11 +28,21 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
-        $exceptions->respond(function (\Symfony\Component\HttpFoundation\Response $response) {
+        $exceptions->respond(function (\Symfony\Component\HttpFoundation\Response $response, \Throwable $exception) {
             $status = $response->getStatusCode();
 
-            if (in_array($status, [403, 404, 500, 503])) {
-                return \Inertia\Inertia::render('error', ['status' => $status])
+            if (in_array($status, [403, 404, 419, 429, 500, 503])) {
+                $props = ['status' => $status];
+
+                // Only include detailed error info in debug mode for security
+                if (config('app.debug')) {
+                    $props['message'] = $exception->getMessage();
+                    $props['exception'] = get_class($exception);
+                    $props['file'] = $exception->getFile();
+                    $props['line'] = $exception->getLine();
+                }
+
+                return \Inertia\Inertia::render('error', $props)
                     ->toResponse(request())
                     ->setStatusCode($status);
             }

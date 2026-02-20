@@ -1,5 +1,5 @@
 import { Head, useForm } from '@inertiajs/react';
-import { LoaderCircle } from 'lucide-react';
+import { LoaderCircle, Mail, Lock, KeyRound } from 'lucide-react';
 import { FormEventHandler } from 'react';
 
 import InputError from '@/components/input-error';
@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import AuthLayout from '@/layouts/auth-layout';
+import { cn } from '@/lib/utils';
 
 interface ResetPasswordProps {
     token: string;
@@ -36,62 +37,104 @@ export default function ResetPassword({ token, email }: ResetPasswordProps) {
     };
 
     return (
-        <AuthLayout title="Reset password" description="Please enter your new password below">
+        <AuthLayout title="Reset password" description="Create a new secure password for your account">
             <Head title="Reset password" />
 
-            <form onSubmit={submit}>
-                <div className="grid gap-6">
-                    <div className="grid gap-2">
-                        <Label htmlFor="email">Email</Label>
+            <form className="flex flex-col gap-5" onSubmit={submit}>
+                {/* Email Field (Read-only) */}
+                <div className="space-y-2">
+                    <Label htmlFor="email" className="text-sm font-medium">
+                        Email address
+                    </Label>
+                    <div className="relative">
+                        <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                            <Mail className="h-4 w-4" />
+                        </div>
                         <Input
                             id="email"
                             type="email"
                             name="email"
                             autoComplete="email"
                             value={data.email}
-                            className="mt-1 block w-full"
                             readOnly
                             onChange={(e) => setData('email', e.target.value)}
+                            className="pl-10 h-11 bg-muted/50 border-border/50 text-muted-foreground cursor-not-allowed"
                         />
-                        <InputError message={errors.email} className="mt-2" />
                     </div>
+                    <InputError message={errors.email} />
+                </div>
 
-                    <div className="grid gap-2">
-                        <Label htmlFor="password">Password</Label>
+                {/* Password Field */}
+                <div className="space-y-2">
+                    <Label htmlFor="password" className="text-sm font-medium">
+                        New password
+                    </Label>
+                    <div className="relative">
+                        <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                            <Lock className="h-4 w-4" />
+                        </div>
                         <Input
                             id="password"
                             type="password"
                             name="password"
                             autoComplete="new-password"
                             value={data.password}
-                            className="mt-1 block w-full"
                             autoFocus
                             onChange={(e) => setData('password', e.target.value)}
-                            placeholder="Password"
+                            placeholder="••••••••"
+                            className={cn(
+                                "pl-10 h-11 bg-background/50 border-border/50 focus:border-primary/50 focus:ring-primary/20 transition-all",
+                                errors.password && "border-destructive focus:border-destructive focus:ring-destructive/20"
+                            )}
                         />
-                        <InputError message={errors.password} />
                     </div>
+                    <InputError message={errors.password} />
+                </div>
 
-                    <div className="grid gap-2">
-                        <Label htmlFor="password_confirmation">Confirm password</Label>
+                {/* Confirm Password Field */}
+                <div className="space-y-2">
+                    <Label htmlFor="password_confirmation" className="text-sm font-medium">
+                        Confirm new password
+                    </Label>
+                    <div className="relative">
+                        <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                            <Lock className="h-4 w-4" />
+                        </div>
                         <Input
                             id="password_confirmation"
                             type="password"
                             name="password_confirmation"
                             autoComplete="new-password"
                             value={data.password_confirmation}
-                            className="mt-1 block w-full"
                             onChange={(e) => setData('password_confirmation', e.target.value)}
-                            placeholder="Confirm password"
+                            placeholder="••••••••"
+                            className={cn(
+                                "pl-10 h-11 bg-background/50 border-border/50 focus:border-primary/50 focus:ring-primary/20 transition-all",
+                                errors.password_confirmation && "border-destructive focus:border-destructive focus:ring-destructive/20"
+                            )}
                         />
-                        <InputError message={errors.password_confirmation} className="mt-2" />
                     </div>
-
-                    <Button type="submit" className="mt-4 w-full" disabled={processing}>
-                        {processing && <LoaderCircle className="h-4 w-4 animate-spin" />}
-                        Reset password
-                    </Button>
+                    <InputError message={errors.password_confirmation} />
                 </div>
+
+                {/* Submit Button */}
+                <Button
+                    type="submit"
+                    className="mt-2 h-11 w-full font-medium transition-all hover:shadow-lg hover:shadow-primary/20"
+                    disabled={processing}
+                >
+                    {processing ? (
+                        <>
+                            <LoaderCircle className="mr-2 h-4 w-4 animate-spin" />
+                            Resetting...
+                        </>
+                    ) : (
+                        <>
+                            <KeyRound className="mr-2 h-4 w-4" />
+                            Reset password
+                        </>
+                    )}
+                </Button>
             </form>
         </AuthLayout>
     );

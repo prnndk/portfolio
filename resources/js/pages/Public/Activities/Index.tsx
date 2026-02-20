@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { type Activity } from '@/types';
 import { Head, Link } from '@inertiajs/react';
 import { ArrowLeft, ArrowRight, Calendar, Briefcase } from 'lucide-react';
+import { Seo } from '@/components/seo';
 import {
     Empty,
     EmptyHeader,
@@ -35,7 +36,12 @@ export default function ActivitiesIndex({ activities }: Props) {
 
     return (
         <GuestLayout>
-            <Head title="Activities" />
+            <Seo
+                title="Activities & Experience | Arya Gading Prinandika"
+                description="My journey through education, work experience, and achievements."
+                url="/activities"
+            />
+
 
             <div className="container mx-auto px-4 py-24">
                 <FadeIn>

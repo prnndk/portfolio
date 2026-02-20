@@ -6,6 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta name="author" content="Arya Gading Prinandika">
+    <meta name="theme-color" content="#0f172a" media="(prefers-color-scheme: dark)">
+    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
     <meta name="keywords"
         content="portfolio, arya gading, arya gading prinandika, gading, prinandika, gading prinandika,software engineer, laravel, react, golang, web development">
     <meta name="description"
@@ -13,6 +15,7 @@
 
     {{-- Dynamic OpenGraph Meta Tags (SSR) - These are essential for social media crawlers --}}
     <meta property="og:type" content="{{ $seo['type'] ?? 'website' }}">
+    <meta property="og:locale" content="en_US">
     <meta property="og:site_name" content="{{ config('app.name', 'Portfolio Gading') }}">
     <meta property="og:title" content="{{ $seo['title'] ?? config('app.name', 'Portfolio Gading') }}">
     <meta property="og:description"
@@ -38,6 +41,14 @@
         content="{{ Str::limit($seo['description'] ?? 'Portfolio of Arya Gading Prinandika - Software Engineer specializing in modern web development.', 200) }}">
     <meta name="twitter:image" content="{{ $seo['image'] ?? config('app.url') . '/opengraph.png' }}">
     <meta name="twitter:creator" content="@aryagading">
+
+    {{-- JSON-LD Structured Data (server-side for crawlers) --}}
+    @if(isset($jsonLd) && !empty($jsonLd))
+        @foreach($jsonLd as $schema)
+            <script
+                type="application/ld+json">{!! json_encode($schema, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT) !!}</script>
+        @endforeach
+    @endif
 
     {{-- Inline script to detect system dark mode preference and apply it immediately --}}
     <script>

@@ -5,9 +5,10 @@ interface SeoProps {
     description?: string;
     image?: string;
     url?: string;
-    type?: 'website' | 'article';
+    type?: 'website' | 'article' | 'profile';
     publishedTime?: string;
     author?: string;
+    jsonLd?: Record<string, unknown> | Record<string, unknown>[];
 }
 
 export function Seo({
@@ -17,7 +18,8 @@ export function Seo({
     url,
     type = 'website',
     publishedTime,
-    author
+    author,
+    jsonLd
 }: SeoProps) {
 
     const appName = import.meta.env.VITE_APP_NAME || 'Portfolio Arya Gading Prinandika';
@@ -32,13 +34,20 @@ export function Seo({
         ? (url.startsWith('http') ? url : `${appUrl}${url}`)
         : typeof window !== 'undefined' ? window.location.href : appUrl;
 
+    // Normalize jsonLd to an array
+    const jsonLdArray = jsonLd
+        ? (Array.isArray(jsonLd) ? jsonLd : [jsonLd])
+        : [];
+
     return (
         <Head>
             <title>{title}</title>
             <meta name="description" content={description} />
+            <link rel="canonical" href={fullUrl} />
 
             {/* Open Graph */}
             <meta property="og:type" content={type} />
+            <meta property="og:locale" content="en_US" />
             <meta property="og:title" content={title} />
             <meta property="og:description" content={description} />
             <meta property="og:image" content={fullImage} />
@@ -50,6 +59,7 @@ export function Seo({
             <meta name="twitter:title" content={title} />
             <meta name="twitter:description" content={description} />
             <meta name="twitter:image" content={fullImage} />
+            <meta name="twitter:creator" content="@aryagading" />
 
             {/* Article Specific */}
             {type === 'article' && publishedTime && (
@@ -58,6 +68,13 @@ export function Seo({
             {type === 'article' && author && (
                 <meta property="article:author" content={author} />
             )}
+
+            {/* JSON-LD Structured Data */}
+            {jsonLdArray.map((schema, i) => (
+                <script key={i} type="application/ld+json">
+                    {JSON.stringify(schema)}
+                </script>
+            ))}
         </Head>
     );
 }

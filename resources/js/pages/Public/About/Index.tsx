@@ -1,7 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { ArrowRight, Linkedin, Mail, Instagram, Download, MapPin, Code2, Camera, Laptop, Sparkles, Github, Coffee, Gamepad2, BookOpen, Music, MessageSquare, Star } from 'lucide-react';
+import { ArrowRight, Linkedin, Mail, Instagram, Download, MapPin, Code2, Camera, Laptop, Sparkles, Github, Coffee, Gamepad2, BookOpen, Music, MessageSquare, Image as ImageIcon } from 'lucide-react';
 import GuestLayout from '@/layouts/guest-layout';
 import { Spotlight } from '@/components/ui/spotlight-new';
 import { TextReveal, FadeIn } from '@/components/aceternity/text-reveal';
@@ -12,8 +12,28 @@ import { Highlighter } from '@/components/ui/highlighter';
 import { DraggableCardBody, DraggableCardContainer } from '@/components/ui/draggable-card';
 import { Timeline } from '@/components/ui/timeline';
 import { Floating, FloatingElement } from '@/components/ui/parallax-floating';
+import { Lightbox } from '@/components/ui/lightbox';
 
-import { useRef } from 'react';
+import { useRef, useState } from 'react';
+
+// Journey type from backend
+interface Journey {
+    id: number;
+    title: string;
+    subtitle: string | null;
+    organization: string | null;
+    type: 'work' | 'education' | 'achievement' | 'other';
+    description: string | null;
+    skills: string[] | null;
+    logo_display_url: string | null;
+    all_gallery_images: { url: string; type: 'uploaded' | 'url'; path: string | null }[];
+    start_date: string | null;
+    end_date: string | null;
+}
+
+interface Props {
+    journeys: Journey[];
+}
 
 // Polaroid style photo card component
 const PolaroidCard = ({
@@ -29,7 +49,7 @@ const PolaroidCard = ({
     label: string;
     rotation: string;
     className?: string;
-    constraintRef?: React.RefObject<any>;
+    constraintRef?: React.RefObject<Element | null>;
 }) => (
     <DraggableCardContainer className={className}>
         <DraggableCardBody
@@ -59,89 +79,158 @@ const PolaroidCard = ({
     </DraggableCardContainer>
 );
 
-// Timeline data
-const timelineData = [
-    {
-        title: "2024",
-        content: (
-            <div>
-                <p className="text-foreground text-sm md:text-base font-semibold mb-2">
-                    Full-Stack Developer & Tech Lead
-                </p>
-                <p className="text-muted-foreground text-sm md:text-base mb-4">
-                    Leading development of enterprise applications, implementing microservices architecture,
-                    and mentoring junior developers. Built scalable systems handling thousands of concurrent users.
-                </p>
-                <div className="flex flex-wrap gap-2">
-                    <span className="px-3 py-1 text-xs rounded-full bg-primary/10 text-primary">Laravel</span>
-                    <span className="px-3 py-1 text-xs rounded-full bg-primary/10 text-primary">React</span>
-                    <span className="px-3 py-1 text-xs rounded-full bg-primary/10 text-primary">Go</span>
-                    <span className="px-3 py-1 text-xs rounded-full bg-primary/10 text-primary">Kubernetes</span>
-                </div>
-            </div>
-        ),
-    },
-    {
-        title: "2023",
-        content: (
-            <div>
-                <p className="text-foreground text-sm md:text-base font-semibold mb-2">
-                    Software Engineer
-                </p>
-                <p className="text-muted-foreground text-sm md:text-base mb-4">
-                    Developed and maintained multiple web applications. Implemented CI/CD pipelines and
-                    containerization strategies. Contributed to open-source projects and tech communities.
-                </p>
-                <div className="flex flex-wrap gap-2">
-                    <span className="px-3 py-1 text-xs rounded-full bg-primary/10 text-primary">TypeScript</span>
-                    <span className="px-3 py-1 text-xs rounded-full bg-primary/10 text-primary">Docker</span>
-                    <span className="px-3 py-1 text-xs rounded-full bg-primary/10 text-primary">PostgreSQL</span>
-                </div>
-            </div>
-        ),
-    },
-    {
-        title: "2022",
-        content: (
-            <div>
-                <p className="text-foreground text-sm md:text-base font-semibold mb-2">
-                    Junior Developer & University
-                </p>
-                <p className="text-muted-foreground text-sm md:text-base mb-4">
-                    Started my professional journey while completing my degree. Built foundational skills
-                    in web development, database design, and software engineering principles.
-                </p>
-                <div className="flex flex-wrap gap-2">
-                    <span className="px-3 py-1 text-xs rounded-full bg-primary/10 text-primary">PHP</span>
-                    <span className="px-3 py-1 text-xs rounded-full bg-primary/10 text-primary">JavaScript</span>
-                    <span className="px-3 py-1 text-xs rounded-full bg-primary/10 text-primary">MySQL</span>
-                </div>
-            </div>
-        ),
-    },
-    {
-        title: "2022",
-        content: (
-            <div>
-                <p className="text-foreground text-sm md:text-base font-semibold mb-2">
-                    Graduate from SMAN 1 Blitar
-                </p>
-                <p className="text-muted-foreground text-sm md:text-base mb-4">
-                    Graduate from high school, i managed to learn and create my first application using Laravel.
-                    In high school, i joined in OSIS that was handling extracurricular regarding IT.
-                </p>
-                <div className="flex flex-wrap gap-2">
-                    <span className="px-3 py-1 text-xs rounded-full bg-primary/10 text-primary">HTML/CSS</span>
-                    <span className="px-3 py-1 text-xs rounded-full bg-primary/10 text-primary">Python</span>
-                    <span className="px-3 py-1 text-xs rounded-full bg-primary/10 text-primary">Git</span>
-                </div>
-            </div>
-        ),
-    },
-];
+// Journey Timeline Item Component with gallery lightbox
+function JourneyTimelineItem({ journey, onGalleryClick }: { journey: Journey; onGalleryClick: (images: string[], index: number) => void }) {
+    const formatDate = (date: string | null) => {
+        if (!date) return null;
+        return new Date(date).toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+    };
 
-export default function About() {
+    const galleryImages = journey.all_gallery_images.map(img => img.url);
+
+    return (
+        <div>
+            {/* Header with Logo (optional) */}
+            <div className="flex items-start gap-4 mb-3">
+                {/* Only show logo if it exists */}
+                {journey.logo_display_url && (
+                    <div className="h-14 w-14 shrink-0 rounded-xl border border-border bg-white dark:bg-neutral-900 overflow-hidden shadow-sm">
+                        <img
+                            src={journey.logo_display_url}
+                            alt={journey.organization || journey.title}
+                            className="h-full w-full object-contain p-1.5"
+                        />
+                    </div>
+                )}
+                <div className="flex-1 min-w-0">
+                    <p className="text-foreground text-sm md:text-base font-semibold">
+                        {journey.title}
+                    </p>
+                    {(journey.subtitle || journey.organization) && (
+                        <p className="text-sm text-muted-foreground">
+                            {journey.subtitle}
+                            {journey.subtitle && journey.organization && ' · '}
+                            {journey.organization}
+                        </p>
+                    )}
+                    {journey.start_date && (
+                        <p className="text-xs text-muted-foreground mt-0.5">
+                            {formatDate(journey.start_date)} - {journey.end_date ? formatDate(journey.end_date) : 'Present'}
+                        </p>
+                    )}
+                </div>
+            </div>
+
+            {/* Description - limited to 3 lines */}
+            {journey.description && (
+                <p className="text-muted-foreground text-sm md:text-base mb-4">
+                    {journey.description}
+                </p>
+            )}
+
+            {/* Skills */}
+            {journey.skills && journey.skills.length > 0 && (
+                <div className="flex flex-wrap gap-2 mb-4">
+                    {journey.skills.map((skill, i) => (
+                        <span key={i} className="px-3 py-1 text-xs rounded-full bg-primary/10 text-primary">
+                            {skill}
+                        </span>
+                    ))}
+                </div>
+            )}
+
+            {/* Gallery Preview */}
+            {galleryImages.length > 0 && (
+                <div className="mt-4">
+                    <div className="flex items-center gap-2 mb-2">
+                        <ImageIcon className="h-4 w-4 text-muted-foreground" />
+                        <span className="text-xs text-muted-foreground">
+                            {galleryImages.length} photo{galleryImages.length > 1 ? 's' : ''} - Click to view fullscreen
+                        </span>
+                    </div>
+                    <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
+                        {galleryImages.slice(0, 4).map((url, i) => (
+                            <button
+                                key={i}
+                                onClick={() => onGalleryClick(galleryImages, i)}
+                                className="group relative aspect-video overflow-hidden rounded-lg border border-border bg-muted cursor-pointer hover:ring-2 hover:ring-primary transition-all"
+                            >
+                                <img
+                                    src={url}
+                                    alt={`${journey.title} photo ${i + 1}`}
+                                    className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-110"
+                                />
+                                {i === 3 && galleryImages.length > 4 && (
+                                    <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
+                                        <span className="text-white text-lg font-semibold">
+                                            +{galleryImages.length - 4}
+                                        </span>
+                                    </div>
+                                )}
+                            </button>
+                        ))}
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+}
+
+export default function About({ journeys }: Props) {
     const containerRef = useRef<HTMLElement>(null);
+
+    // Lightbox state
+    const [lightboxOpen, setLightboxOpen] = useState(false);
+    const [lightboxImages, setLightboxImages] = useState<string[]>([]);
+    const [lightboxIndex, setLightboxIndex] = useState(0);
+
+    const openLightbox = (images: string[], index: number) => {
+        setLightboxImages(images);
+        setLightboxIndex(index);
+        setLightboxOpen(true);
+    };
+
+    // Convert journeys to timeline data format
+    const timelineData = journeys.map((journey) => {
+        // Get year from start_date for title
+        const year = journey.start_date
+            ? new Date(journey.start_date).getFullYear().toString()
+            : 'Present';
+
+        return {
+            title: year,
+            content: (
+                <JourneyTimelineItem
+                    journey={journey}
+                    onGalleryClick={openLightbox}
+                />
+            ),
+        };
+    });
+
+    // Fallback if no journeys
+    const fallbackTimelineData = [
+        {
+            title: "2024",
+            content: (
+                <div>
+                    <p className="text-foreground text-sm md:text-base font-semibold mb-2">
+                        Full-Stack Developer & Tech Lead
+                    </p>
+                    <p className="text-muted-foreground text-sm md:text-base mb-4">
+                        Leading development of enterprise applications, implementing microservices architecture,
+                        and mentoring junior developers. Built scalable systems handling thousands of concurrent users.
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                        <span className="px-3 py-1 text-xs rounded-full bg-primary/10 text-primary">Laravel</span>
+                        <span className="px-3 py-1 text-xs rounded-full bg-primary/10 text-primary">React</span>
+                        <span className="px-3 py-1 text-xs rounded-full bg-primary/10 text-primary">Go</span>
+                        <span className="px-3 py-1 text-xs rounded-full bg-primary/10 text-primary">Kubernetes</span>
+                    </div>
+                </div>
+            ),
+        },
+    ];
 
     return (
         <GuestLayout>
@@ -233,22 +322,21 @@ export default function About() {
 
                         <TextReveal delay={0.4}>
                             <h1 className="font-heading text-4xl font-bold leading-tight md:text-5xl lg:text-6xl">
-                                I'm <Highlighter action="underline" color="#87CEFA" delay={900}>Arya Gading</Highlighter>
+                                I'm <Highlighter action="underline" color="#87CEFA" delay={900}>Arya Gading P.</Highlighter>
                             </h1>
                         </TextReveal>
 
                         <TextReveal delay={0.6}>
                             <p className="mt-6 text-lg text-muted-foreground leading-relaxed">
-                                A passionate <span className="text-foreground font-medium">Full-Stack Developer</span> and <span className="text-foreground font-medium">Learner</span> based in Indonesia,
-                                specializing in building modern web applications that solve real-world problems.
+                                Hi, I'm <strong className="font-semibold text-foreground">Arya</strong>. I am a passionate <strong className="font-semibold text-foreground">Developer and Student</strong> based in <strong className="font-semibold text-foreground">Indonesia</strong> who loves challenges and learning new things.
+
                             </p>
                         </TextReveal>
 
                         <TextReveal delay={0.8}>
                             <p className="mt-4 text-muted-foreground leading-relaxed">
-                                With expertise in Laravel, NodeJS, Go, and cloud infrastructure, I craft scalable solutions
-                                from concept to deployment. When I'm not coding, you'll find me exploring new technologies
-                                or gaming.
+                                I specialize in building <strong className="font-semibold text-foreground">Web and Mobile Applications</strong> using modern tech stacks, with additional expertise in <strong className="font-semibold text-foreground">DevOps and Cloud Infrastructure</strong>.
+                                Just like normal human, i like playing games, listening to music, and watching movies when i'm not coding.
                             </p>
                         </TextReveal>
 
@@ -293,53 +381,52 @@ export default function About() {
                             <h2 className="font-heading text-3xl font-bold md:text-4xl">
                                 What I Do
                             </h2>
-                            <p className="mt-2 text-muted-foreground max-w-2xl mx-auto">
-                                I specialize in building end-to-end solutions, from designing intuitive user interfaces
-                                to architecting robust backend systems.
+                            <p className="mt-4 text-muted-foreground max-w-2xl mx-auto text-lg">
+                                As a <span className="text-primary font-semibold">University Student & Developer</span>, I bridge the gap between academic theory and real-world application. I love exploring new technologies to build robust software, from concept to deployment.
                             </p>
                         </div>
                     </FadeIn>
 
                     <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+                        {/* Card 1: Full Stack Focus */}
                         <FadeIn delay={0.1}>
-                            <div className="group rounded-2xl border border-border bg-background p-8 transition-all hover:border-primary/50 hover:shadow-lg">
+                            <div className="group h-full rounded-2xl border border-border bg-background p-8 transition-all hover:border-primary/50 hover:shadow-lg">
                                 <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400">
                                     <Code2 className="h-6 w-6" />
                                 </div>
-                                <h3 className="font-heading text-xl font-semibold">Web Development</h3>
-                                <p className="mt-2 text-muted-foreground">
-                                    Building modern, responsive web applications with React, Next.js, Golang, and Laravel.
-                                    Focused on performance, accessibility, and user experience.
+                                <h3 className="font-heading text-xl font-semibold">Full Stack Development</h3>
+                                <p className="mt-2 text-muted-foreground leading-relaxed">
+                                    Building comprehensive web and mobile solutions. I craft interactive interfaces using React/Next.js and integrate them with powerful backends like Laravel and Node.js.
                                 </p>
                             </div>
                         </FadeIn>
 
+                        {/* Card 2: Backend Focus */}
                         <FadeIn delay={0.2}>
-                            <div className="group rounded-2xl border border-border bg-background p-8 transition-all hover:border-primary/50 hover:shadow-lg">
+                            <div className="group h-full rounded-2xl border border-border bg-background p-8 transition-all hover:border-primary/50 hover:shadow-lg">
                                 <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400">
                                     <svg className="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                         <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
                                     </svg>
                                 </div>
-                                <h3 className="font-heading text-xl font-semibold">Backend & APIs</h3>
-                                <p className="mt-2 text-muted-foreground">
-                                    Designing and developing scalable REST APIs with Go, Laravel, and Node.js.
-                                    Database design, authentication, and microservices architecture.
+                                <h3 className="font-heading text-xl font-semibold">Backend Engineering</h3>
+                                <p className="mt-2 text-muted-foreground leading-relaxed">
+                                    Designing scalable logic and REST APIs. My focus is on performance and data efficiency using Python, Go, and Node.js, ensuring applications run smoothly under load.
                                 </p>
                             </div>
                         </FadeIn>
 
+                        {/* Card 3: DevOps Focus */}
                         <FadeIn delay={0.3}>
-                            <div className="group rounded-2xl border border-border bg-background p-8 transition-all hover:border-primary/50 hover:shadow-lg">
+                            <div className="group h-full rounded-2xl border border-border bg-background p-8 transition-all hover:border-primary/50 hover:shadow-lg">
                                 <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-cyan-100 text-cyan-600 dark:bg-cyan-900/30 dark:text-cyan-400">
                                     <svg className="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                         <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
                                     </svg>
                                 </div>
-                                <h3 className="font-heading text-xl font-semibold">DevOps & Cloud</h3>
-                                <p className="mt-2 text-muted-foreground">
-                                    Managing deployments with Docker, and CI/CD pipelines.
-                                    Cloud infrastructure on AWS, GCP, and self-hosted solutions.
+                                <h3 className="font-heading text-xl font-semibold">DevOps & Infrastructure</h3>
+                                <p className="mt-2 text-muted-foreground leading-relaxed">
+                                    Bridging development and operations. I manage server deployments using Docker, Nginx, and Linux automation to create secure and reliable production environments.
                                 </p>
                             </div>
                         </FadeIn>
@@ -350,7 +437,7 @@ export default function About() {
             {/* Timeline / Journey Section */}
             <section className="border-t border-border">
                 <Timeline
-                    data={timelineData}
+                    data={timelineData.length > 0 ? timelineData : fallbackTimelineData}
                     title="My Journey"
                     description="From curious beginner to building production-grade applications. Here's how my story unfolded."
                 />
@@ -575,6 +662,14 @@ export default function About() {
                     </FadeIn>
                 </div>
             </section>
+
+            {/* Lightbox for gallery images */}
+            <Lightbox
+                images={lightboxImages}
+                initialIndex={lightboxIndex}
+                isOpen={lightboxOpen}
+                onClose={() => setLightboxOpen(false)}
+            />
         </GuestLayout>
     );
 }

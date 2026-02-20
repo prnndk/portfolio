@@ -37,6 +37,31 @@ export default function ProjectShow({ project }: Props) {
         setLightboxOpen(true);
     };
 
+    // JSON-LD structured data for SEO
+    const jsonLd: Record<string, unknown> = {
+        '@context': 'https://schema.org',
+        '@type': 'CreativeWork',
+        name: project.title,
+        description: project.description,
+        image: ogImage,
+        author: {
+            '@type': 'Person',
+            name: 'Arya Gading Prinandika',
+            url: appUrl,
+        },
+        url: projectUrl,
+    };
+
+    if (project.url) {
+        jsonLd.mainEntityOfPage = project.url;
+    }
+    if (project.github_url) {
+        jsonLd.codeRepository = project.github_url;
+    }
+    if (project.tech_tags && project.tech_tags.length > 0) {
+        jsonLd.keywords = project.tech_tags.join(', ');
+    }
+
     return (
         <GuestLayout>
             {/* Enhanced SEO Head */}
@@ -48,6 +73,7 @@ export default function ProjectShow({ project }: Props) {
 
                 {/* Open Graph / Facebook */}
                 <meta property="og:type" content="website" />
+                <meta property="og:locale" content="en_US" />
                 <meta property="og:title" content={project.title} />
                 <meta property="og:description" content={project.description} />
                 <meta property="og:image" content={ogImage} />
@@ -62,6 +88,11 @@ export default function ProjectShow({ project }: Props) {
                 <meta name="twitter:description" content={project.description} />
                 <meta name="twitter:image" content={ogImage} />
                 <meta name="twitter:creator" content="@aryagading" />
+
+                {/* JSON-LD Structured Data */}
+                <script type="application/ld+json">
+                    {JSON.stringify(jsonLd)}
+                </script>
             </Head>
 
             <article className="min-h-screen">

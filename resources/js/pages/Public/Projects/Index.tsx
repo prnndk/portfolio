@@ -6,6 +6,7 @@ import { type Project } from '@/types';
 import { Head, Link } from '@inertiajs/react';
 import { ArrowLeft, ArrowRight, FolderOpen } from 'lucide-react';
 import { getProjectImage } from '@/lib/project-utils';
+import { Seo } from '@/components/seo';
 import {
     Empty,
     EmptyHeader,
@@ -32,7 +33,12 @@ interface Props {
 export default function ProjectsIndex({ projects }: Props) {
     return (
         <GuestLayout>
-            <Head title="Projects" />
+            <Seo
+                title="Projects | Arya Gading Prinandika"
+                description="A showcase of my work, side projects, and open source contributions."
+                url="/projects"
+            />
+
 
             <div className="container mx-auto px-4 py-24">
                 <FadeIn>

@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { type BreadcrumbItem, type Post } from '@/types';
 import { Head, Link, useForm } from '@inertiajs/react';
-import { ArrowLeft, Save, Eye, FileText, Settings, ExternalLink, Upload, Link as LinkIcon, ImagePlus, Trash2 } from 'lucide-react';
+import { ArrowLeft, Save, Eye, FileText, Settings, ExternalLink, Upload, Link as LinkIcon, ImagePlus } from 'lucide-react';
 import { type FormEvent, useState, useCallback } from 'react';
 import { FileUploader } from '@/components/ui/file-uploader';
 import MDEditor, { commands } from '@uiw/react-md-editor';

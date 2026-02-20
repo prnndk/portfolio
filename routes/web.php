@@ -6,8 +6,10 @@ use App\Http\Controllers\Admin\PostController;
 use App\Http\Controllers\Admin\ProjectController;
 use App\Http\Controllers\Admin\TechStackController;
 use App\Http\Controllers\Admin\ShortLinkController;
+use App\Http\Controllers\Admin\JourneyController;
 use App\Models\Activity;
 use App\Models\Favorite;
+use App\Models\Journey;
 use App\Models\Post;
 use App\Models\Project;
 use App\Models\TechStack;
@@ -36,7 +38,9 @@ Route::get('/', function () {
 })->name('home');
 
 Route::get('/about', function () {
-    return Inertia::render('Public/About/Index');
+    return Inertia::render('Public/About/Index', [
+        'journeys' => Journey::active()->ordered()->get(),
+    ]);
 })->name('about');
 
 Route::get('/projects', function () {
@@ -55,7 +59,9 @@ Route::get('/contact', function () {
     return Inertia::render('Public/Contact/Index');
 })->name('contact.index');
 
-Route::post('/contact', [ContactController::class, 'store'])->name('contact.store');
+Route::post('/contact', [ContactController::class, 'store'])
+    ->middleware('throttle:5,1') // 5 requests per minute
+    ->name('contact.store');
 
 Route::get('/projects/{project:slug}', function (Project $project) {
     if (!$project->is_active) {
@@ -115,6 +121,16 @@ Route::get('/favorites', function (\Illuminate\Http\Request $request) {
     ]);
 })->name('favorites.index');
 
+// Tools Routes
+Route::get('/tools', function () {
+    return Inertia::render('Public/Tools/Index');
+})->name('tools.index');
+
+Route::get('/tools/image-compress', function () {
+    return Inertia::render('Public/Tools/ImageCompress');
+})->name('tools.image-compress');
+
+
 // Authenticated Routes
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('dashboard', function () {
@@ -132,6 +148,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
                 'activities' => [
                     'total' => Activity::count(),
                     'active' => Activity::active()->count(),
+                ],
+                'journeys' => [
+                    'total' => Journey::count(),
+                    'active' => Journey::active()->count(),
                 ],
                 'favorites' => [
                     'total' => Favorite::count(),
@@ -154,6 +174,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::resource('posts', PostController::class);
         Route::resource('tech-stacks', TechStackController::class);
         Route::resource('favorites', FavoriteController::class)->except(['show']);
+        Route::resource('journeys', JourneyController::class)->except(['show']);
         Route::resource('contacts', ContactController::class)->only(['index', 'show', 'destroy']);
         Route::resource('short-links', ShortLinkController::class)->except(['show']);
 

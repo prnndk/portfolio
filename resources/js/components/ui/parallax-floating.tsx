@@ -6,12 +6,12 @@ import React, {
     useRef,
     useCallback,
 } from "react";
-import { useMotionValue, useSpring, motion, useTransform } from "framer-motion";
+import { useMotionValue, useSpring, motion, useTransform, type MotionValue } from "framer-motion";
 
 // Context to share mouse position
 const MouseContext = createContext<{
-    x: any;
-    y: any;
+    x: MotionValue<number>;
+    y: MotionValue<number>;
 } | undefined>(undefined);
 
 interface FloatingProps {

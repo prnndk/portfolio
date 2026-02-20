@@ -1,4 +1,8 @@
 User-agent: *
-Disallow:
+Disallow: /admin/
+Disallow: /dashboard
+Disallow: /login
+Disallow: /register
 
-Sitemap: /sitemap.xml
+Sitemap: https://aryagading.com/sitemap.xml
+Host: https://aryagading.com
