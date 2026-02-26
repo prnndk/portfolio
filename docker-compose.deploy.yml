@@ -1,0 +1,54 @@
+version: '3.8'
+services:
+  app:
+    image: prnndk/portfolio-app:latest
+    container_name: portofolio-app
+    restart: unless-stopped
+    working_dir: /var/www
+    # Jika menggunakan code dari dalam image, jangan mount /var/www dari host.
+    # Jika Anda ingin melakukan mount storage/ .env saja, bisa uncomment di bawah:
+    # volumes:
+    #   - ./.env:/var/www/.env
+    #   - ./storage:/var/www/storage
+    networks:
+      - portofolio-network
+
+  db:
+    image: mysql:8.0
+    container_name: portofolio-db
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${DB_DATABASE:-laravel}
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-root}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-root}
+      MYSQL_USER: ${DB_USERNAME:-laravel}
+      SERVICE_TAGS: dev
+      SERVICE_NAME: mysql
+    ports:
+      - "127.0.0.1:3378:3306"
+    volumes:
+      - dbdata:/var/lib/mysql
+    networks:
+      - portofolio-network
+
+  nginx:
+    image: nginx:alpine
+    container_name: portofolio-nginx
+    restart: unless-stopped
+    ports:
+      - "8878:80"
+    volumes:
+      # Pastikan file static dan config nginx tersedia di host,
+      # atau Anda bisa proxy pass langsung ke app jika tidak melayani file static via nginx
+      - ./:/var/www
+      - ./docker/nginx/conf.d:/etc/nginx/conf.d
+    networks:
+      - portofolio-network
+
+networks:
+  portofolio-network:
+    driver: bridge
+
+volumes:
+  dbdata:
+    driver: local
