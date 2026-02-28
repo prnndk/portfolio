@@ -1,47 +1,146 @@
-version: '3.8'
+# Production deployment compose file.
+# Prerequisites on the server:
+#   - .env file exists next to this file
+#   - docker & docker compose v2 are installed
+#
+# Usage:
+#   docker compose -f docker-compose.deploy.yml pull
+#   docker compose -f docker-compose.deploy.yml up -d
+#
+# On first run the entrypoint will:
+#   - wait for the database
+#   - run migrations
+#   - generate app key (if missing)
+#   - link storage
+#   - warm all caches
+#   - copy public/ into the shared volume so nginx can serve assets
+
 services:
+  # ── PHP-FPM ──────────────────────────────────────────────────────────────
   app:
     image: prnndk/portfolio-app:latest
     container_name: portofolio-app
     restart: unless-stopped
     working_dir: /var/www
-    # Jika menggunakan code dari dalam image, jangan mount /var/www dari host.
-    # Jika Anda ingin melakukan mount storage/ .env saja, bisa uncomment di bawah:
-    # volumes:
-    #   - ./.env:/var/www/.env
-    #   - ./storage:/var/www/storage
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      # Inject runtime secrets — never bake .env into the image
+      - ./.env:/var/www/.env:ro
+      # Persistent storage for user uploads / logs
+      - app-storage:/var/www/storage
+      # Shared volume: entrypoint copies public/ here so nginx can serve assets
+      - app-public:/var/www-public
+      # tmpfs for /tmp — ephemeral, not persisted, not shared
+      - type: tmpfs
+        target: /tmp
+        tmpfs:
+          size: 64m
+          mode: 0o1777
+    healthcheck:
+      test: ['CMD-SHELL', "php-fpm -t 2>&1 | grep -q 'configuration file.*test is successful'"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    # ── Privilege hardening ───────────────────────────────────────────────
+    security_opt:
+      - no-new-privileges:true # prevent setuid/setgid privilege escalation
+    cap_drop:
+      - ALL # drop every Linux capability …
+    cap_add:
+      - CHOWN # … add back only what php-fpm master needs
+      - SETUID
+      - SETGID
+      - DAC_OVERRIDE
+    # ── Resource limits (DoS protection) ─────────────────────────────────
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
+    pids_limit: 100
+    read_only: false # Laravel writes to storage & bootstrap/cache
     networks:
       - portofolio-network
 
+  # ── MySQL ─────────────────────────────────────────────────────────────────
   db:
     image: mysql:8.0
     container_name: portofolio-db
     restart: unless-stopped
     environment:
-      MYSQL_DATABASE: ${DB_DATABASE:-laravel}
-      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-root}
-      MYSQL_PASSWORD: ${DB_PASSWORD:-root}
-      MYSQL_USER: ${DB_USERNAME:-laravel}
-      SERVICE_TAGS: dev
-      SERVICE_NAME: mysql
+      MYSQL_DATABASE: ${DB_DATABASE:?DB_DATABASE must be set}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:?DB_ROOT_PASSWORD must be set}
+      MYSQL_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD must be set}
+      MYSQL_USER: ${DB_USERNAME:?DB_USERNAME must be set}
+    # Port bound to localhost only — never expose DB to the internet
     ports:
-      - "127.0.0.1:3378:3306"
+      - '127.0.0.1:3378:3306'
     volumes:
       - dbdata:/var/lib/mysql
+    healthcheck:
+      # Use a file-based password so the credential is NEVER visible in `ps`
+      test:
+        - CMD
+        - sh
+        - -c
+        - 'mysqladmin ping -h localhost -u root --password=$$MYSQL_ROOT_PASSWORD'
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    cap_add:
+      - CHOWN
+      - SETUID
+      - SETGID
+      - DAC_OVERRIDE
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
+    pids_limit: 200
     networks:
       - portofolio-network
 
+  # ── Nginx ─────────────────────────────────────────────────────────────────
   nginx:
     image: nginx:alpine
     container_name: portofolio-nginx
     restart: unless-stopped
+    depends_on:
+      app:
+        condition: service_healthy
     ports:
-      - "8878:80"
+      - '8878:80'
     volumes:
-      # Pastikan file static dan config nginx tersedia di host,
-      # atau Anda bisa proxy pass langsung ke app jika tidak melayani file static via nginx
-      - ./:/var/www
-      - ./docker/nginx/conf.d:/etc/nginx/conf.d
+      # Serve compiled assets from the shared volume (populated by app entrypoint)
+      - app-public:/var/www/public:ro
+      # Persistent storage so nginx can serve uploaded files
+      - app-storage:/var/www/storage:ro
+      # Nginx config (read-only — must not be modified at runtime)
+      - ./docker/nginx/conf.d:/etc/nginx/conf.d:ro
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    cap_add:
+      - NET_BIND_SERVICE # needed to bind port 80 inside the container
+      - CHOWN
+      - SETUID
+      - SETGID
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 128M
+    pids_limit: 50
     networks:
       - portofolio-network
 
@@ -51,4 +150,10 @@ networks:
 
 volumes:
   dbdata:
+    driver: local
+  # Shared public/ directory — populated by app entrypoint on startup
+  app-public:
+    driver: local
+  # Persistent storage — survives container re-creations
+  app-storage:
     driver: local

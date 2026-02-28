@@ -1,28 +1,15 @@
-import GuestLayout from '@/layouts/guest-layout';
 import { FadeIn } from '@/components/aceternity/text-reveal';
-import { Button } from '@/components/ui/button';
-import { type Activity } from '@/types';
-import { Head, Link } from '@inertiajs/react';
-import { ArrowLeft, ArrowRight, Calendar, Briefcase } from 'lucide-react';
+import { Pagination } from '@/components/pagination';
+import { PageHeader } from '@/components/portfolio/page-header';
 import { Seo } from '@/components/seo';
-import {
-    Empty,
-    EmptyHeader,
-    EmptyMedia,
-    EmptyTitle,
-    EmptyDescription,
-} from '@/components/ui/empty';
+import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/components/ui/empty';
+import GuestLayout from '@/layouts/guest-layout';
+import { type Activity, type PaginatedData } from '@/types';
+import { Link } from '@inertiajs/react';
+import { Briefcase, Calendar } from 'lucide-react';
 
 interface Props {
-    activities: {
-        data: Activity[];
-        links: {
-            url: string | null;
-            label: string;
-            active: boolean;
-        }[];
-        last_page: number;
-    };
+    activities: PaginatedData<Activity>;
 }
 
 export default function ActivitiesIndex({ activities }: Props) {
@@ -42,25 +29,8 @@ export default function ActivitiesIndex({ activities }: Props) {
                 url="/activities"
             />
 
-
             <div className="container mx-auto px-4 py-24">
-                <FadeIn>
-                    <div className="mb-12">
-                        <Link
-                            href="/"
-                            className="mb-4 inline-flex items-center text-sm text-muted-foreground hover:text-primary transition-colors"
-                        >
-                            <ArrowLeft className="mr-2 h-4 w-4" />
-                            Back to Home
-                        </Link>
-                        <h1 className="font-heading text-4xl font-bold md:text-5xl">
-                            Activities & Experience
-                        </h1>
-                        <p className="mt-4 max-w-2xl text-lg text-muted-foreground">
-                            My journey through education, work experience, and achievements.
-                        </p>
-                    </div>
-                </FadeIn>
+                <PageHeader title="Activities & Experience" description="My journey through education, work experience, and achievements." />
 
                 {activities.data.length > 0 ? (
                     <>
@@ -72,7 +42,7 @@ export default function ActivitiesIndex({ activities }: Props) {
                                         <div className="absolute left-0 h-10 w-10 flex-shrink-0 translate-x-1/2 rounded-full border-4 border-background bg-primary md:left-1/2 md:-translate-x-1/2" />
 
                                         {/* Content */}
-                                        <div className="ml-16 w-full md:w-[calc(50%-2.5rem)] md:ml-0 md:mr-0">
+                                        <div className="ml-16 w-full md:mr-0 md:ml-0 md:w-[calc(50%-2.5rem)]">
                                             <Link
                                                 href={`/activities/${activity.id}`}
                                                 className="group block rounded-xl border border-border/50 bg-card p-6 transition-colors hover:border-primary/50 hover:shadow-lg"
@@ -84,15 +54,9 @@ export default function ActivitiesIndex({ activities }: Props) {
                                                         {activity.end_date && ` - ${formatDate(activity.end_date)}`}
                                                     </span>
                                                 </div>
-                                                <h3 className="mb-1 font-heading text-xl font-bold group-hover:text-primary">
-                                                    {activity.title}
-                                                </h3>
-                                                <p className="mb-4 text-sm font-medium text-muted-foreground">
-                                                    {activity.organization}
-                                                </p>
-                                                <p className="line-clamp-3 text-sm leading-relaxed text-muted-foreground">
-                                                    {activity.description}
-                                                </p>
+                                                <h3 className="mb-1 font-heading text-xl font-bold group-hover:text-primary">{activity.title}</h3>
+                                                <p className="mb-4 text-sm font-medium text-muted-foreground">{activity.organization}</p>
+                                                <p className="line-clamp-3 text-sm leading-relaxed text-muted-foreground">{activity.description}</p>
                                             </Link>
                                         </div>
                                     </div>
@@ -100,42 +64,7 @@ export default function ActivitiesIndex({ activities }: Props) {
                             ))}
                         </div>
 
-                        {/* Pagination */}
-                        {activities.last_page > 1 && (
-                            <div className="mt-12 flex justify-center gap-2">
-                                {activities.links.map((link, i) => {
-                                    if (link.url === null) return null;
-                                    const isPrev = link.label.includes('Previous');
-                                    const isNext = link.label.includes('Next');
-
-                                    if (isPrev || isNext) {
-                                        return (
-                                            <Button
-                                                key={i}
-                                                variant="outline"
-                                                size="icon"
-                                                asChild
-                                                disabled={!link.url}
-                                            >
-                                                <Link href={link.url}>
-                                                    {isPrev ? <ArrowLeft className="h-4 w-4" /> : <ArrowRight className="h-4 w-4" />}
-                                                </Link>
-                                            </Button>
-                                        );
-                                    }
-
-                                    return (
-                                        <Button
-                                            key={i}
-                                            variant={link.active ? 'default' : 'outline'}
-                                            asChild
-                                        >
-                                            <Link href={link.url} dangerouslySetInnerHTML={{ __html: link.label }} />
-                                        </Button>
-                                    );
-                                })}
-                            </div>
-                        )}
+                        <Pagination paginator={activities} />
                     </>
                 ) : (
                     <FadeIn delay={0.2}>
@@ -146,9 +75,7 @@ export default function ActivitiesIndex({ activities }: Props) {
                                         <Briefcase className="h-6 w-6" />
                                     </EmptyMedia>
                                     <EmptyTitle>No activities yet</EmptyTitle>
-                                    <EmptyDescription>
-                                        Experience and activities will be showcased here once they are added.
-                                    </EmptyDescription>
+                                    <EmptyDescription>Experience and activities will be showcased here once they are added.</EmptyDescription>
                                 </EmptyHeader>
                             </Empty>
                         </div>

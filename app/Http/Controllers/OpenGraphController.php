@@ -17,8 +17,8 @@ class OpenGraphController extends Controller
             title: $post->title,
             subtitle: 'Blog Post',
             date: $post->published_at
-            ? $post->published_at->format('M d, Y')
-            : null
+                ? $post->published_at->format('M d, Y')
+                : null
         );
     }
 
@@ -41,10 +41,17 @@ class OpenGraphController extends Controller
      */
     public function generate(Request $request)
     {
+        $request->validate([
+            'title'    => 'nullable|string|max:120',
+            'subtitle' => 'nullable|string|max:80',
+            'date'     => 'nullable|string|max:30',
+            'tags'     => 'nullable|string|max:200',
+        ]);
+
         $title = $request->get('title', 'aryagading.com');
         $subtitle = $request->get('subtitle');
         $date = $request->get('date');
-        $tags = $request->get('tags') ? explode(',', $request->get('tags')) : null;
+        $tags = $request->get('tags') ? array_slice(explode(',', $request->get('tags')), 0, 6) : null;
 
         return $this->generateImage($title, $subtitle, $date, $tags);
     }

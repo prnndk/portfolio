@@ -17,12 +17,24 @@ class Post extends Model
         'published_at',
         'status',
         'is_active',
+        // view_count is intentionally NOT fillable — use incrementViewCount() only
     ];
+
+    public function tags(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    {
+        return $this->belongsToMany(Tag::class, 'post_tag');
+    }
 
     protected $casts = [
         'published_at' => 'datetime',
-        'is_active' => 'boolean',
+        'is_active'    => 'boolean',
+        'view_count'   => 'integer',
     ];
+
+    public function incrementViewCount(): void
+    {
+        $this->increment('view_count');
+    }
 
     protected static function boot()
     {

@@ -17,8 +17,16 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->encryptCookies(except: ['appearance', 'sidebar_state']);
 
-        // Trust all proxies (Cloudflare, Nginx, etc.) for proper HTTPS detection
-        $middleware->trustProxies(at: '*');
+        // Trust only requests coming from known private-network proxy IPs.
+        // Using '*' would allow any direct client to spoof X-Forwarded-For.
+        // Docker internal networks use the RFC-1918 ranges below; adjust if
+        // you add a cloud load-balancer (add its CIDR or specific IP here).
+        $middleware->trustProxies(at: [
+            '127.0.0.1',
+            '10.0.0.0/8',
+            '172.16.0.0/12',
+            '192.168.0.0/16',
+        ]);
 
         $middleware->web(append: [
             ShareSeoData::class,

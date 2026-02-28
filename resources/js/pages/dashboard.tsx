@@ -1,28 +1,11 @@
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/components/ui/empty';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem, type Post } from '@/types';
 import { Head, Link } from '@inertiajs/react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import {
-    Empty,
-    EmptyHeader,
-    EmptyMedia,
-    EmptyTitle,
-    EmptyDescription,
-    EmptyContent,
-} from '@/components/ui/empty';
-import {
-    FolderKanban,
-    FileText,
-    Calendar,
-    Star,
-    Link2,
-    Plus,
-    ArrowRight,
-    Eye,
-    Map,
-} from 'lucide-react';
+import { ArrowRight, Calendar, Eye, FileText, FolderKanban, Link2, Mail, Map, Plus, Star } from 'lucide-react';
 
 const breadcrumbs: BreadcrumbItem[] = [
     {
@@ -33,11 +16,12 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 interface Stats {
     projects: { total: number; active: number };
-    posts: { total: number; active: number; published: number };
+    posts: { total: number; active: number; published: number; totalViews: number };
     activities: { total: number; active: number };
     journeys: { total: number; active: number };
     favorites: { total: number; active: number };
     shortLinks: { total: number; active: number; clicks: number };
+    contacts: { total: number; unread: number };
 }
 
 interface Props {
@@ -62,7 +46,7 @@ const StatCard = ({
     color: string;
     activeLabel?: string;
 }) => (
-    <Card className="group hover:shadow-lg transition-all duration-300">
+    <Card className="group transition-all duration-300 hover:shadow-lg">
         <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">{title}</CardTitle>
             <div className={`rounded-lg p-2 ${color}`}>
@@ -73,11 +57,11 @@ const StatCard = ({
             <div className="text-3xl font-bold">{total}</div>
             <div className="mt-1 flex items-center justify-between">
                 <p className="text-xs text-muted-foreground">
-                    <span className="text-green-500 font-medium">{active}</span> {activeLabel}
+                    <span className="font-medium text-green-500">{active}</span> {activeLabel}
                 </p>
                 <Link
                     href={href}
-                    className="text-xs text-primary hover:underline flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                    className="flex items-center gap-1 text-xs text-primary opacity-0 transition-opacity group-hover:opacity-100 hover:underline"
                 >
                     Manage <ArrowRight className="h-3 w-3" />
                 </Link>
@@ -120,7 +104,7 @@ export default function Dashboard({ stats, recentPosts }: Props) {
                 </div>
 
                 {/* Stats Grid */}
-                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
+                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                     <StatCard
                         title="Projects"
                         icon={FolderKanban}
@@ -136,6 +120,16 @@ export default function Dashboard({ stats, recentPosts }: Props) {
                         active={stats.posts.published}
                         href="/admin/posts"
                         color="bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400"
+                        activeLabel="published"
+                    />
+                    <StatCard
+                        title="Post Views"
+                        icon={Eye}
+                        total={stats.posts.totalViews}
+                        active={stats.posts.published}
+                        href="/admin/posts"
+                        color="bg-violet-100 text-violet-600 dark:bg-violet-900/30 dark:text-violet-400"
+                        activeLabel="published posts"
                     />
                     <StatCard
                         title="Activities"
@@ -170,6 +164,15 @@ export default function Dashboard({ stats, recentPosts }: Props) {
                         href="/admin/short-links"
                         color="bg-cyan-100 text-cyan-600 dark:bg-cyan-900/30 dark:text-cyan-400"
                     />
+                    <StatCard
+                        title="Contacts"
+                        icon={Mail}
+                        total={stats.contacts.total}
+                        active={stats.contacts.unread}
+                        activeLabel="unread"
+                        href="/admin/contacts"
+                        color="bg-rose-100 text-rose-600 dark:bg-rose-900/30 dark:text-rose-400"
+                    />
                 </div>
 
                 {/* Recent Posts Section */}
@@ -195,9 +198,7 @@ export default function Dashboard({ stats, recentPosts }: Props) {
                                             <FileText className="h-6 w-6" />
                                         </EmptyMedia>
                                         <EmptyTitle>No posts yet</EmptyTitle>
-                                        <EmptyDescription>
-                                            Start writing your first blog post to share your thoughts.
-                                        </EmptyDescription>
+                                        <EmptyDescription>Start writing your first blog post to share your thoughts.</EmptyDescription>
                                     </EmptyHeader>
                                     <EmptyContent>
                                         <Button size="sm" asChild>
@@ -217,23 +218,21 @@ export default function Dashboard({ stats, recentPosts }: Props) {
                                         >
                                             <div className="min-w-0 flex-1">
                                                 <div className="flex items-center gap-2">
-                                                    <h4 className="font-medium truncate">{post.title}</h4>
-                                                    <Badge className={`shrink-0 ${getStatusColor(post.status)}`}>
-                                                        {post.status}
-                                                    </Badge>
+                                                    <h4 className="truncate font-medium">{post.title}</h4>
+                                                    <Badge className={`shrink-0 ${getStatusColor(post.status)}`}>{post.status}</Badge>
                                                     {!post.is_active && (
                                                         <Badge variant="outline" className="shrink-0 text-muted-foreground">
                                                             Inactive
                                                         </Badge>
                                                     )}
                                                 </div>
-                                                <p className="text-xs text-muted-foreground mt-1">
+                                                <p className="mt-1 text-xs text-muted-foreground">
                                                     {post.published_at
                                                         ? `Published ${formatDate(post.published_at)}`
                                                         : `Created ${formatDate(post.created_at)}`}
                                                 </p>
                                             </div>
-                                            <div className="flex items-center gap-1 ml-3">
+                                            <div className="ml-3 flex items-center gap-1">
                                                 {post.status === 'published' && post.is_active && (
                                                     <Button variant="ghost" size="icon" className="h-8 w-8" asChild>
                                                         <a href={`/blog/${post.slug}`} target="_blank" rel="noopener noreferrer">
@@ -268,7 +267,7 @@ export default function Dashboard({ stats, recentPosts }: Props) {
                         </CardHeader>
                         <CardContent>
                             <div className="grid gap-3 sm:grid-cols-2">
-                                <Button variant="outline" className="justify-start h-auto py-4" asChild>
+                                <Button variant="outline" className="h-auto justify-start py-4" asChild>
                                     <Link href="/admin/projects/create">
                                         <FolderKanban className="mr-3 h-5 w-5 text-blue-500" />
                                         <div className="text-left">
@@ -277,7 +276,7 @@ export default function Dashboard({ stats, recentPosts }: Props) {
                                         </div>
                                     </Link>
                                 </Button>
-                                <Button variant="outline" className="justify-start h-auto py-4" asChild>
+                                <Button variant="outline" className="h-auto justify-start py-4" asChild>
                                     <Link href="/admin/posts/create">
                                         <FileText className="mr-3 h-5 w-5 text-purple-500" />
                                         <div className="text-left">
@@ -286,7 +285,7 @@ export default function Dashboard({ stats, recentPosts }: Props) {
                                         </div>
                                     </Link>
                                 </Button>
-                                <Button variant="outline" className="justify-start h-auto py-4" asChild>
+                                <Button variant="outline" className="h-auto justify-start py-4" asChild>
                                     <Link href="/admin/activities/create">
                                         <Calendar className="mr-3 h-5 w-5 text-orange-500" />
                                         <div className="text-left">
@@ -295,7 +294,7 @@ export default function Dashboard({ stats, recentPosts }: Props) {
                                         </div>
                                     </Link>
                                 </Button>
-                                <Button variant="outline" className="justify-start h-auto py-4" asChild>
+                                <Button variant="outline" className="h-auto justify-start py-4" asChild>
                                     <Link href="/admin/favorites/create">
                                         <Star className="mr-3 h-5 w-5 text-pink-500" />
                                         <div className="text-left">
@@ -304,7 +303,7 @@ export default function Dashboard({ stats, recentPosts }: Props) {
                                         </div>
                                     </Link>
                                 </Button>
-                                <Button variant="outline" className="justify-start h-auto py-4" asChild>
+                                <Button variant="outline" className="h-auto justify-start py-4" asChild>
                                     <Link href="/admin/journeys/create">
                                         <Map className="mr-3 h-5 w-5 text-teal-500" />
                                         <div className="text-left">
@@ -313,7 +312,7 @@ export default function Dashboard({ stats, recentPosts }: Props) {
                                         </div>
                                     </Link>
                                 </Button>
-                                <Button variant="outline" className="justify-start h-auto py-4" asChild>
+                                <Button variant="outline" className="h-auto justify-start py-4" asChild>
                                     <Link href="/admin/short-links/create">
                                         <Link2 className="mr-3 h-5 w-5 text-cyan-500" />
                                         <div className="text-left">
@@ -323,7 +322,7 @@ export default function Dashboard({ stats, recentPosts }: Props) {
                                     </Link>
                                 </Button>
                             </div>
-                            <div className="mt-4 pt-4 border-t">
+                            <div className="mt-4 border-t pt-4">
                                 <Button variant="ghost" className="w-full" asChild>
                                     <a href="/" target="_blank" rel="noopener noreferrer">
                                         View Live Site

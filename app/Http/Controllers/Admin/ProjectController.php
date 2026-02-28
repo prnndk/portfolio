@@ -44,7 +44,13 @@ class ProjectController extends Controller
             'is_active' => 'boolean',
         ]);
 
-        $validated['slug'] = Str::slug($validated['title']);
+        $baseSlug          = Str::slug($validated['title']);
+        $slug              = $baseSlug;
+        $counter           = 1;
+        while (Project::where('slug', $slug)->exists()) {
+            $slug = $baseSlug . '-' . $counter++;
+        }
+        $validated['slug'] = $slug;
 
         if ($request->hasFile('image')) {
             $validated['image'] = $request->file('image')->store('projects', 'public');
@@ -94,7 +100,13 @@ class ProjectController extends Controller
             'is_active' => 'boolean',
         ]);
 
-        $validated['slug'] = Str::slug($validated['title']);
+        $baseSlug          = Str::slug($validated['title']);
+        $slug              = $baseSlug;
+        $counter           = 1;
+        while (Project::where('slug', $slug)->where('id', '!=', $project->id)->exists()) {
+            $slug = $baseSlug . '-' . $counter++;
+        }
+        $validated['slug'] = $slug;
 
         // Handle image file upload
         if ($request->hasFile('image')) {
@@ -120,6 +132,16 @@ class ProjectController extends Controller
         // Handle gallery removals (uploaded files)
         if ($request->has('remove_gallery')) {
             foreach ($request->input('remove_gallery') as $path) {
+                // Security: only allow deleting files inside projects/ and reject traversal
+                if (
+                    !is_string($path) ||
+                    !str_starts_with($path, 'projects/') ||
+                    str_contains($path, '..') ||
+                    str_contains($path, '//')
+                ) {
+                    continue;
+                }
+
                 if (($key = array_search($path, $currentGallery)) !== false) {
                     unset($currentGallery[$key]);
                     Storage::disk('public')->delete($path);

@@ -52,7 +52,7 @@ export interface Tool {
     description: string;
     icon: string;
     href: string;
-    category: 'image' | 'text' | 'utility' | 'converter';
+    category: 'image' | 'text' | 'utility' | 'converter' | 'pdf';
     isNew?: boolean;
     isFeatured?: boolean;
 }

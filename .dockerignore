@@ -1,0 +1,46 @@
+# ─── Secrets — NEVER bake into the image ─────────────────────────────────────
+.env
+.env.*
+!.env.example
+
+# ─── VCS ─────────────────────────────────────────────────────────────────────
+.git
+.gitignore
+.gitattributes
+
+# ─── Dev / test tooling (not needed in production image) ─────────────────────
+node_modules
+tests
+.phpunit.result.cache
+phpunit.xml
+.editorconfig
+.styleci.yml
+.php-cs-fixer*
+phpstan.neon
+rector.php
+*.sh
+!docker/entrypoint.sh
+
+# ─── Docker files themselves ──────────────────────────────────────────────────
+Dockerfile
+docker-compose*.yml
+docker/nginx
+
+# ─── Laravel caches & local storage (built fresh inside the container) ────────
+storage/framework/cache
+storage/framework/sessions
+storage/framework/views
+storage/logs/*.log
+bootstrap/cache/*.php
+
+# ─── Build artefacts (produced in node-builder stage, not host) ──────────────
+public/build
+public/hot
+
+# ─── IDEs & OS noise ─────────────────────────────────────────────────────────
+.idea
+.vscode
+*.swp
+*.swo
+.DS_Store
+Thumbs.db

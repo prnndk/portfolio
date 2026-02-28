@@ -95,6 +95,17 @@ export interface Post {
     published_at: string | null;
     status: 'draft' | 'published' | 'archived';
     is_active: boolean;
+    view_count: number;
+    tags: Tag[];
+    created_at: string;
+    updated_at: string;
+}
+
+export interface Tag {
+    id: number;
+    name: string;
+    slug: string;
+    posts_count?: number;
     created_at: string;
     updated_at: string;
 }
@@ -143,4 +154,24 @@ export interface ShortLink {
     short_url?: string;
     created_at: string;
     updated_at: string;
+}
+
+/** Generic paginated response from Laravel's paginator. */
+export interface PaginatedData<T> {
+    data: T[];
+    current_page: number;
+    last_page: number;
+    per_page: number;
+    total: number;
+    from: number | null;
+    to: number | null;
+    next_page_url: string | null;
+    prev_page_url: string | null;
+    links: PaginationLink[];
+}
+
+export interface PaginationLink {
+    url: string | null;
+    label: string;
+    active: boolean;
 }

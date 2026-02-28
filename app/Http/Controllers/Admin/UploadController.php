@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Intervention\Image\Laravel\Facades\Image;
 
 class UploadController extends Controller
 {
@@ -24,19 +25,23 @@ class UploadController extends Controller
             ],
         ]);
 
-        $file = $request->file('image');
+        $file     = $request->file('image');
+        $filename = Str::uuid() . '.webp';
+        $dir      = 'posts/content';
 
-        // Generate a unique filename to prevent overwrites and path traversal
-        $filename = Str::uuid() . '.' . $file->getClientOriginalExtension();
+        // Resize to max 1200 px wide and encode as WebP at 85% quality
+        $encoded = Image::read($file->getPathname())
+            ->scaleDown(width: 1200)
+            ->toWebp(quality: 85);
 
-        // Store in a dedicated uploads folder for post content
-        $path = $file->storeAs('posts/content', $filename, 'public');
+        Storage::disk('public')->put("{$dir}/{$filename}", $encoded);
 
-        // Return the public URL
+        $path = "{$dir}/{$filename}";
+
         return response()->json([
             'success' => true,
-            'url' => asset('storage/' . $path),
-            'path' => $path,
+            'url'     => asset('storage/' . $path),
+            'path'    => $path,
         ]);
     }
 
@@ -47,21 +52,31 @@ class UploadController extends Controller
     public function deleteImage(Request $request)
     {
         $request->validate([
-            'path' => ['required', 'string'],
+            'path' => ['required', 'string', 'max:255'],
         ]);
 
         $path = $request->input('path');
 
-        // Security: Only allow deleting from posts/content directory
-        if (!Str::startsWith($path, 'posts/content/')) {
+        // Security: Reject null bytes, directory traversal sequences, and
+        // encoded variants before any filesystem interaction.
+        if (
+            Str::contains($path, ['..', '//', "\0", '%2e', '%2f', '%00']) ||
+            !Str::startsWith($path, 'posts/content/')
+        ) {
             return response()->json([
                 'success' => false,
                 'message' => 'Invalid path',
             ], 403);
         }
 
-        // Security: Prevent directory traversal
-        if (Str::contains($path, ['..', '//'])) {
+        // Canonicalize and verify the resolved path stays inside the
+        // intended storage directory (defence-in-depth against any
+        // bypass of the string checks above).
+        $storageDisk = Storage::disk('public');
+        $fullPath    = $storageDisk->path($path);
+        $allowedDir  = $storageDisk->path('posts/content');
+
+        if (!str_starts_with(realpath($fullPath) ?: '', realpath($allowedDir) ?: $allowedDir)) {
             return response()->json([
                 'success' => false,
                 'message' => 'Invalid path',

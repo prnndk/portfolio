@@ -1,68 +1,82 @@
 'use client';
 
-import { Head, Link } from '@inertiajs/react';
-import { ArrowLeft, ArrowRight, FileText } from 'lucide-react';
-import GuestLayout from '@/layouts/guest-layout';
 import { FadeIn } from '@/components/aceternity/text-reveal';
+import { Pagination } from '@/components/pagination';
+import { PageHeader } from '@/components/portfolio/page-header';
 import { BlogCard } from '@/components/portfolio/sections';
-import { Button } from '@/components/ui/button';
-import { type Post } from '@/types';
 import { Seo } from '@/components/seo';
-import {
-    Empty,
-    EmptyHeader,
-    EmptyMedia,
-    EmptyTitle,
-    EmptyDescription,
-} from '@/components/ui/empty';
-
-interface PaginatedPosts {
-    data: Post[];
-    current_page: number;
-    last_page: number;
-    per_page: number;
-    total: number;
-    next_page_url: string | null;
-    prev_page_url: string | null;
-    links: {
-        url: string | null;
-        label: string;
-        active: boolean;
-    }[];
-}
+import { Badge } from '@/components/ui/badge';
+import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/components/ui/empty';
+import GuestLayout from '@/layouts/guest-layout';
+import { type PaginatedData, type Post, type Tag } from '@/types';
+import { Link } from '@inertiajs/react';
+import { FileText, Tag as TagIcon, X } from 'lucide-react';
 
 interface Props {
-    posts: PaginatedPosts;
+    posts: PaginatedData<Post>;
+    tags: Tag[];
+    activeTag?: string | null;
 }
 
-export default function BlogIndex({ posts }: Props) {
+export default function BlogIndex({ posts, tags, activeTag }: Props) {
     return (
         <GuestLayout>
-            <Seo
-                title="Blog | Arya Gading Prinandika"
-                description="Thoughts, tutorials, and insights on software development."
-                url="/blog"
-            />
-
+            <Seo title="Blog | Arya Gading Prinandika" description="Thoughts, tutorials, and insights on software development." url="/blog" />
 
             <div className="container mx-auto px-4 py-24">
-                <FadeIn>
-                    <div className="mb-12">
-                        <Link
-                            href="/"
-                            className="mb-4 inline-flex items-center text-sm text-muted-foreground hover:text-primary transition-colors"
-                        >
-                            <ArrowLeft className="mr-2 h-4 w-4" />
-                            Back to Home
-                        </Link>
-                        <h1 className="font-heading text-4xl font-bold md:text-5xl">
-                            Blog
-                        </h1>
-                        <p className="mt-4 max-w-2xl text-lg text-muted-foreground">
-                            Thoughts, tutorials, and insights on software development.
+                <PageHeader title="Blog" description="Thoughts, tutorials, and insights on software development." />
+
+                {/* Tag filter pills */}
+                {tags.length > 0 && (
+                    <FadeIn delay={0.05}>
+                        <div className="mb-8 flex flex-wrap items-center gap-2">
+                            <span className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                                <TagIcon className="h-3.5 w-3.5" />
+                                Filter:
+                            </span>
+                            <Link href="/blog">
+                                <Badge
+                                    variant={!activeTag ? 'default' : 'outline'}
+                                    className="cursor-pointer transition-colors hover:bg-primary hover:text-primary-foreground"
+                                >
+                                    All
+                                </Badge>
+                            </Link>
+                            {tags.map((tag) => (
+                                <Link key={tag.id} href={`/blog?tag=${tag.slug}`}>
+                                    <Badge
+                                        variant={activeTag === tag.slug ? 'default' : 'outline'}
+                                        className="cursor-pointer transition-colors hover:bg-primary hover:text-primary-foreground"
+                                    >
+                                        {tag.name}
+                                        {tag.posts_count !== undefined && <span className="ml-1 opacity-60">({tag.posts_count})</span>}
+                                    </Badge>
+                                </Link>
+                            ))}
+                            {activeTag && (
+                                <Link
+                                    href="/blog"
+                                    className="ml-1 flex items-center gap-1 text-xs text-muted-foreground transition-colors hover:text-primary"
+                                >
+                                    <X className="h-3 w-3" />
+                                    Clear filter
+                                </Link>
+                            )}
+                        </div>
+                    </FadeIn>
+                )}
+
+                {activeTag && (
+                    <FadeIn delay={0.08}>
+                        <p className="mb-6 text-sm text-muted-foreground">
+                            Showing posts tagged <span className="font-medium text-foreground">#{activeTag}</span>
+                            {' — '}
+                            <span>
+                                {posts.total} post{posts.total !== 1 ? 's' : ''}
+                            </span>
                         </p>
-                    </div>
-                </FadeIn>
+                    </FadeIn>
+                )}
 
                 {posts.data.length > 0 ? (
                     <>
@@ -74,42 +88,7 @@ export default function BlogIndex({ posts }: Props) {
                             ))}
                         </div>
 
-                        {/* Pagination */}
-                        {posts.last_page > 1 && posts.links && (
-                            <div className="mt-12 flex justify-center gap-2">
-                                {posts.links.map((link, i) => {
-                                    if (link.url === null) return null;
-                                    const isPrev = link.label.includes('Previous');
-                                    const isNext = link.label.includes('Next');
-
-                                    if (isPrev || isNext) {
-                                        return (
-                                            <Button
-                                                key={i}
-                                                variant="outline"
-                                                size="icon"
-                                                asChild
-                                                disabled={!link.url}
-                                            >
-                                                <Link href={link.url}>
-                                                    {isPrev ? <ArrowLeft className="h-4 w-4" /> : <ArrowRight className="h-4 w-4" />}
-                                                </Link>
-                                            </Button>
-                                        );
-                                    }
-
-                                    return (
-                                        <Button
-                                            key={i}
-                                            variant={link.active ? 'default' : 'outline'}
-                                            asChild
-                                        >
-                                            <Link href={link.url} dangerouslySetInnerHTML={{ __html: link.label }} />
-                                        </Button>
-                                    );
-                                })}
-                            </div>
-                        )}
+                        <Pagination paginator={posts} />
                     </>
                 ) : (
                     <FadeIn delay={0.2}>
@@ -119,9 +98,11 @@ export default function BlogIndex({ posts }: Props) {
                                     <EmptyMedia variant="icon">
                                         <FileText className="h-6 w-6" />
                                     </EmptyMedia>
-                                    <EmptyTitle>No blog posts yet</EmptyTitle>
+                                    <EmptyTitle>{activeTag ? `No posts tagged #${activeTag}` : 'No blog posts yet'}</EmptyTitle>
                                     <EmptyDescription>
-                                        Stay tuned! New articles and tutorials are coming soon.
+                                        {activeTag
+                                            ? 'Try a different tag or browse all posts.'
+                                            : 'Stay tuned! New articles and tutorials are coming soon.'}
                                     </EmptyDescription>
                                 </EmptyHeader>
                             </Empty>

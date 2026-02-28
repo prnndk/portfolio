@@ -1,10 +1,3 @@
-import AppLayout from '@/layouts/app-layout';
-import { type BreadcrumbItem, type ShortLink } from '@/types';
-import { Head, Link, useForm } from '@inertiajs/react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Plus, Edit, Trash2, ExternalLink, Copy, Link2, MousePointerClick } from 'lucide-react';
 import {
     AlertDialog,
     AlertDialogAction,
@@ -16,23 +9,21 @@ import {
     AlertDialogTitle,
     AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
-import {
-    Empty,
-    EmptyHeader,
-    EmptyMedia,
-    EmptyTitle,
-    EmptyDescription,
-    EmptyContent
-} from '@/components/ui/empty';
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from '@/components/ui/table';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Empty, EmptyContent, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/components/ui/empty';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import AppLayout from '@/layouts/app-layout';
+import { type BreadcrumbItem, type ShortLink } from '@/types';
+import { Head, Link, useForm } from '@inertiajs/react';
+import { Copy, Edit, ExternalLink, Link2, Monitor, MousePointerClick, Plus, Smartphone, Tablet, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
+
+interface ClickDay {
+    date: string;
+    clicks: number;
+}
 
 interface Props {
     shortLinks: {
@@ -41,6 +32,9 @@ interface Props {
         current_page: number;
         last_page: number;
     };
+    clicks30d: Record<number, number>;
+    deviceBreakdown: Record<string, number>;
+    clicksTimeline: ClickDay[];
 }
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -48,7 +42,7 @@ const breadcrumbs: BreadcrumbItem[] = [
     { title: 'Short Links', href: '/admin/short-links' },
 ];
 
-export default function ShortLinksIndex({ shortLinks }: Props) {
+export default function ShortLinksIndex({ shortLinks, clicks30d, deviceBreakdown, clicksTimeline }: Props) {
     const { delete: destroy, processing } = useForm();
 
     const handleDelete = (id: number) => {
@@ -69,6 +63,15 @@ export default function ShortLinksIndex({ shortLinks }: Props) {
         });
     };
 
+    const total30d = Object.values(clicks30d).reduce((s, c) => s + c, 0);
+    const maxDailyClicks = Math.max(...clicksTimeline.map((d) => d.clicks), 1);
+
+    const deviceIcons: Record<string, React.ReactNode> = {
+        desktop: <Monitor className="mr-1 inline h-3.5 w-3.5" />,
+        mobile: <Smartphone className="mr-1 inline h-3.5 w-3.5" />,
+        tablet: <Tablet className="mr-1 inline h-3.5 w-3.5" />,
+    };
+
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Short Links" />
@@ -87,6 +90,64 @@ export default function ShortLinksIndex({ shortLinks }: Props) {
                     </Button>
                 </div>
 
+                {/* Analytics summary */}
+                {clicksTimeline.length > 0 && (
+                    <div className="grid gap-4 md:grid-cols-2">
+                        {/* 30-day sparkline */}
+                        <Card>
+                            <CardHeader className="pb-2">
+                                <CardTitle className="text-sm font-medium">Clicks – last 30 days</CardTitle>
+                                <CardDescription className="text-2xl font-bold text-foreground">{total30d.toLocaleString()}</CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                <div className="flex h-12 items-end gap-px">
+                                    {clicksTimeline.map((day) => (
+                                        <div
+                                            key={day.date}
+                                            title={`${day.date}: ${day.clicks} click${day.clicks !== 1 ? 's' : ''}`}
+                                            className="flex-1 cursor-default rounded-sm bg-primary/70 transition-colors hover:bg-primary"
+                                            style={{ height: `${Math.max(2, (day.clicks / maxDailyClicks) * 100)}%` }}
+                                        />
+                                    ))}
+                                </div>
+                                <p className="mt-1 text-xs text-muted-foreground">Daily clicks — hover bars for details</p>
+                            </CardContent>
+                        </Card>
+
+                        {/* Device breakdown */}
+                        <Card>
+                            <CardHeader className="pb-2">
+                                <CardTitle className="text-sm font-medium">Device breakdown (30 d)</CardTitle>
+                            </CardHeader>
+                            <CardContent className="space-y-2">
+                                {Object.entries(deviceBreakdown).length === 0 ? (
+                                    <p className="text-sm text-muted-foreground">No data yet</p>
+                                ) : (
+                                    Object.entries(deviceBreakdown).map(([device, count]) => {
+                                        const pct = total30d > 0 ? Math.round((count / total30d) * 100) : 0;
+                                        return (
+                                            <div key={device} className="space-y-1">
+                                                <div className="flex items-center justify-between text-xs">
+                                                    <span className="flex items-center capitalize">
+                                                        {deviceIcons[device] ?? null}
+                                                        {device}
+                                                    </span>
+                                                    <span className="font-medium">
+                                                        {count} ({pct}%)
+                                                    </span>
+                                                </div>
+                                                <div className="h-1.5 overflow-hidden rounded-full bg-muted">
+                                                    <div className="h-full rounded-full bg-primary/70" style={{ width: `${pct}%` }} />
+                                                </div>
+                                            </div>
+                                        );
+                                    })
+                                )}
+                            </CardContent>
+                        </Card>
+                    </div>
+                )}
+
                 {/* Table Card */}
                 <Card>
                     <CardHeader>
@@ -103,9 +164,7 @@ export default function ShortLinksIndex({ shortLinks }: Props) {
                                         <Link2 className="h-6 w-6" />
                                     </EmptyMedia>
                                     <EmptyTitle>No short links yet</EmptyTitle>
-                                    <EmptyDescription>
-                                        Create your first short link to start sharing URLs.
-                                    </EmptyDescription>
+                                    <EmptyDescription>Create your first short link to start sharing URLs.</EmptyDescription>
                                 </EmptyHeader>
                                 <EmptyContent>
                                     <Button asChild>
@@ -123,7 +182,8 @@ export default function ShortLinksIndex({ shortLinks }: Props) {
                                         <TableRow>
                                             <TableHead>Short Link</TableHead>
                                             <TableHead className="hidden sm:table-cell">Original URL</TableHead>
-                                            <TableHead className="text-center">Clicks</TableHead>
+                                            <TableHead className="text-center">All-time</TableHead>
+                                            <TableHead className="hidden text-center md:table-cell">30 d</TableHead>
                                             <TableHead className="text-center">Status</TableHead>
                                             <TableHead className="hidden md:table-cell">Created</TableHead>
                                             <TableHead className="text-right">Actions</TableHead>
@@ -135,9 +195,7 @@ export default function ShortLinksIndex({ shortLinks }: Props) {
                                                 <TableCell>
                                                     <div className="space-y-1">
                                                         <div className="flex items-center gap-2">
-                                                            <code className="rounded bg-muted px-2 py-1 text-sm font-mono">
-                                                                /{link.code}
-                                                            </code>
+                                                            <code className="rounded bg-muted px-2 py-1 font-mono text-sm">/{link.code}</code>
                                                             <Button
                                                                 variant="ghost"
                                                                 size="icon"
@@ -147,22 +205,13 @@ export default function ShortLinksIndex({ shortLinks }: Props) {
                                                                 <Copy className="h-3.5 w-3.5" />
                                                             </Button>
                                                         </div>
-                                                        {link.title && (
-                                                            <p className="text-sm text-muted-foreground">{link.title}</p>
-                                                        )}
+                                                        {link.title && <p className="text-sm text-muted-foreground">{link.title}</p>}
                                                     </div>
                                                 </TableCell>
-                                                <TableCell className="hidden sm:table-cell max-w-xs">
+                                                <TableCell className="hidden max-w-xs sm:table-cell">
                                                     <div className="flex items-center gap-2">
-                                                        <span className="truncate text-sm text-muted-foreground">
-                                                            {link.original_url}
-                                                        </span>
-                                                        <a
-                                                            href={link.original_url}
-                                                            target="_blank"
-                                                            rel="noopener noreferrer"
-                                                            className="shrink-0"
-                                                        >
+                                                        <span className="truncate text-sm text-muted-foreground">{link.original_url}</span>
+                                                        <a href={link.original_url} target="_blank" rel="noopener noreferrer" className="shrink-0">
                                                             <ExternalLink className="h-3.5 w-3.5 text-muted-foreground hover:text-foreground" />
                                                         </a>
                                                     </div>
@@ -173,12 +222,15 @@ export default function ShortLinksIndex({ shortLinks }: Props) {
                                                         <span className="font-medium">{link.clicks}</span>
                                                     </div>
                                                 </TableCell>
+                                                <TableCell className="hidden text-center md:table-cell">
+                                                    <span className="text-sm font-medium">{(clicks30d[link.id] ?? 0).toLocaleString()}</span>
+                                                </TableCell>
                                                 <TableCell className="text-center">
                                                     <Badge variant={link.is_active ? 'default' : 'secondary'}>
                                                         {link.is_active ? 'Active' : 'Inactive'}
                                                     </Badge>
                                                 </TableCell>
-                                                <TableCell className="hidden md:table-cell text-sm text-muted-foreground">
+                                                <TableCell className="hidden text-sm text-muted-foreground md:table-cell">
                                                     {formatDate(link.created_at)}
                                                 </TableCell>
                                                 <TableCell className="text-right">
@@ -193,7 +245,7 @@ export default function ShortLinksIndex({ shortLinks }: Props) {
                                                                 <Button
                                                                     variant="ghost"
                                                                     size="icon"
-                                                                    className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10"
+                                                                    className="h-8 w-8 text-destructive hover:bg-destructive/10 hover:text-destructive"
                                                                 >
                                                                     <Trash2 className="h-4 w-4" />
                                                                 </Button>
@@ -202,8 +254,8 @@ export default function ShortLinksIndex({ shortLinks }: Props) {
                                                                 <AlertDialogHeader>
                                                                     <AlertDialogTitle>Delete short link?</AlertDialogTitle>
                                                                     <AlertDialogDescription>
-                                                                        This will permanently delete the short link "/{link.code}".
-                                                                        This action cannot be undone.
+                                                                        This will permanently delete the short link "/{link.code}". This action cannot
+                                                                        be undone.
                                                                     </AlertDialogDescription>
                                                                 </AlertDialogHeader>
                                                                 <AlertDialogFooter>

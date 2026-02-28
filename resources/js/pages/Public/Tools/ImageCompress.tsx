@@ -1,38 +1,38 @@
 'use client';
 
-import { motion, AnimatePresence } from 'framer-motion';
-import {
-    Upload,
-    Download,
-    Trash2,
-    RefreshCw,
-    Check,
-    X,
-    Loader2,
-    ArrowLeft,
-    Zap,
-    Settings2,
-    Image as ImageLucide,
-    Eye,
-    Pencil,
-    Crop,
-    Sparkles,
-    AlertCircle,
-} from 'lucide-react';
-import { useCallback, useState, useEffect } from 'react';
-import { useDropzone } from 'react-dropzone';
-import GuestLayout from '@/layouts/guest-layout';
-import { Spotlight } from '@/components/ui/spotlight-new';
-import { Seo } from '@/components/seo';
-import { Link } from '@inertiajs/react';
-import { Button } from '@/components/ui/button';
-import { Slider } from '@/components/ui/slider';
-import { cn } from '@/lib/utils';
-import { useImageCompression } from '@/hooks/use-image-compression';
-import { CompressedImage, CropData, OutputFormat } from '@/types/image-compressor';
-import { formatFileSize, downloadImage, downloadAllAsZip } from '@/lib/image-compression';
 import { ImageEditorModal } from '@/components/image-editor-modal';
 import { ImagePreviewModal } from '@/components/image-preview-modal';
+import { Seo } from '@/components/seo';
+import { Button } from '@/components/ui/button';
+import { Slider } from '@/components/ui/slider';
+import { Spotlight } from '@/components/ui/spotlight-new';
+import { useImageCompression } from '@/hooks/use-image-compression';
+import GuestLayout from '@/layouts/guest-layout';
+import { downloadAllAsZip, downloadImage, formatFileSize } from '@/lib/image-compression';
+import { cn } from '@/lib/utils';
+import { CompressedImage, CropData, OutputFormat } from '@/types/image-compressor';
+import { Link } from '@inertiajs/react';
+import { AnimatePresence, motion } from 'framer-motion';
+import {
+    AlertCircle,
+    ArrowLeft,
+    Check,
+    Crop,
+    Download,
+    Eye,
+    Image as ImageLucide,
+    Loader2,
+    Pencil,
+    RefreshCw,
+    Settings2,
+    Sparkles,
+    Trash2,
+    Upload,
+    X,
+    Zap,
+} from 'lucide-react';
+import { useCallback, useEffect, useState } from 'react';
+import { useDropzone } from 'react-dropzone';
 import { toast } from 'sonner';
 
 // Format options
@@ -123,10 +123,7 @@ function ImagePreviewCard({
             className="group relative overflow-hidden rounded-xl border border-border bg-card"
         >
             {/* Image Preview */}
-            <div
-                className="relative aspect-video overflow-hidden bg-muted cursor-pointer"
-                onClick={onPreview}
-            >
+            <div className="relative aspect-video cursor-pointer overflow-hidden bg-muted" onClick={onPreview}>
                 <img
                     src={image.compressedPreview || image.preview}
                     alt={image.originalFile.name}
@@ -135,13 +132,16 @@ function ImagePreviewCard({
                 />
 
                 {/* Hover Overlay */}
-                <div className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                <div className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
                     <div className="flex items-center gap-2">
                         <Button
                             size="icon"
                             variant="secondary"
                             className="h-9 w-9"
-                            onClick={(e) => { e.stopPropagation(); onPreview(); }}
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                onPreview();
+                            }}
                             title="Preview"
                         >
                             <Eye className="h-4 w-4" />
@@ -150,7 +150,10 @@ function ImagePreviewCard({
                             size="icon"
                             variant="secondary"
                             className="h-9 w-9"
-                            onClick={(e) => { e.stopPropagation(); onEdit(); }}
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                onEdit();
+                            }}
                             title="Edit Image"
                         >
                             <Pencil className="h-4 w-4" />
@@ -160,14 +163,17 @@ function ImagePreviewCard({
 
                 {/* Remove Button */}
                 <button
-                    onClick={(e) => { e.stopPropagation(); onRemove(); }}
-                    className="absolute right-2 top-2 rounded-full bg-red-500/90 p-1.5 text-white opacity-0 transition-opacity group-hover:opacity-100 hover:bg-red-600"
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        onRemove();
+                    }}
+                    className="absolute top-2 right-2 rounded-full bg-red-500/90 p-1.5 text-white opacity-0 transition-opacity group-hover:opacity-100 hover:bg-red-600"
                 >
                     <Trash2 className="h-3.5 w-3.5" />
                 </button>
 
                 {/* Status Badge */}
-                <div className="absolute left-2 top-2">{getStatusBadge()}</div>
+                <div className="absolute top-2 left-2">{getStatusBadge()}</div>
 
                 {/* Edit indicator */}
                 {hasEdits && (
@@ -178,9 +184,9 @@ function ImagePreviewCard({
             </div>
 
             {/* Info & Actions */}
-            <div className="p-3 space-y-3">
+            <div className="space-y-3 p-3">
                 <div className="space-y-1">
-                    <p className="text-sm font-medium truncate" title={image.originalFile.name}>
+                    <p className="truncate text-sm font-medium" title={image.originalFile.name}>
                         {image.originalFile.name}
                     </p>
                     <div className="flex items-center gap-2 text-xs text-muted-foreground">
@@ -188,17 +194,21 @@ function ImagePreviewCard({
                         {image.status === 'completed' && image.compressedSize > 0 && (
                             <>
                                 <span>→</span>
-                                <span className="text-green-600 dark:text-green-400 font-medium">
-                                    {formatFileSize(image.compressedSize)}
-                                </span>
-                                <span className={image.compressionRatio > 0 ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"}>
-                                    ({image.compressionRatio > 0 ? `-${image.compressionRatio.toFixed(1)}%` : `+${Math.abs(image.compressionRatio).toFixed(1)}%`})
+                                <span className="font-medium text-green-600 dark:text-green-400">{formatFileSize(image.compressedSize)}</span>
+                                <span
+                                    className={image.compressionRatio > 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}
+                                >
+                                    (
+                                    {image.compressionRatio > 0
+                                        ? `-${image.compressionRatio.toFixed(1)}%`
+                                        : `+${Math.abs(image.compressionRatio).toFixed(1)}%`}
+                                    )
                                 </span>
                             </>
                         )}
                     </div>
                     {hasEdits && (
-                        <p className="text-xs text-primary flex items-center gap-1">
+                        <p className="flex items-center gap-1 text-xs text-primary">
                             <Sparkles className="h-3 w-3" />
                             Edits applied
                         </p>
@@ -208,12 +218,7 @@ function ImagePreviewCard({
                 {/* Action Buttons */}
                 <div className="flex gap-2">
                     {image.status !== 'completed' ? (
-                        <Button
-                            size="sm"
-                            className="flex-1"
-                            onClick={onCompress}
-                            disabled={image.status === 'compressing'}
-                        >
+                        <Button size="sm" className="flex-1" onClick={onCompress} disabled={image.status === 'compressing'}>
                             {image.status === 'compressing' ? (
                                 <>
                                     <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
@@ -228,20 +233,11 @@ function ImagePreviewCard({
                         </Button>
                     ) : (
                         <>
-                            <Button
-                                size="sm"
-                                variant="outline"
-                                className="flex-1"
-                                onClick={onEdit}
-                            >
+                            <Button size="sm" variant="outline" className="flex-1" onClick={onEdit}>
                                 <Pencil className="mr-1.5 h-3.5 w-3.5" />
                                 Edit
                             </Button>
-                            <Button
-                                size="sm"
-                                className="flex-1"
-                                onClick={onDownload}
-                            >
+                            <Button size="sm" className="flex-1" onClick={onDownload}>
                                 <Download className="mr-1.5 h-3.5 w-3.5" />
                                 Download
                             </Button>
@@ -259,7 +255,7 @@ function DropZone({ onFilesAdded }: { onFilesAdded: (files: File[]) => void }) {
         (acceptedFiles: File[]) => {
             onFilesAdded(acceptedFiles);
         },
-        [onFilesAdded]
+        [onFilesAdded],
     );
 
     const { getRootProps, getInputProps, isDragActive } = useDropzone({
@@ -275,9 +271,7 @@ function DropZone({ onFilesAdded }: { onFilesAdded: (files: File[]) => void }) {
             {...getRootProps()}
             className={cn(
                 'group relative flex min-h-[14rem] cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed transition-all duration-300',
-                isDragActive
-                    ? 'border-primary bg-primary/10 scale-[1.02]'
-                    : 'border-border bg-muted/30 hover:border-primary/50 hover:bg-primary/5'
+                isDragActive ? 'scale-[1.02] border-primary bg-primary/10' : 'border-border bg-muted/30 hover:border-primary/50 hover:bg-primary/5',
             )}
         >
             <input {...getInputProps()} />
@@ -294,12 +288,8 @@ function DropZone({ onFilesAdded }: { onFilesAdded: (files: File[]) => void }) {
                 </motion.div>
 
                 <div className="space-y-1">
-                    <h3 className="text-lg font-semibold text-foreground">
-                        {isDragActive ? 'Drop your images here' : 'Drag & drop images here'}
-                    </h3>
-                    <p className="text-sm text-muted-foreground">
-                        or click to select files • JPEG, PNG, WebP, GIF, BMP
-                    </p>
+                    <h3 className="text-lg font-semibold text-foreground">{isDragActive ? 'Drop your images here' : 'Drag & drop images here'}</h3>
+                    <p className="text-sm text-muted-foreground">or click to select files • JPEG, PNG, WebP, GIF, BMP</p>
                 </div>
             </div>
         </div>
@@ -320,7 +310,7 @@ function CompressionSettings({
 }) {
     return (
         <div className="rounded-2xl border border-border bg-card p-6">
-            <div className="flex items-center gap-3 mb-6">
+            <div className="mb-6 flex items-center gap-3">
                 <div className="rounded-xl bg-primary/10 p-2.5">
                     <Settings2 className="h-5 w-5 text-primary" />
                 </div>
@@ -338,14 +328,7 @@ function CompressionSettings({
                         <span className="text-sm font-semibold text-primary">{quality}%</span>
                     </div>
 
-                    <Slider
-                        value={[quality]}
-                        onValueChange={([v]) => onQualityChange(v)}
-                        min={10}
-                        max={100}
-                        step={5}
-                        className="w-full"
-                    />
+                    <Slider value={[quality]} onValueChange={([v]) => onQualityChange(v)} min={10} max={100} step={5} className="w-full" />
 
                     <div className="flex justify-between text-xs text-muted-foreground">
                         <span>Smaller file</span>
@@ -368,7 +351,7 @@ function CompressionSettings({
                                     'flex-1 rounded-lg border px-2 py-1.5 text-xs font-medium transition-all',
                                     quality === preset.value
                                         ? 'border-primary bg-primary text-primary-foreground'
-                                        : 'border-border text-muted-foreground hover:border-primary/50 hover:text-foreground'
+                                        : 'border-border text-muted-foreground hover:border-primary/50 hover:text-foreground',
                                 )}
                             >
                                 {preset.label}
@@ -389,7 +372,7 @@ function CompressionSettings({
                                     'rounded-lg border px-3 py-2.5 text-left transition-all',
                                     outputFormat === option.value
                                         ? 'border-primary bg-primary/10 ring-1 ring-primary'
-                                        : 'border-border hover:border-primary/50'
+                                        : 'border-border hover:border-primary/50',
                                 )}
                             >
                                 <span className="block text-sm font-medium">{option.label}</span>
@@ -427,9 +410,7 @@ export default function ImageCompressor() {
 
     const completedCount = images.filter((img) => img.status === 'completed').length;
     const pendingCount = images.filter((img) => img.status === 'pending').length;
-    const totalSavings = images
-        .filter((img) => img.status === 'completed')
-        .reduce((acc, img) => acc + (img.originalSize - img.compressedSize), 0);
+    const totalSavings = images.filter((img) => img.status === 'completed').reduce((acc, img) => acc + (img.originalSize - img.compressedSize), 0);
 
     const handleDownloadAll = async () => {
         const completedImages = images.filter((img) => img.status === 'completed');
@@ -438,12 +419,7 @@ export default function ImageCompressor() {
         }
     };
 
-    const handleEditSave = (updates: {
-        cropData?: CropData;
-        rotation: number;
-        flipHorizontal: boolean;
-        flipVertical: boolean;
-    }) => {
+    const handleEditSave = (updates: { cropData?: CropData; rotation: number; flipHorizontal: boolean; flipVertical: boolean }) => {
         if (editingImage) {
             updateImageEditState(editingImage.id, updates);
             // Show toast to indicate edit was saved and image needs to be recompressed
@@ -476,14 +452,39 @@ export default function ImageCompressor() {
     return (
         <GuestLayout>
             <Seo
-                title="Compress Image Tools"
-                description="Compress your images locally without uploading to any server. Adjust quality, crop, rotate, flip and convert between formats. 100% free and private."
+                title="Free Image Compressor – Compress PNG, JPG, WebP Online (No Upload)"
+                description="Compress your images locally without uploading to any server. Adjust quality, crop, rotate, flip and convert between PNG, JPG, WebP formats. 100% free, private and works offline."
+                url="/tools/image-compress"
+                jsonLd={[
+                    {
+                        '@context': 'https://schema.org',
+                        '@type': 'WebApplication',
+                        name: 'Image Compressor',
+                        description:
+                            'Compress images locally in your browser. Adjust quality, crop, rotate, flip and convert between formats without uploading files.',
+                        url: 'https://aryagading.com/tools/image-compress',
+                        applicationCategory: 'MultimediaApplication',
+                        operatingSystem: 'Any (Browser-based)',
+                        offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+                        featureList: 'Image compression, Quality adjustment, Crop, Rotate, Flip, Format conversion (PNG, JPG, WebP)',
+                        browserRequirements: 'Requires a modern web browser with JavaScript enabled',
+                    },
+                    {
+                        '@context': 'https://schema.org',
+                        '@type': 'BreadcrumbList',
+                        itemListElement: [
+                            { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://aryagading.com' },
+                            { '@type': 'ListItem', position: 2, name: 'Tools', item: 'https://aryagading.com/tools' },
+                            { '@type': 'ListItem', position: 3, name: 'Image Compressor', item: 'https://aryagading.com/tools/image-compress' },
+                        ],
+                    },
+                ]}
             />
 
             {/* Ambient Background */}
-            <div className="pointer-events-none fixed inset-0 z-0 hidden dark:block overflow-hidden">
-                <div className="absolute -top-[20%] -right-[10%] h-[70vh] w-[70vh] rounded-full bg-blue-600/20 blur-[100px] opacity-20" />
-                <div className="absolute top-[40%] -left-[10%] h-[50vh] w-[50vh] rounded-full bg-cyan-600/20 blur-[100px] opacity-20" />
+            <div className="pointer-events-none fixed inset-0 z-0 hidden overflow-hidden dark:block">
+                <div className="absolute -top-[20%] -right-[10%] h-[70vh] w-[70vh] rounded-full bg-blue-600/20 opacity-20 blur-[100px]" />
+                <div className="absolute top-[40%] -left-[10%] h-[50vh] w-[50vh] rounded-full bg-cyan-600/20 opacity-20 blur-[100px]" />
             </div>
 
             {/* Header */}
@@ -493,24 +494,20 @@ export default function ImageCompressor() {
                     {/* Back Link */}
                     <Link
                         href="/tools"
-                        className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors mb-6"
+                        className="mb-6 inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-primary"
                     >
                         <ArrowLeft className="h-4 w-4" />
                         Back to Tools
                     </Link>
 
-                    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                    <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                         <div className="flex items-center gap-4">
                             <div className="inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 text-primary">
                                 <ImageLucide className="h-7 w-7" />
                             </div>
                             <div>
-                                <h1 className="font-heading text-2xl font-bold md:text-3xl">
-                                    Image Compressor
-                                </h1>
-                                <p className="text-sm text-muted-foreground">
-                                    Compress images locally • 100% private
-                                </p>
+                                <h1 className="font-heading text-2xl font-bold md:text-3xl">Image Compressor</h1>
+                                <p className="text-sm text-muted-foreground">Compress images locally • 100% private</p>
                             </div>
                         </div>
 
@@ -533,8 +530,8 @@ export default function ImageCompressor() {
             </section>
 
             {/* Main Content */}
-            <section className="pb-24 my-10">
-                <div className="container mx-auto px-4 space-y-6">
+            <section className="my-10 pb-24">
+                <div className="container mx-auto space-y-6 px-4">
                     {/* Compression Settings - Always Visible */}
                     <CompressionSettings
                         quality={quality}
@@ -553,47 +550,32 @@ export default function ImageCompressor() {
                             <div className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-border bg-card p-4">
                                 <div className="flex items-center gap-6">
                                     <div className="text-sm">
-                                        <span className="text-muted-foreground">Images:</span>{' '}
-                                        <span className="font-medium">{images.length}</span>
+                                        <span className="text-muted-foreground">Images:</span> <span className="font-medium">{images.length}</span>
                                     </div>
                                     {pendingCount > 0 && (
                                         <div className="text-sm">
                                             <span className="text-muted-foreground">Ready to compress:</span>{' '}
-                                            <span className="font-medium text-yellow-600 dark:text-yellow-400">
-                                                {pendingCount}
-                                            </span>
+                                            <span className="font-medium text-yellow-600 dark:text-yellow-400">{pendingCount}</span>
                                         </div>
                                     )}
                                     <div className="text-sm">
                                         <span className="text-muted-foreground">Completed:</span>{' '}
-                                        <span className="font-medium text-green-600 dark:text-green-400">
-                                            {completedCount}
-                                        </span>
+                                        <span className="font-medium text-green-600 dark:text-green-400">{completedCount}</span>
                                     </div>
                                     {totalSavings > 0 && (
                                         <div className="text-sm">
                                             <span className="text-muted-foreground">Total Saved:</span>{' '}
-                                            <span className="font-medium text-green-600 dark:text-green-400">
-                                                {formatFileSize(totalSavings)}
-                                            </span>
+                                            <span className="font-medium text-green-600 dark:text-green-400">{formatFileSize(totalSavings)}</span>
                                         </div>
                                     )}
                                 </div>
 
                                 <div className="flex items-center gap-2">
-                                    <Button
-                                        variant="outline"
-                                        size="sm"
-                                        onClick={clearAllImages}
-                                    >
+                                    <Button variant="outline" size="sm" onClick={clearAllImages}>
                                         <Trash2 className="mr-2 h-4 w-4" />
                                         Clear All
                                     </Button>
-                                    <Button
-                                        size="sm"
-                                        onClick={compressAllImages}
-                                        disabled={isProcessing || pendingCount === 0}
-                                    >
+                                    <Button size="sm" onClick={compressAllImages} disabled={isProcessing || pendingCount === 0}>
                                         {isProcessing ? (
                                             <>
                                                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -630,15 +612,13 @@ export default function ImageCompressor() {
 
                     {/* Feature Cards (shown when no images) */}
                     {images.length === 0 && (
-                        <div className="grid gap-4 md:grid-cols-3 mt-4">
+                        <div className="mt-4 grid gap-4 md:grid-cols-3">
                             <div className="rounded-xl border border-border bg-card p-6">
                                 <div className="mb-3 inline-flex h-10 w-10 items-center justify-center rounded-lg bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400">
                                     <Zap className="h-5 w-5" />
                                 </div>
                                 <h3 className="font-medium">Fast Compression</h3>
-                                <p className="mt-1 text-sm text-muted-foreground">
-                                    Process images instantly in your browser without any uploads.
-                                </p>
+                                <p className="mt-1 text-sm text-muted-foreground">Process images instantly in your browser without any uploads.</p>
                             </div>
 
                             <div className="rounded-xl border border-border bg-card p-6">
@@ -646,9 +626,7 @@ export default function ImageCompressor() {
                                     <Pencil className="h-5 w-5" />
                                 </div>
                                 <h3 className="font-medium">Edit Before Export</h3>
-                                <p className="mt-1 text-sm text-muted-foreground">
-                                    Crop, rotate, flip, and preview before downloading.
-                                </p>
+                                <p className="mt-1 text-sm text-muted-foreground">Crop, rotate, flip, and preview before downloading.</p>
                             </div>
 
                             <div className="rounded-xl border border-border bg-card p-6">
@@ -658,9 +636,7 @@ export default function ImageCompressor() {
                                     </svg>
                                 </div>
                                 <h3 className="font-medium">100% Private</h3>
-                                <p className="mt-1 text-sm text-muted-foreground">
-                                    Your files never leave your device. Complete privacy guaranteed.
-                                </p>
+                                <p className="mt-1 text-sm text-muted-foreground">Your files never leave your device. Complete privacy guaranteed.</p>
                             </div>
                         </div>
                     )}
@@ -668,12 +644,7 @@ export default function ImageCompressor() {
             </section>
 
             {/* Image Editor Modal */}
-            <ImageEditorModal
-                image={editingImage}
-                isOpen={!!editingImage}
-                onClose={() => setEditingImage(null)}
-                onSave={handleEditSave}
-            />
+            <ImageEditorModal image={editingImage} isOpen={!!editingImage} onClose={() => setEditingImage(null)} onSave={handleEditSave} />
 
             {/* Image Preview Modal */}
             <ImagePreviewModal

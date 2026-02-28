@@ -1,10 +1,9 @@
-version: '3.8'
 services:
   app:
     build:
       context: .
       dockerfile: Dockerfile
-    image: portofolio-app
+    image: prnndk/portfolio-app
     container_name: portofolio-app
     restart: unless-stopped
     working_dir: /var/www

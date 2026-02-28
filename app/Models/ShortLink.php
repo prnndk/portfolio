@@ -45,6 +45,11 @@ class ShortLink extends Model
     /**
      * Increment the click count.
      */
+    public function clicks(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(ShortLinkClick::class);
+    }
+
     public function incrementClicks(): void
     {
         $this->increment('clicks');

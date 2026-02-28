@@ -1,14 +1,15 @@
 'use client';
 
-import { Head, Link } from '@inertiajs/react';
-import { ArrowLeft, Calendar, Clock, Twitter, Facebook, Linkedin, Link as LinkIcon } from 'lucide-react';
-import GuestLayout from '@/layouts/guest-layout';
 import { FadeIn } from '@/components/aceternity/text-reveal';
-import { type Post } from '@/types';
 import { MDXContent } from '@/components/mdx-content';
-import { Button } from '@/components/ui/button';
-import { toast } from 'sonner';
 import { TableOfContents } from '@/components/table-of-contents';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import GuestLayout from '@/layouts/guest-layout';
+import { type Post } from '@/types';
+import { Head, Link } from '@inertiajs/react';
+import { ArrowLeft, Calendar, Clock, Facebook, Linkedin, Link as LinkIcon, Tag as TagIcon, Twitter } from 'lucide-react';
+import { toast } from 'sonner';
 
 interface Props {
     post: Post;
@@ -80,6 +81,7 @@ export default function BlogShow({ post, relatedPosts = [] }: Props) {
             '@id': postUrl,
         },
         wordCount: post.content.split(/\s+/).length,
+        keywords: post.tags && post.tags.length > 0 ? post.tags.map((t) => t.name).join(', ') : undefined,
     };
 
     return (
@@ -100,12 +102,8 @@ export default function BlogShow({ post, relatedPosts = [] }: Props) {
                 <meta property="og:image:height" content="630" />
                 <meta property="og:url" content={postUrl} />
                 <meta property="og:site_name" content="Arya Gading Prinandika" />
-                {post.published_at && (
-                    <meta property="article:published_time" content={formatISODate(post.published_at)} />
-                )}
-                {post.updated_at && (
-                    <meta property="article:modified_time" content={formatISODate(post.updated_at)} />
-                )}
+                {post.published_at && <meta property="article:published_time" content={formatISODate(post.published_at)} />}
+                {post.updated_at && <meta property="article:modified_time" content={formatISODate(post.updated_at)} />}
                 <meta property="article:author" content="Arya Gading Prinandika" />
 
                 {/* Twitter Card */}
@@ -116,9 +114,7 @@ export default function BlogShow({ post, relatedPosts = [] }: Props) {
                 <meta name="twitter:creator" content="@aryagading" />
 
                 {/* JSON-LD Structured Data */}
-                <script type="application/ld+json">
-                    {JSON.stringify(jsonLd)}
-                </script>
+                <script type="application/ld+json">{JSON.stringify(jsonLd)}</script>
             </Head>
 
             {/* Table of Contents - Floating sidebar */}
@@ -129,7 +125,7 @@ export default function BlogShow({ post, relatedPosts = [] }: Props) {
                     <FadeIn>
                         <Link
                             href="/blog"
-                            className="mb-8 inline-flex items-center text-sm text-muted-foreground hover:text-primary transition-colors"
+                            className="mb-8 inline-flex items-center text-sm text-muted-foreground transition-colors hover:text-primary"
                         >
                             <ArrowLeft className="mr-2 h-4 w-4" />
                             Back to Blog
@@ -138,14 +134,8 @@ export default function BlogShow({ post, relatedPosts = [] }: Props) {
 
                     <FadeIn delay={0.1}>
                         <header className="mx-auto max-w-3xl">
-                            <h1 className="font-heading text-3xl font-bold leading-tight md:text-4xl lg:text-5xl">
-                                {post.title}
-                            </h1>
-                            {post.excerpt && (
-                                <p className="mt-4 text-lg text-muted-foreground leading-relaxed">
-                                    {post.excerpt}
-                                </p>
-                            )}
+                            <h1 className="font-heading text-3xl leading-tight font-bold md:text-4xl lg:text-5xl">{post.title}</h1>
+                            {post.excerpt && <p className="mt-4 text-lg leading-relaxed text-muted-foreground">{post.excerpt}</p>}
                             <div className="mt-6 flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
                                 <span className="flex items-center gap-1.5">
                                     <Calendar className="h-4 w-4" />
@@ -157,43 +147,36 @@ export default function BlogShow({ post, relatedPosts = [] }: Props) {
                                 </span>
                             </div>
 
+                            {/* Tags */}
+                            {post.tags && post.tags.length > 0 && (
+                                <div className="mt-4 flex flex-wrap items-center gap-2">
+                                    <TagIcon className="h-3.5 w-3.5 text-muted-foreground" />
+                                    {post.tags.map((tag) => (
+                                        <Link key={tag.id} href={`/blog?tag=${tag.slug}`}>
+                                            <Badge
+                                                variant="secondary"
+                                                className="cursor-pointer transition-colors hover:bg-primary hover:text-primary-foreground"
+                                            >
+                                                {tag.name}
+                                            </Badge>
+                                        </Link>
+                                    ))}
+                                </div>
+                            )}
+
                             {/* Share buttons */}
                             <div className="mt-6 flex items-center gap-2">
-                                <span className="text-sm text-muted-foreground mr-2">Share:</span>
-                                <Button
-                                    variant="outline"
-                                    size="icon"
-                                    className="h-8 w-8"
-                                    onClick={shareOnTwitter}
-                                    title="Share on Twitter"
-                                >
+                                <span className="mr-2 text-sm text-muted-foreground">Share:</span>
+                                <Button variant="outline" size="icon" className="h-8 w-8" onClick={shareOnTwitter} title="Share on Twitter">
                                     <Twitter className="h-4 w-4" />
                                 </Button>
-                                <Button
-                                    variant="outline"
-                                    size="icon"
-                                    className="h-8 w-8"
-                                    onClick={shareOnFacebook}
-                                    title="Share on Facebook"
-                                >
+                                <Button variant="outline" size="icon" className="h-8 w-8" onClick={shareOnFacebook} title="Share on Facebook">
                                     <Facebook className="h-4 w-4" />
                                 </Button>
-                                <Button
-                                    variant="outline"
-                                    size="icon"
-                                    className="h-8 w-8"
-                                    onClick={shareOnLinkedIn}
-                                    title="Share on LinkedIn"
-                                >
+                                <Button variant="outline" size="icon" className="h-8 w-8" onClick={shareOnLinkedIn} title="Share on LinkedIn">
                                     <Linkedin className="h-4 w-4" />
                                 </Button>
-                                <Button
-                                    variant="outline"
-                                    size="icon"
-                                    className="h-8 w-8"
-                                    onClick={copyLink}
-                                    title="Copy link"
-                                >
+                                <Button variant="outline" size="icon" className="h-8 w-8" onClick={copyLink} title="Copy link">
                                     <LinkIcon className="h-4 w-4" />
                                 </Button>
                             </div>
@@ -223,11 +206,7 @@ export default function BlogShow({ post, relatedPosts = [] }: Props) {
                         <div className="mx-auto mt-16 max-w-3xl border-t border-border pt-8">
                             <div className="flex items-start gap-4">
                                 <div className="h-16 w-16 overflow-hidden rounded-full bg-muted">
-                                    <img
-                                        src="/memoji.png"
-                                        alt="Author"
-                                        className="h-full w-full object-cover"
-                                    />
+                                    <img src="/memoji.png" alt="Author" className="h-full w-full object-cover" />
                                 </div>
                                 <div>
                                     <h3 className="font-semibold">Arya Gading Prinandika</h3>
@@ -243,25 +222,30 @@ export default function BlogShow({ post, relatedPosts = [] }: Props) {
                     {relatedPosts.length > 0 && (
                         <FadeIn delay={0.5}>
                             <div className="mx-auto mt-16 max-w-3xl">
-                                <h2 className="font-heading text-2xl font-bold mb-6">Related Posts</h2>
+                                <h2 className="mb-6 font-heading text-2xl font-bold">Related Posts</h2>
                                 <div className="grid gap-6 md:grid-cols-2">
-                                    {relatedPosts.slice(0, 2).map((relatedPost) => (
+                                    {relatedPosts.slice(0, 4).map((relatedPost) => (
                                         <Link
                                             key={relatedPost.id}
                                             href={`/blog/${relatedPost.slug}`}
                                             className="group block rounded-lg border border-border p-4 transition-colors hover:border-primary/50 hover:bg-muted/50"
                                         >
-                                            <h3 className="font-semibold group-hover:text-primary transition-colors line-clamp-2">
+                                            <h3 className="line-clamp-2 font-semibold transition-colors group-hover:text-primary">
                                                 {relatedPost.title}
                                             </h3>
                                             {relatedPost.excerpt && (
-                                                <p className="mt-2 text-sm text-muted-foreground line-clamp-2">
-                                                    {relatedPost.excerpt}
-                                                </p>
+                                                <p className="mt-2 line-clamp-2 text-sm text-muted-foreground">{relatedPost.excerpt}</p>
                                             )}
-                                            <p className="mt-3 text-xs text-muted-foreground">
-                                                {formatDate(relatedPost.published_at)}
-                                            </p>
+                                            {relatedPost.tags && relatedPost.tags.length > 0 && (
+                                                <div className="mt-3 flex flex-wrap gap-1">
+                                                    {relatedPost.tags.slice(0, 3).map((tag) => (
+                                                        <Badge key={tag.id} variant="outline" className="px-1.5 py-0 text-xs">
+                                                            {tag.name}
+                                                        </Badge>
+                                                    ))}
+                                                </div>
+                                            )}
+                                            <p className="mt-3 text-xs text-muted-foreground">{formatDate(relatedPost.published_at)}</p>
                                         </Link>
                                     ))}
                                 </div>
@@ -271,10 +255,7 @@ export default function BlogShow({ post, relatedPosts = [] }: Props) {
 
                     <FadeIn delay={0.5}>
                         <div className="mx-auto mt-12 max-w-3xl border-t border-border pt-8">
-                            <Link
-                                href="/blog"
-                                className="inline-flex items-center text-sm text-primary hover:underline"
-                            >
+                            <Link href="/blog" className="inline-flex items-center text-sm text-primary hover:underline">
                                 <ArrowLeft className="mr-2 h-4 w-4" />
                                 View all posts
                             </Link>

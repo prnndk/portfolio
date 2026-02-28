@@ -8,7 +8,14 @@ use Illuminate\Support\Facades\Log;
 
 class ContactController extends Controller
 {
-    public function index()
+    /** Public contact form page. */
+    public function create(): \Inertia\Response
+    {
+        return \Inertia\Inertia::render('Public/Contact/Index');
+    }
+
+    /** Admin: list all received contact messages. */
+    public function index(): \Inertia\Response
     {
         return \Inertia\Inertia::render('Admin/Contacts/Index', [
             'contacts' => Contact::latest()->paginate(10),

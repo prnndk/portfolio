@@ -1,8 +1,24 @@
 User-agent: *
+Allow: /
+Allow: /tools/
+Allow: /projects/
+Allow: /blog/
+Allow: /activities/
+Allow: /about
+Allow: /contact
+Allow: /favorites
+
 Disallow: /admin/
 Disallow: /dashboard
 Disallow: /login
 Disallow: /register
+Disallow: /settings/
+Disallow: /og/
+Disallow: /build/
+Disallow: /vendor/
+
+# Crawl-delay for polite crawling
+Crawl-delay: 2
 
 Sitemap: https://aryagading.com/sitemap.xml
 Host: https://aryagading.com
