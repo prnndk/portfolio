@@ -19,6 +19,7 @@ import { Button } from '@/components/ui/button';
 import {
     Dialog,
     DialogContent,
+    DialogDescription,
     DialogHeader,
     DialogTitle,
 } from '@/components/ui/dialog';
@@ -61,6 +62,7 @@ export function ImageEditorModal({
 }: ImageEditorModalProps) {
     const containerRef = useRef<HTMLDivElement>(null);
     const imageRef = useRef<HTMLImageElement>(null);
+    const cropBoxRef = useRef<CropBox | null>(null);
 
     // Local edit state
     const [rotation, setRotation] = useState(0);
@@ -71,6 +73,7 @@ export function ImageEditorModal({
     const [isCropping, setIsCropping] = useState(false);
     const [selectedRatio, setSelectedRatio] = useState<string>('free');
     const [cropBox, setCropBox] = useState<CropBox | null>(null);
+    cropBoxRef.current = cropBox;
     const [isDragging, setIsDragging] = useState(false);
     const [dragType, setDragType] = useState<'move' | 'resize' | null>(null);
     const [dragStart, setDragStart] = useState<{ x: number; y: number; box: CropBox } | null>(null);
@@ -127,15 +130,16 @@ export function ImageEditorModal({
 
     // Update crop box when ratio changes
     useEffect(() => {
-        if (isCropping && cropBox && imageRef.current) {
+        if (isCropping && cropBoxRef.current && imageRef.current) {
             const ratio = aspectRatios.find(r => r.id === selectedRatio)?.ratio;
             if (ratio) {
                 const img = imageRef.current;
                 const rect = img.getBoundingClientRect();
+                const currentBox = cropBoxRef.current;
 
                 // Adjust current box to new ratio
-                let newWidth = cropBox.width;
-                let newHeight = cropBox.width / ratio;
+                let newWidth = currentBox.width;
+                let newHeight = currentBox.width / ratio;
 
                 // Make sure it fits within image
                 if (newHeight > rect.height * 0.9) {
@@ -143,13 +147,14 @@ export function ImageEditorModal({
                     newWidth = newHeight * ratio;
                 }
 
-                const x = Math.max(0, Math.min(cropBox.x, rect.width - newWidth));
-                const y = Math.max(0, Math.min(cropBox.y, rect.height - newHeight));
+                const x = Math.max(0, Math.min(currentBox.x, rect.width - newWidth));
+                const y = Math.max(0, Math.min(currentBox.y, rect.height - newHeight));
 
                 setCropBox({ x, y, width: newWidth, height: newHeight });
             }
         }
-    }, [selectedRatio, isCropping, cropBox]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [selectedRatio, isCropping]);
 
     const handleRotateCW = () => setRotation((r) => (r + 90) % 360);
     const handleRotateCCW = () => setRotation((r) => (r - 90 + 360) % 360);
@@ -327,6 +332,7 @@ export function ImageEditorModal({
         <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
             <DialogContent className="max-w-4xl h-[90vh] flex flex-col p-0 gap-0">
                 <DialogHeader className="p-4 border-b">
+                    <DialogDescription className="sr-only">Edit image crop, rotation, and flip settings</DialogDescription>
                     <DialogTitle className="flex items-center justify-between">
                         <span>Edit Image</span>
                         <span className="text-sm font-normal text-muted-foreground truncate max-w-[200px]">
