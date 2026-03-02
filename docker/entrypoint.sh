@@ -90,9 +90,19 @@ echo "⚡  Optimising application..."
 php artisan optimize
 
 # ─── Publish public assets to shared volume (for nginx) ───────────────────────
+#
+# Problem: the named volume persists across deployments, so a plain `cp -rf`
+# only adds/overwrites files — it never removes assets that were deleted or
+# renamed between releases.  The fix is to wipe the volume content first so
+# nginx always serves exactly what is inside this image, nothing more.
 if [ -d /var/www-public ]; then
-    echo "📁  Syncing public/ -> shared volume..."
+    echo "📁  Cleaning stale assets from shared volume..."
+    # Delete every entry inside the volume without removing the mount-point dir.
+    find /var/www-public -mindepth 1 -delete 2>/dev/null || true
+
+    echo "📁  Copying public/ -> shared volume..."
     cp -rf /var/www/public/. /var/www-public/
+
     # Ensure nginx can read but not write these files
     chmod -R 750 /var/www-public 2>/dev/null || true
 fi
