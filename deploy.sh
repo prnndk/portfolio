@@ -155,6 +155,7 @@ deploy_build_push() {
     docker build \
       --no-cache \
       --pull \
+      --provenance=false \
       --tag "${REGISTRY_IMAGE}:latest" \
       --tag "${REGISTRY_IMAGE}:${GIT_SHA}" \
       --label "git.sha=${GIT_SHA}" \
@@ -194,6 +195,7 @@ deploy_build_server() {
     docker build \
         --no-cache \
         --pull \
+        --provenance=false \
         --tag "${REGISTRY_IMAGE}:latest" \
         --tag "${REGISTRY_IMAGE}:${GIT_SHA}" \
         --label "git.sha=${GIT_SHA}" \

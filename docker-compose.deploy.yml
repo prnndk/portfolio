@@ -55,12 +55,15 @@ services:
       - SETGID
       - DAC_OVERRIDE
     # ── Resource limits (DoS protection) ─────────────────────────────────
+    # Note: pids_limit is set here inside deploy.resources.limits — newer
+    # Docker Compose versions unify the top-level pids_limit and
+    # deploy.resources.limits.pids into one field; having both causes an error.
     deploy:
       resources:
         limits:
           cpus: '1.0'
           memory: 512M
-    pids_limit: 100
+          pids: 100
     read_only: false # Laravel writes to storage & bootstrap/cache
     networks:
       - portofolio-network
@@ -106,7 +109,7 @@ services:
         limits:
           cpus: '1.0'
           memory: 512M
-    pids_limit: 200
+          pids: 200
     networks:
       - portofolio-network
 
@@ -141,7 +144,7 @@ services:
         limits:
           cpus: '0.5'
           memory: 128M
-    pids_limit: 50
+          pids: 50
     networks:
       - portofolio-network
 
