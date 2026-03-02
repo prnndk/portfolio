@@ -1,30 +1,24 @@
 'use client';
 
-import { useState, useRef, useCallback, useEffect } from 'react';
-import {
-    X,
-    Crop,
-    RotateCcw,
-    RotateCw,
-    FlipHorizontal,
-    FlipVertical,
-    Check,
-    Move,
-    RectangleHorizontal,
-    Square,
-    Smartphone,
-    Monitor,
-} from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogHeader,
-    DialogTitle,
-} from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { cn } from '@/lib/utils';
 import { CompressedImage, CropData } from '@/types/image-compressor';
+import {
+    Check,
+    Crop,
+    FlipHorizontal,
+    FlipVertical,
+    Monitor,
+    Move,
+    RectangleHorizontal,
+    RotateCcw,
+    RotateCw,
+    Smartphone,
+    Square,
+    X,
+} from 'lucide-react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
 const aspectRatios = [
     { id: 'free', label: 'Free', icon: Move, ratio: null },
@@ -39,12 +33,7 @@ interface ImageEditorModalProps {
     image: CompressedImage | null;
     isOpen: boolean;
     onClose: () => void;
-    onSave: (updates: {
-        cropData?: CropData;
-        rotation: number;
-        flipHorizontal: boolean;
-        flipVertical: boolean;
-    }) => void;
+    onSave: (updates: { cropData?: CropData; rotation: number; flipHorizontal: boolean; flipVertical: boolean }) => void;
 }
 
 interface CropBox {
@@ -54,12 +43,7 @@ interface CropBox {
     height: number;
 }
 
-export function ImageEditorModal({
-    image,
-    isOpen,
-    onClose,
-    onSave,
-}: ImageEditorModalProps) {
+export function ImageEditorModal({ image, isOpen, onClose, onSave }: ImageEditorModalProps) {
     const containerRef = useRef<HTMLDivElement>(null);
     const imageRef = useRef<HTMLImageElement>(null);
     const cropBoxRef = useRef<CropBox | null>(null);
@@ -102,7 +86,7 @@ export function ImageEditorModal({
         const rect = img.getBoundingClientRect();
 
         // Set initial crop box to 80% of image
-        const ratio = aspectRatios.find(r => r.id === selectedRatio)?.ratio;
+        const ratio = aspectRatios.find((r) => r.id === selectedRatio)?.ratio;
         let width = rect.width * 0.8;
         let height = rect.height * 0.8;
 
@@ -131,7 +115,7 @@ export function ImageEditorModal({
     // Update crop box when ratio changes
     useEffect(() => {
         if (isCropping && cropBoxRef.current && imageRef.current) {
-            const ratio = aspectRatios.find(r => r.id === selectedRatio)?.ratio;
+            const ratio = aspectRatios.find((r) => r.id === selectedRatio)?.ratio;
             if (ratio) {
                 const img = imageRef.current;
                 const rect = img.getBoundingClientRect();
@@ -153,7 +137,7 @@ export function ImageEditorModal({
                 setCropBox({ x, y, width: newWidth, height: newHeight });
             }
         }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [selectedRatio, isCropping]);
 
     const handleRotateCW = () => setRotation((r) => (r + 90) % 360);
@@ -191,81 +175,86 @@ export function ImageEditorModal({
         });
     };
 
-    const handleMouseMove = useCallback((e: React.MouseEvent) => {
-        if (!isDragging || !dragStart || !cropBox || !imageRef.current) return;
+    const handleMouseMove = useCallback(
+        (e: React.MouseEvent) => {
+            if (!isDragging || !dragStart || !cropBox || !imageRef.current) return;
 
-        const img = imageRef.current;
-        const rect = img.getBoundingClientRect();
-        const ratio = aspectRatios.find(r => r.id === selectedRatio)?.ratio;
+            const img = imageRef.current;
+            const rect = img.getBoundingClientRect();
+            const ratio = aspectRatios.find((r) => r.id === selectedRatio)?.ratio;
 
-        const dx = e.clientX - dragStart.x;
-        const dy = e.clientY - dragStart.y;
+            const dx = e.clientX - dragStart.x;
+            const dy = e.clientY - dragStart.y;
 
-        const newBox = { ...dragStart.box };
+            const newBox = { ...dragStart.box };
 
-        if (dragType === 'move') {
-            newBox.x = Math.max(0, Math.min(dragStart.box.x + dx, rect.width - cropBox.width));
-            newBox.y = Math.max(0, Math.min(dragStart.box.y + dy, rect.height - cropBox.height));
-        } else if (dragType === 'resize' && resizeHandle) {
-            // Handle resize based on which corner/edge is being dragged
-            switch (resizeHandle) {
-                case 'se': // Bottom-right
-                    newBox.width = Math.max(50, dragStart.box.width + dx);
-                    if (ratio) {
-                        newBox.height = newBox.width / ratio;
-                    } else {
-                        newBox.height = Math.max(50, dragStart.box.height + dy);
+            if (dragType === 'move') {
+                newBox.x = Math.max(0, Math.min(dragStart.box.x + dx, rect.width - cropBox.width));
+                newBox.y = Math.max(0, Math.min(dragStart.box.y + dy, rect.height - cropBox.height));
+            } else if (dragType === 'resize' && resizeHandle) {
+                // Handle resize based on which corner/edge is being dragged
+                switch (resizeHandle) {
+                    case 'se': // Bottom-right
+                        newBox.width = Math.max(50, dragStart.box.width + dx);
+                        if (ratio) {
+                            newBox.height = newBox.width / ratio;
+                        } else {
+                            newBox.height = Math.max(50, dragStart.box.height + dy);
+                        }
+                        break;
+                    case 'sw': {
+                        // Bottom-left
+                        const newWidthSW = Math.max(50, dragStart.box.width - dx);
+                        newBox.x = dragStart.box.x + (dragStart.box.width - newWidthSW);
+                        newBox.width = newWidthSW;
+                        if (ratio) {
+                            newBox.height = newBox.width / ratio;
+                        } else {
+                            newBox.height = Math.max(50, dragStart.box.height + dy);
+                        }
+                        break;
                     }
-                    break;
-                case 'sw': { // Bottom-left
-                    const newWidthSW = Math.max(50, dragStart.box.width - dx);
-                    newBox.x = dragStart.box.x + (dragStart.box.width - newWidthSW);
-                    newBox.width = newWidthSW;
-                    if (ratio) {
-                        newBox.height = newBox.width / ratio;
-                    } else {
-                        newBox.height = Math.max(50, dragStart.box.height + dy);
+                    case 'ne': // Top-right
+                        newBox.width = Math.max(50, dragStart.box.width + dx);
+                        if (ratio) {
+                            const newHeightNE = newBox.width / ratio;
+                            newBox.y = dragStart.box.y + (dragStart.box.height - newHeightNE);
+                            newBox.height = newHeightNE;
+                        } else {
+                            const newHeightNE = Math.max(50, dragStart.box.height - dy);
+                            newBox.y = dragStart.box.y + (dragStart.box.height - newHeightNE);
+                            newBox.height = newHeightNE;
+                        }
+                        break;
+                    case 'nw': {
+                        // Top-left
+                        const newWidthNW = Math.max(50, dragStart.box.width - dx);
+                        newBox.x = dragStart.box.x + (dragStart.box.width - newWidthNW);
+                        newBox.width = newWidthNW;
+                        if (ratio) {
+                            const newHeightNW = newBox.width / ratio;
+                            newBox.y = dragStart.box.y + (dragStart.box.height - newHeightNW);
+                            newBox.height = newHeightNW;
+                        } else {
+                            const newHeightNW = Math.max(50, dragStart.box.height - dy);
+                            newBox.y = dragStart.box.y + (dragStart.box.height - newHeightNW);
+                            newBox.height = newHeightNW;
+                        }
+                        break;
                     }
-                    break;
                 }
-                case 'ne': // Top-right
-                    newBox.width = Math.max(50, dragStart.box.width + dx);
-                    if (ratio) {
-                        const newHeightNE = newBox.width / ratio;
-                        newBox.y = dragStart.box.y + (dragStart.box.height - newHeightNE);
-                        newBox.height = newHeightNE;
-                    } else {
-                        const newHeightNE = Math.max(50, dragStart.box.height - dy);
-                        newBox.y = dragStart.box.y + (dragStart.box.height - newHeightNE);
-                        newBox.height = newHeightNE;
-                    }
-                    break;
-                case 'nw': { // Top-left
-                    const newWidthNW = Math.max(50, dragStart.box.width - dx);
-                    newBox.x = dragStart.box.x + (dragStart.box.width - newWidthNW);
-                    newBox.width = newWidthNW;
-                    if (ratio) {
-                        const newHeightNW = newBox.width / ratio;
-                        newBox.y = dragStart.box.y + (dragStart.box.height - newHeightNW);
-                        newBox.height = newHeightNW;
-                    } else {
-                        const newHeightNW = Math.max(50, dragStart.box.height - dy);
-                        newBox.y = dragStart.box.y + (dragStart.box.height - newHeightNW);
-                        newBox.height = newHeightNW;
-                    }
-                    break;
-                }
+
+                // Constrain to image bounds
+                newBox.x = Math.max(0, newBox.x);
+                newBox.y = Math.max(0, newBox.y);
+                newBox.width = Math.min(newBox.width, rect.width - newBox.x);
+                newBox.height = Math.min(newBox.height, rect.height - newBox.y);
             }
 
-            // Constrain to image bounds
-            newBox.x = Math.max(0, newBox.x);
-            newBox.y = Math.max(0, newBox.y);
-            newBox.width = Math.min(newBox.width, rect.width - newBox.x);
-            newBox.height = Math.min(newBox.height, rect.height - newBox.y);
-        }
-
-        setCropBox(newBox);
-    }, [isDragging, dragStart, cropBox, dragType, resizeHandle, selectedRatio]);
+            setCropBox(newBox);
+        },
+        [isDragging, dragStart, cropBox, dragType, resizeHandle, selectedRatio],
+    );
 
     const handleMouseUp = () => {
         setIsDragging(false);
@@ -330,31 +319,25 @@ export function ImageEditorModal({
 
     return (
         <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-            <DialogContent className="max-w-4xl h-[90vh] flex flex-col p-0 gap-0">
-                <DialogHeader className="p-4 border-b">
+            <DialogContent className="flex h-[90vh] max-w-4xl flex-col gap-0 p-0">
+                <DialogHeader className="border-b p-4">
                     <DialogDescription className="sr-only">Edit image crop, rotation, and flip settings</DialogDescription>
                     <DialogTitle className="flex items-center justify-between">
                         <span>Edit Image</span>
-                        <span className="text-sm font-normal text-muted-foreground truncate max-w-[200px]">
-                            {image.originalFile.name}
-                        </span>
+                        <span className="max-w-[200px] truncate text-sm font-normal text-muted-foreground">{image.originalFile.name}</span>
                     </DialogTitle>
                 </DialogHeader>
 
                 {/* Toolbar */}
-                <div className="flex flex-wrap items-center justify-between gap-2 p-3 border-b bg-muted/30">
+                <div className="flex flex-wrap items-center justify-between gap-2 border-b bg-muted/30 p-3">
                     <div className="flex items-center gap-1">
-                        <Button
-                            size="sm"
-                            variant={isCropping ? 'default' : 'outline'}
-                            onClick={() => setIsCropping(!isCropping)}
-                        >
-                            <Crop className="h-4 w-4 mr-1" />
+                        <Button size="sm" variant={isCropping ? 'default' : 'outline'} onClick={() => setIsCropping(!isCropping)}>
+                            <Crop className="mr-1 h-4 w-4" />
                             Crop
                         </Button>
                         {cropBox && (
                             <Button size="sm" variant="ghost" onClick={clearCrop}>
-                                <X className="h-4 w-4 mr-1" />
+                                <X className="mr-1 h-4 w-4" />
                                 Clear
                             </Button>
                         )}
@@ -367,7 +350,7 @@ export function ImageEditorModal({
                         <Button size="icon" variant="outline" className="h-8 w-8" onClick={handleRotateCW} title="Rotate Right">
                             <RotateCw className="h-4 w-4" />
                         </Button>
-                        <div className="w-px h-6 bg-border mx-1" />
+                        <div className="mx-1 h-6 w-px bg-border" />
                         <Button
                             size="icon"
                             className="h-8 w-8"
@@ -395,17 +378,17 @@ export function ImageEditorModal({
 
                 {/* Aspect Ratio Selector - Only show when cropping */}
                 {isCropping && (
-                    <div className="flex items-center gap-1 p-2 border-b bg-muted/20 overflow-x-auto">
-                        <span className="text-xs text-muted-foreground mr-2 whitespace-nowrap">Aspect Ratio:</span>
+                    <div className="flex items-center gap-1 overflow-x-auto border-b bg-muted/20 p-2">
+                        <span className="mr-2 text-xs whitespace-nowrap text-muted-foreground">Aspect Ratio:</span>
                         {aspectRatios.map((ar) => (
                             <button
                                 key={ar.id}
                                 onClick={() => setSelectedRatio(ar.id)}
                                 className={cn(
-                                    'flex items-center gap-1 px-2.5 py-1.5 rounded-md text-xs font-medium transition-all whitespace-nowrap',
+                                    'flex items-center gap-1 rounded-md px-2.5 py-1.5 text-xs font-medium whitespace-nowrap transition-all',
                                     selectedRatio === ar.id
                                         ? 'bg-primary text-primary-foreground'
-                                        : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                                        : 'bg-muted text-muted-foreground hover:bg-muted/80',
                                 )}
                             >
                                 <ar.icon className="h-3 w-3" />
@@ -418,7 +401,7 @@ export function ImageEditorModal({
                 {/* Image Preview Area */}
                 <div
                     ref={containerRef}
-                    className="flex-1 overflow-hidden bg-[repeating-conic-gradient(#80808020_0%_25%,transparent_0%_50%)] bg-[length:16px_16px] flex items-center justify-center p-4"
+                    className="flex flex-1 items-center justify-center overflow-hidden bg-[repeating-conic-gradient(#80808020_0%_25%,transparent_0%_50%)] bg-[length:16px_16px] p-4"
                     onMouseMove={handleMouseMove}
                     onMouseUp={handleMouseUp}
                     onMouseLeave={handleMouseUp}
@@ -428,7 +411,7 @@ export function ImageEditorModal({
                             ref={imageRef}
                             src={image.preview}
                             alt={image.originalFile.name}
-                            className="max-w-full max-h-[50vh] object-contain"
+                            className="max-h-[50vh] max-w-full object-contain"
                             style={{ transform: getTransformStyle() }}
                             draggable={false}
                             onLoad={handleImageLoad}
@@ -438,7 +421,7 @@ export function ImageEditorModal({
                         {isCropping && cropBox && (
                             <>
                                 {/* Darkened areas outside crop */}
-                                <div className="absolute inset-0 pointer-events-none">
+                                <div className="pointer-events-none absolute inset-0">
                                     {/* Top */}
                                     <div
                                         className="absolute bg-black/50"
@@ -483,7 +466,7 @@ export function ImageEditorModal({
 
                                 {/* Crop Box */}
                                 <div
-                                    className="absolute border-2 border-white cursor-move"
+                                    className="absolute cursor-move border-2 border-white"
                                     style={{
                                         left: cropBox.x,
                                         top: cropBox.y,
@@ -493,35 +476,36 @@ export function ImageEditorModal({
                                     onMouseDown={(e) => handleMouseDown(e, 'move')}
                                 >
                                     {/* Grid lines */}
-                                    <div className="absolute inset-0 pointer-events-none">
-                                        <div className="absolute left-1/3 top-0 bottom-0 w-px bg-white/50" />
-                                        <div className="absolute left-2/3 top-0 bottom-0 w-px bg-white/50" />
-                                        <div className="absolute top-1/3 left-0 right-0 h-px bg-white/50" />
-                                        <div className="absolute top-2/3 left-0 right-0 h-px bg-white/50" />
+                                    <div className="pointer-events-none absolute inset-0">
+                                        <div className="absolute top-0 bottom-0 left-1/3 w-px bg-white/50" />
+                                        <div className="absolute top-0 bottom-0 left-2/3 w-px bg-white/50" />
+                                        <div className="absolute top-1/3 right-0 left-0 h-px bg-white/50" />
+                                        <div className="absolute top-2/3 right-0 left-0 h-px bg-white/50" />
                                     </div>
 
                                     {/* Resize Handles */}
                                     {/* Corners */}
                                     <div
-                                        className="absolute -top-2 -left-2 w-4 h-4 bg-white border border-gray-300 rounded-sm cursor-nw-resize"
+                                        className="absolute -top-2 -left-2 h-4 w-4 cursor-nw-resize rounded-sm border border-gray-300 bg-white"
                                         onMouseDown={(e) => handleMouseDown(e, 'resize', 'nw')}
                                     />
                                     <div
-                                        className="absolute -top-2 -right-2 w-4 h-4 bg-white border border-gray-300 rounded-sm cursor-ne-resize"
+                                        className="absolute -top-2 -right-2 h-4 w-4 cursor-ne-resize rounded-sm border border-gray-300 bg-white"
                                         onMouseDown={(e) => handleMouseDown(e, 'resize', 'ne')}
                                     />
                                     <div
-                                        className="absolute -bottom-2 -left-2 w-4 h-4 bg-white border border-gray-300 rounded-sm cursor-sw-resize"
+                                        className="absolute -bottom-2 -left-2 h-4 w-4 cursor-sw-resize rounded-sm border border-gray-300 bg-white"
                                         onMouseDown={(e) => handleMouseDown(e, 'resize', 'sw')}
                                     />
                                     <div
-                                        className="absolute -bottom-2 -right-2 w-4 h-4 bg-white border border-gray-300 rounded-sm cursor-se-resize"
+                                        className="absolute -right-2 -bottom-2 h-4 w-4 cursor-se-resize rounded-sm border border-gray-300 bg-white"
                                         onMouseDown={(e) => handleMouseDown(e, 'resize', 'se')}
                                     />
 
                                     {/* Dimension indicator */}
-                                    <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 bg-black/80 text-white text-xs px-2 py-1 rounded whitespace-nowrap">
-                                        {Math.round(cropBox.width * (naturalSize.width / (imageRef.current?.getBoundingClientRect().width || 1)))} × {Math.round(cropBox.height * (naturalSize.height / (imageRef.current?.getBoundingClientRect().height || 1)))}
+                                    <div className="absolute -bottom-8 left-1/2 -translate-x-1/2 rounded bg-black/80 px-2 py-1 text-xs whitespace-nowrap text-white">
+                                        {Math.round(cropBox.width * (naturalSize.width / (imageRef.current?.getBoundingClientRect().width || 1)))} ×{' '}
+                                        {Math.round(cropBox.height * (naturalSize.height / (imageRef.current?.getBoundingClientRect().height || 1)))}
                                     </div>
                                 </div>
                             </>
@@ -530,7 +514,7 @@ export function ImageEditorModal({
                 </div>
 
                 {/* Edit Summary */}
-                <div className="p-3 border-t bg-muted/30">
+                <div className="border-t bg-muted/30 p-3">
                     <div className="flex items-center justify-between text-sm text-muted-foreground">
                         <div className="flex items-center gap-4">
                             {rotation !== 0 && (
@@ -557,20 +541,18 @@ export function ImageEditorModal({
                                     Cropped ({selectedRatio})
                                 </span>
                             )}
-                            {rotation === 0 && !flipHorizontal && !flipVertical && !cropBox && (
-                                <span>No edits applied</span>
-                            )}
+                            {rotation === 0 && !flipHorizontal && !flipVertical && !cropBox && <span>No edits applied</span>}
                         </div>
                     </div>
                 </div>
 
                 {/* Footer Actions */}
-                <div className="flex items-center justify-end gap-2 p-4 border-t">
+                <div className="flex items-center justify-end gap-2 border-t p-4">
                     <Button variant="outline" onClick={onClose}>
                         Cancel
                     </Button>
                     <Button onClick={handleSave}>
-                        <Check className="h-4 w-4 mr-2" />
+                        <Check className="mr-2 h-4 w-4" />
                         Apply Changes
                     </Button>
                 </div>
