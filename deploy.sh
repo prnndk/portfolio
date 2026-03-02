@@ -17,6 +17,48 @@ success() { echo -e "${GREEN}✅  $*${NC}"; }
 warn()    { echo -e "${YELLOW}⚠️  $*${NC}"; }
 error()   { echo -e "${RED}❌  $*${NC}"; exit 1; }
 
+# ── Pre-flight: validate that all required production env vars are present ────
+# Only checks standard Laravel variables that must be present in .env.
+# DB_ROOT_PASSWORD is optional — if absent it defaults to DB_PASSWORD (see below).
+REQUIRED_PROD_VARS=(
+    APP_KEY
+    APP_URL
+    DB_HOST
+    DB_PORT
+    DB_DATABASE
+    DB_USERNAME
+    DB_PASSWORD
+)
+validate_prod_env() {
+    [ ! -f .env ] && error ".env file not found. Create it before deploying."
+    local missing=()
+    for var in "${REQUIRED_PROD_VARS[@]}"; do
+        # grep for the key; ignore commented-out lines
+        val=$(grep -E "^${var}=" .env | cut -d= -f2- | tr -d '"\047 ')
+        [ -z "$val" ] && missing+=("$var")
+    done
+    if [ ${#missing[@]} -gt 0 ]; then
+        error "Missing or empty required variables in .env:\n$(printf '   • %s\n' "${missing[@]}")"
+    fi
+
+    # DB_ROOT_PASSWORD is not a standard Laravel variable.
+    # If it's not explicitly set, fall back to DB_PASSWORD so the server .env
+    # only needs the variables Laravel itself uses.
+    local root_pw
+    root_pw=$(grep -E '^DB_ROOT_PASSWORD=' .env | cut -d= -f2- | tr -d '"\047 ')
+    if [ -z "$root_pw" ]; then
+        local app_pw
+        app_pw=$(grep -E '^DB_PASSWORD=' .env | cut -d= -f2-)
+        export DB_ROOT_PASSWORD="$app_pw"
+        warn "DB_ROOT_PASSWORD not set — falling back to DB_PASSWORD for MySQL root."
+        warn "For better security, add DB_ROOT_PASSWORD= to your .env with a separate value."
+    else
+        export DB_ROOT_PASSWORD="$root_pw"
+    fi
+
+    success "All required env vars are present."
+}
+
 # ── Argument parsing ──────────────────────────────────────────────────────────
 MODE="local"
 [[ "${1:-}" == "--prod"         ]] && MODE="prod"
@@ -47,7 +89,7 @@ deploy_local() {
 deploy_prod() {
     info "Mode: PRODUCTION (docker-compose.deploy.yml)"
 
-    [ ! -f .env ] && error ".env file not found. Create it before deploying."
+    validate_prod_env
 
     info "Pulling latest images..."
     $COMPOSE_PROD pull
@@ -141,7 +183,7 @@ deploy_build_push() {
 deploy_build_server() {
     info "Mode: BUILD ON SERVER  →  ${REGISTRY_IMAGE}:latest"
 
-    [ ! -f .env ] && error ".env file not found. Create it before deploying."
+    validate_prod_env
 
     GIT_SHA=$(git rev-parse --short HEAD 2>/dev/null || echo "unknown")
     info "Building from commit ${GIT_SHA}..."

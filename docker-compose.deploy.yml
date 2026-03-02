@@ -72,7 +72,8 @@ services:
     restart: unless-stopped
     environment:
       MYSQL_DATABASE: ${DB_DATABASE:?DB_DATABASE must be set}
-      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:?DB_ROOT_PASSWORD must be set}
+      # DB_ROOT_PASSWORD is optional in .env — deploy.sh falls back to DB_PASSWORD
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:?DB_ROOT_PASSWORD must be set (deploy.sh exports this automatically)}
       MYSQL_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD must be set}
       MYSQL_USER: ${DB_USERNAME:?DB_USERNAME must be set}
     # Port bound to localhost only — never expose DB to the internet
