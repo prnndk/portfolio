@@ -47,37 +47,6 @@ chmod 750 /var/www/storage \
           /var/www/storage/app \
           /var/www/bootstrap/cache 2>/dev/null || true
 
-# ─── Wait for database ────────────────────────────────────────────────────────
-# Use a raw PDO probe instead of `php artisan db:show` because:
-#   • proc_open is disabled in security.ini (Symfony\Process would throw)
-#   • the intl extension is not installed (db:show formatting would throw)
-# parse_ini_file() reads .env natively; credentials are never echoed to logs.
-echo "⏳  Waiting for database connection..."
-MAX_RETRIES=30
-RETRY=0
-until php -r "
-    \$env  = parse_ini_file('/var/www/.env') ?: [];
-    \$host = \$env['DB_HOST']     ?? '127.0.0.1';
-    \$port = \$env['DB_PORT']     ?? 3306;
-    \$name = \$env['DB_DATABASE'] ?? '';
-    \$user = \$env['DB_USERNAME'] ?? '';
-    \$pass = \$env['DB_PASSWORD'] ?? '';
-    try {
-        new PDO(\"mysql:host={\$host};port={\$port};dbname={\$name}\", \$user, \$pass,
-            [PDO::ATTR_TIMEOUT => 3, PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
-        exit(0);
-    } catch (Exception \$e) { exit(1); }
-" 2>/dev/null; do
-    RETRY=$((RETRY + 1))
-    if [ "$RETRY" -ge "$MAX_RETRIES" ]; then
-        echo "❌  Database not reachable after ${MAX_RETRIES} attempts. Aborting."
-        exit 1
-    fi
-    echo "    Retry ${RETRY}/${MAX_RETRIES} — waiting 2s..."
-    sleep 2
-done
-echo "✅  Database is ready."
-
 # ─── Migrations ───────────────────────────────────────────────────────────────
 echo "🗄️   Running migrations..."
 php artisan migrate --force --no-interaction
