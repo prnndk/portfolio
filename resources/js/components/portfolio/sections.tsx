@@ -105,30 +105,37 @@ export function BlogCard({ post }: BlogCardProps) {
         });
     };
 
+    const image = post.featured_image ? `/storage/${post.featured_image}` : post.featured_image_url;
+
     return (
-        <Link href={`/blog/${post.slug}`}>
-            <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                whileHover={{ y: -5 }}
-                className="group block overflow-hidden rounded-xl border border-border bg-card transition-colors hover:border-primary/50"
-            >
-                {(post.featured_image || post.featured_image_url) && (
-                    <div className="aspect-video overflow-hidden">
-                        <img
-                            src={post.featured_image ? `/storage/${post.featured_image}` : post.featured_image_url!}
-                            alt={post.title}
-                            className="h-full w-full object-cover transition-transform group-hover:scale-105"
-                        />
+        <Link
+            href={`/blog/${post.slug}`}
+            className="group flex h-full flex-col overflow-hidden rounded-3xl border border-border bg-card transition-colors hover:border-primary"
+        >
+            {image && (
+                <div className="aspect-video overflow-hidden bg-muted">
+                    <img
+                        src={image}
+                        alt={post.title}
+                        loading="lazy"
+                        className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+                    />
+                </div>
+            )}
+            <div className="flex flex-1 flex-col gap-3 p-6">
+                <p className="font-mono text-xs text-muted-foreground">{formatDate(post.published_at)}</p>
+                <h3 className="font-heading text-2xl font-bold tracking-[-0.03em] transition-colors group-hover:text-primary">{post.title}</h3>
+                {post.excerpt && <p className="line-clamp-3 text-muted-foreground">{post.excerpt}</p>}
+                {post.tags?.length > 0 && (
+                    <div className="mt-auto flex flex-wrap gap-2 pt-2">
+                        {post.tags.slice(0, 3).map((tag) => (
+                            <span key={tag.id} className="rounded-full border border-border px-3 py-1 font-mono text-xs">
+                                {tag.name}
+                            </span>
+                        ))}
                     </div>
                 )}
-                <div className="p-4">
-                    <p className="text-xs text-muted-foreground">{formatDate(post.published_at)}</p>
-                    <h3 className="mt-1 font-heading text-lg font-semibold group-hover:text-primary">{post.title}</h3>
-                    {post.excerpt && <p className="mt-2 line-clamp-2 text-sm text-muted-foreground">{post.excerpt}</p>}
-                </div>
-            </motion.div>
+            </div>
         </Link>
     );
 }

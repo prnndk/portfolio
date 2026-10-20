@@ -1,3 +1,4 @@
+import { Mascot, type MascotPose } from '@/components/portfolio/mascot';
 import { cn } from '@/lib/utils';
 import { Link } from '@inertiajs/react';
 import { motion, useMotionValue, useSpring } from 'framer-motion';
@@ -238,4 +239,38 @@ export function LiveClock({ timeZone, className }: { timeZone: string; className
         return () => clearInterval(id);
     }, [timeZone]);
     return <span className={cn('tabular-nums', className)}>{now ?? '--:--:--'}</span>;
+}
+
+/** Container with the vertical padding every inner page uses under the floating nav. */
+export function PageContainer({ className, children }: { className?: string; children: ReactNode }) {
+    return <Container className={cn('pt-28 pb-24 md:pt-36 md:pb-32', className)}>{children}</Container>;
+}
+
+/** Dashed empty state with the mascot. */
+export function EmptyBlock({ text, title, pose = 'lost' }: { text: string; title?: string; pose?: MascotPose }) {
+    return (
+        <div className="flex flex-col items-center gap-3 rounded-3xl border border-dashed border-border p-12 text-center">
+            <Mascot pose={pose} follow={false} className="h-28 w-24" />
+            {title && <h3 className="font-heading text-xl font-bold tracking-[-0.02em]">{title}</h3>}
+            <p className="max-w-md text-muted-foreground">{text}</p>
+        </div>
+    );
+}
+
+/** Pill link used for tag and type filters. */
+export function FilterChip({ href, active, children }: { href: string; active: boolean; children: ReactNode }) {
+    return (
+        <Link
+            href={href}
+            aria-current={active ? 'true' : undefined}
+            className={cn(
+                'inline-flex min-h-11 items-center gap-2 rounded-full border px-4 font-mono text-xs tracking-[0.06em] transition-colors',
+                active
+                    ? 'border-primary bg-primary text-primary-foreground'
+                    : 'border-border text-muted-foreground hover:border-primary hover:text-foreground',
+            )}
+        >
+            {children}
+        </Link>
+    );
 }

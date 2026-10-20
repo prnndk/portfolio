@@ -2,16 +2,15 @@
 
 import { Head, Link } from '@inertiajs/react';
 
-import { ArrowLeft, ExternalLink, Github, Calendar, ImageIcon } from 'lucide-react';
-import GuestLayout from '@/layouts/guest-layout';
 import { FadeIn } from '@/components/aceternity/text-reveal';
-import { Badge } from '@/components/ui/badge';
-import { Button, buttonVariants } from '@/components/ui/button';
-import { LinkPreview } from '@/components/ui/link-preview';
-import { type Project } from '@/types';
+import { PageContainer } from '@/components/portfolio/signal';
 import { Lightbox } from '@/components/ui/lightbox';
+import { LinkPreview } from '@/components/ui/link-preview';
+import GuestLayout from '@/layouts/guest-layout';
+import { getProjectGallery, getProjectImage } from '@/lib/project-utils';
+import { type Project } from '@/types';
+import { ArrowLeft, Calendar, ExternalLink, Github, ImageIcon } from 'lucide-react';
 import { useState } from 'react';
-import { getProjectImage, getProjectGallery } from '@/lib/project-utils';
 
 interface Props {
     project: Project;
@@ -26,7 +25,9 @@ export default function ProjectShow({ project }: Props) {
     // Use project image if available, otherwise use auto-generated OG image
     const displayImage = getProjectImage(project);
     const ogImage = displayImage
-        ? (displayImage.startsWith('http') ? displayImage : `${appUrl}${displayImage}`)
+        ? displayImage.startsWith('http')
+            ? displayImage
+            : `${appUrl}${displayImage}`
         : `${appUrl}/og/project/${project.slug}`;
 
     // Get all gallery images (uploaded + URLs)
@@ -90,97 +91,88 @@ export default function ProjectShow({ project }: Props) {
                 <meta name="twitter:creator" content="@aryagading" />
 
                 {/* JSON-LD Structured Data */}
-                <script type="application/ld+json">
-                    {JSON.stringify(jsonLd)}
-                </script>
+                <script type="application/ld+json">{JSON.stringify(jsonLd)}</script>
             </Head>
 
-            <article className="min-h-screen">
-                <div className="container mx-auto px-4 py-24">
+            <article>
+                <PageContainer>
                     <FadeIn>
                         <Link
                             href="/projects"
-                            className="mb-8 inline-flex items-center text-sm text-muted-foreground hover:text-primary transition-colors"
+                            className="mb-8 inline-flex min-h-11 items-center gap-2 font-mono text-xs tracking-[0.14em] text-muted-foreground uppercase transition-colors hover:text-primary"
                         >
-                            <ArrowLeft className="mr-2 h-4 w-4" />
+                            <ArrowLeft className="h-4 w-4" />
                             Back to Projects
                         </Link>
                     </FadeIn>
 
-                    <div className="grid gap-12 lg:grid-cols-2">
-                        {/* Image */}
-                        <FadeIn delay={0.1}>
-                            <div className="overflow-hidden rounded-xl border border-border">
-                                {displayImage ? (
-                                    <img
-                                        src={displayImage}
-                                        alt={project.title}
-                                        className="w-full object-cover"
-                                    />
-                                ) : (
-                                    <div className="flex aspect-video items-center justify-center bg-muted">
-                                        <span className="text-muted-foreground">No image</span>
-                                    </div>
-                                )}
-                            </div>
+                    <FadeIn delay={0.05}>
+                        <div className="flex flex-col gap-4">
+                            {project.featured && <span className="section-index text-primary">Featured project</span>}
+                            <h1 className="font-heading text-5xl leading-[0.95] font-extrabold tracking-[-0.05em] text-balance md:text-7xl">
+                                {project.title}
+                                <span className="text-primary">.</span>
+                            </h1>
+                        </div>
+                    </FadeIn>
+
+                    <FadeIn delay={0.1}>
+                        <div className="mt-10 overflow-hidden rounded-3xl border border-border bg-muted">
+                            {displayImage ? (
+                                <img src={displayImage} alt={project.title} className="max-h-[640px] w-full object-cover" />
+                            ) : (
+                                <div className="flex aspect-video items-center justify-center text-muted-foreground">No image</div>
+                            )}
+                        </div>
+                    </FadeIn>
+
+                    <div className="mt-12 grid gap-12 lg:grid-cols-[2fr_1fr]">
+                        <FadeIn delay={0.15}>
+                            <p className="text-xl leading-relaxed text-pretty text-muted-foreground md:text-2xl">{project.description}</p>
                         </FadeIn>
 
-                        {/* Content */}
                         <FadeIn delay={0.2}>
-                            <div>
-                                <h1 className="font-heading text-3xl font-bold md:text-4xl">
-                                    {project.title}
-                                </h1>
-
-                                {project.featured && (
-                                    <Badge className="mt-2 bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400">
-                                        Featured Project
-                                    </Badge>
-                                )}
-
-                                <p className="mt-4 text-lg text-muted-foreground">
-                                    {project.description}
-                                </p>
-
+                            <div className="flex flex-col gap-8 border-t border-border pt-6 lg:border-t-0 lg:border-l lg:pt-0 lg:pl-8">
                                 {project.tech_tags && project.tech_tags.length > 0 && (
-                                    <div className="mt-6">
-                                        <h3 className="mb-2 text-sm font-semibold text-muted-foreground">
-                                            Tech Stack
-                                        </h3>
+                                    <div className="flex flex-col gap-3">
+                                        <span className="section-index">Tech stack</span>
                                         <div className="flex flex-wrap gap-2">
                                             {project.tech_tags.map((tag) => (
-                                                <Badge key={tag} variant="secondary">
+                                                <span key={tag} className="rounded-full border border-border px-3 py-1 font-mono text-xs">
                                                     {tag}
-                                                </Badge>
+                                                </span>
                                             ))}
                                         </div>
                                     </div>
                                 )}
 
-                                <div className="mt-8 flex flex-wrap gap-4">
+                                <div className="flex flex-wrap gap-3">
                                     {project.url && (
-                                        <LinkPreview url={project.url} className={buttonVariants({ variant: 'default' })}>
-                                            <ExternalLink className="mr-2 h-4 w-4" />
-                                            View Live
+                                        <LinkPreview
+                                            url={project.url}
+                                            className="inline-flex min-h-12 items-center gap-2 rounded-full bg-primary px-6 font-semibold text-primary-foreground transition-shadow hover:shadow-lg hover:shadow-primary/30"
+                                        >
+                                            <ExternalLink className="h-4 w-4" />
+                                            View live
                                         </LinkPreview>
                                     )}
                                     {project.github_url && (
-                                        <Button variant="outline" asChild>
-                                            <a
-                                                href={project.github_url}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                            >
-                                                <Github className="mr-2 h-4 w-4" />
-                                                View Source
-                                            </a>
-                                        </Button>
+                                        <a
+                                            href={project.github_url}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="inline-flex min-h-12 items-center gap-2 rounded-full border border-border px-6 font-semibold transition-colors hover:border-primary hover:text-primary"
+                                        >
+                                            <Github className="h-4 w-4" />
+                                            View source
+                                        </a>
                                     )}
                                 </div>
 
-                                <div className="mt-8 flex items-center gap-2 text-sm text-muted-foreground">
+                                <div className="flex items-center gap-2 font-mono text-xs text-muted-foreground">
                                     <Calendar className="h-4 w-4" />
-                                    Added {new Date(project.created_at).toLocaleDateString('en-US', {
+                                    Added{' '}
+                                    {new Date(project.created_at).toLocaleDateString('en-US', {
                                         year: 'numeric',
                                         month: 'long',
                                         day: 'numeric',
@@ -191,39 +183,36 @@ export default function ProjectShow({ project }: Props) {
                     </div>
 
                     {allGallery.length > 0 && (
-                        <FadeIn delay={0.3}>
-                            <div className="mt-16">
-                                <h2 className="mb-6 font-heading text-2xl font-bold">Project Gallery</h2>
-                                <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3">
+                        <FadeIn delay={0.25}>
+                            <div className="mt-20">
+                                <span className="section-index">Gallery</span>
+                                <div className="mt-6 grid grid-cols-1 gap-5 sm:grid-cols-2 md:grid-cols-3">
                                     {allGallery.map((image, index) => (
-                                        <div
-                                            key={index}
-                                            className="group relative aspect-video cursor-pointer overflow-hidden rounded-xl border border-border bg-muted transition-all hover:shadow-lg"
+                                        <button
+                                            key={image}
+                                            type="button"
+                                            aria-label={`Open image ${index + 1}`}
+                                            className="group relative aspect-video overflow-hidden rounded-2xl border border-border bg-muted transition-colors hover:border-primary"
                                             onClick={() => openLightbox(index)}
                                         >
                                             <img
                                                 src={image}
                                                 alt={`${project.title} gallery ${index + 1}`}
+                                                loading="lazy"
                                                 className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110"
                                             />
-                                            <div className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
+                                            <span className="absolute inset-0 flex items-center justify-center bg-black/50 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
                                                 <ImageIcon className="h-8 w-8 text-white" />
-                                            </div>
-                                        </div>
+                                            </span>
+                                        </button>
                                     ))}
                                 </div>
                             </div>
                         </FadeIn>
                     )}
 
-                    <Lightbox
-                        isOpen={lightboxOpen}
-                        onClose={() => setLightboxOpen(false)}
-                        images={allGallery}
-                        initialIndex={currentImageIndex}
-                    />
-
-                </div>
+                    <Lightbox isOpen={lightboxOpen} onClose={() => setLightboxOpen(false)} images={allGallery} initialIndex={currentImageIndex} />
+                </PageContainer>
             </article>
         </GuestLayout>
     );

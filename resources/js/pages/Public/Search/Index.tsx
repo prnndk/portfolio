@@ -2,6 +2,7 @@
 
 import { FadeIn } from '@/components/aceternity/text-reveal';
 import { PageHeader } from '@/components/portfolio/page-header';
+import { PageContainer } from '@/components/portfolio/signal';
 import { Seo } from '@/components/seo';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -57,19 +58,19 @@ export default function SearchIndex({ query, posts, projects, activities, total 
                 url="/search"
             />
 
-            <div className="container mx-auto px-4 py-24">
+            <PageContainer>
                 <PageHeader title="Search" description="Find posts, projects, and activities across the entire site." />
 
                 {/* Search Input */}
                 <FadeIn delay={0.05}>
                     <div className="relative mb-10 max-w-2xl">
-                        <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                        <Search className="absolute top-1/2 left-4 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
                         <Input
                             type="search"
                             value={searchValue}
                             onChange={(e) => handleSearch(e.target.value)}
                             placeholder="Search posts, projects, activities..."
-                            className="h-12 pr-10 pl-9 text-base"
+                            className="h-14 rounded-full pr-12 pl-11 text-base"
                             autoFocus
                         />
                         {isPending && <Loader2 className="absolute top-1/2 right-3 h-4 w-4 -translate-y-1/2 animate-spin text-muted-foreground" />}
@@ -108,7 +109,7 @@ export default function SearchIndex({ query, posts, projects, activities, total 
                                 <section>
                                     <div className="mb-4 flex items-center gap-2">
                                         <FileText className="h-5 w-5 text-primary" />
-                                        <h2 className="font-heading text-xl font-bold">Blog Posts</h2>
+                                        <h2 className="font-heading text-2xl font-extrabold tracking-[-0.03em]">Blog Posts</h2>
                                         <Badge variant="secondary">{posts.length}</Badge>
                                     </div>
                                     <div className="grid gap-4 md:grid-cols-2">
@@ -116,7 +117,7 @@ export default function SearchIndex({ query, posts, projects, activities, total 
                                             <Link
                                                 key={post.id}
                                                 href={`/blog/${post.slug}`}
-                                                className="group flex flex-col rounded-lg border border-border p-4 transition-colors hover:border-primary/50 hover:bg-muted/50"
+                                                className="group flex flex-col rounded-2xl border border-border bg-card p-5 transition-colors hover:border-primary"
                                             >
                                                 <h3 className="line-clamp-2 font-semibold transition-colors group-hover:text-primary">
                                                     {post.title}
@@ -154,7 +155,7 @@ export default function SearchIndex({ query, posts, projects, activities, total 
                                 <section>
                                     <div className="mb-4 flex items-center gap-2">
                                         <FolderOpen className="h-5 w-5 text-primary" />
-                                        <h2 className="font-heading text-xl font-bold">Projects</h2>
+                                        <h2 className="font-heading text-2xl font-extrabold tracking-[-0.03em]">Projects</h2>
                                         <Badge variant="secondary">{projects.length}</Badge>
                                     </div>
                                     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -162,7 +163,7 @@ export default function SearchIndex({ query, posts, projects, activities, total 
                                             <Link
                                                 key={project.id}
                                                 href={`/projects/${project.slug}`}
-                                                className="group flex flex-col rounded-lg border border-border p-4 transition-colors hover:border-primary/50 hover:bg-muted/50"
+                                                className="group flex flex-col rounded-2xl border border-border bg-card p-5 transition-colors hover:border-primary"
                                             >
                                                 <h3 className="line-clamp-1 font-semibold transition-colors group-hover:text-primary">
                                                     {project.title}
@@ -192,7 +193,7 @@ export default function SearchIndex({ query, posts, projects, activities, total 
                                 <section>
                                     <div className="mb-4 flex items-center gap-2">
                                         <Award className="h-5 w-5 text-primary" />
-                                        <h2 className="font-heading text-xl font-bold">Activities</h2>
+                                        <h2 className="font-heading text-2xl font-extrabold tracking-[-0.03em]">Activities</h2>
                                         <Badge variant="secondary">{activities.length}</Badge>
                                     </div>
                                     <div className="grid gap-4 md:grid-cols-2">
@@ -200,7 +201,7 @@ export default function SearchIndex({ query, posts, projects, activities, total 
                                             <Link
                                                 key={activity.id}
                                                 href={`/activities/${activity.id}`}
-                                                className="group flex flex-col rounded-lg border border-border p-4 transition-colors hover:border-primary/50 hover:bg-muted/50"
+                                                className="group flex flex-col rounded-2xl border border-border bg-card p-5 transition-colors hover:border-primary"
                                             >
                                                 <h3 className="line-clamp-1 font-semibold transition-colors group-hover:text-primary">
                                                     {activity.title}
@@ -218,7 +219,7 @@ export default function SearchIndex({ query, posts, projects, activities, total 
                         )}
                     </div>
                 )}
-            </div>
+            </PageContainer>
         </GuestLayout>
     );
 }

@@ -1,32 +1,23 @@
 'use client';
 
-import GuestLayout from '@/layouts/guest-layout';
 import { FadeIn } from '@/components/aceternity/text-reveal';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Head, useForm, Link } from '@inertiajs/react';
-import { ArrowLeft, Send, Mail, MapPin, AlertCircle } from 'lucide-react';
-import { toast } from 'sonner';
-import { FormEventHandler, useState, useEffect, useRef } from 'react';
-import { z } from 'zod';
-import { cn } from '@/lib/utils';
+import { Mascot } from '@/components/portfolio/mascot';
+import { LiveClock, PageContainer } from '@/components/portfolio/signal';
 import { Seo } from '@/components/seo';
-
+import { Input } from '@/components/ui/input';
+import GuestLayout from '@/layouts/guest-layout';
+import { cn } from '@/lib/utils';
+import { Link, useForm } from '@inertiajs/react';
+import { AlertCircle, ArrowLeft, ArrowUpRight, Mail, MapPin, Send } from 'lucide-react';
+import { FormEventHandler, useEffect, useRef, useState } from 'react';
+import { toast } from 'sonner';
+import { z } from 'zod';
 
 // Zod validation schema
 const contactSchema = z.object({
-    name: z
-        .string()
-        .min(2, 'Name must be at least 2 characters')
-        .max(100, 'Name must be less than 100 characters'),
-    email: z
-        .string()
-        .email('Please enter a valid email address')
-        .min(1, 'Email is required'),
-    message: z
-        .string()
-        .min(10, 'Message must be at least 10 characters')
-        .max(5000, 'Message must be less than 5000 characters'),
+    name: z.string().min(2, 'Name must be at least 2 characters').max(100, 'Name must be less than 100 characters'),
+    email: z.string().email('Please enter a valid email address').min(1, 'Email is required'),
+    message: z.string().min(10, 'Message must be at least 10 characters').max(5000, 'Message must be less than 5000 characters'),
 });
 
 type ContactFormData = z.infer<typeof contactSchema>;
@@ -36,7 +27,7 @@ type FormDataWithSpamProtection = ContactFormData & {
     website: string; // Honeypot field
     _timestamp: number; // Form load timestamp
     [key: string]: string | number; // Index signature to satisfy FormDataType constraint
-}
+};
 
 // Field error component
 function FieldError({ message }: { message?: string }) {
@@ -53,7 +44,14 @@ export default function ContactIndex() {
     // Store form load timestamp for anti-bot protection
     const formLoadTime = useRef<number>(Math.floor(Date.now() / 1000));
 
-    const { data, setData, post, processing, errors: serverErrors, reset } = useForm<FormDataWithSpamProtection>({
+    const {
+        data,
+        setData,
+        post,
+        processing,
+        errors: serverErrors,
+        reset,
+    } = useForm<FormDataWithSpamProtection>({
         name: '',
         email: '',
         message: '',
@@ -136,7 +134,7 @@ export default function ContactIndex() {
                 formLoadTime.current = Math.floor(Date.now() / 1000);
                 setData('_timestamp', formLoadTime.current);
                 toast.success('Message sent successfully!', {
-                    description: 'Thank you for reaching out. I\'ll get back to you soon.',
+                    description: "Thank you for reaching out. I'll get back to you soon.",
                 });
             },
             onError: (errors) => {
@@ -172,63 +170,55 @@ export default function ContactIndex() {
                 url="/contact"
             />
 
-            <div className="container mx-auto px-4 py-24">
-                <FadeIn>
-                    <div className="mb-12">
+            <PageContainer>
+                <div className="grid gap-12 lg:grid-cols-[1fr_1.1fr] lg:gap-20">
+                    {/* Contact Info */}
+                    <FadeIn>
                         <Link
                             href="/"
-                            className="mb-4 inline-flex items-center text-sm text-muted-foreground hover:text-primary transition-colors"
+                            className="mb-8 inline-flex min-h-11 items-center gap-2 font-mono text-xs tracking-[0.14em] text-muted-foreground uppercase transition-colors hover:text-primary"
                         >
-                            <ArrowLeft className="mr-2 h-4 w-4" />
+                            <ArrowLeft className="h-4 w-4" />
                             Back to Home
                         </Link>
-                        <h1 className="font-heading text-4xl font-bold md:text-5xl">
-                            Get In Touch
+                        <h1 className="font-heading text-6xl leading-[0.88] font-extrabold tracking-[-0.06em] md:text-8xl">
+                            Get in
+                            <br />
+                            touch<span className="text-primary">.</span>
                         </h1>
-                        <p className="mt-4 max-w-2xl text-lg text-muted-foreground">
-                            Have a project in mind, or just want to chat?
+                        <p className="mt-8 max-w-md text-lg leading-relaxed text-pretty text-muted-foreground">
+                            Have a project in mind, or just want to chat? I&apos;m always open to discussing new projects, creative ideas or
+                            opportunities to be part of your visions.
                         </p>
-                    </div>
-                </FadeIn>
 
-                <div className="grid gap-12 lg:grid-cols-2">
-                    {/* Contact Info */}
-                    <FadeIn delay={0.1}>
-                        <div className="space-y-8">
-                            <p className="text-lg text-muted-foreground">
-                                I'm always open to discussing new projects, creative ideas or opportunities to be part of your visions.
-                            </p>
-
-                            <div className="space-y-6">
-                                <div className="flex items-start gap-4">
-                                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                                        <Mail className="h-5 w-5" />
-                                    </div>
-                                    <div>
-                                        <h3 className="font-medium">Email</h3>
-                                        <a href="mailto:me@aryagading.com" className="text-muted-foreground hover:text-primary transition-colors">
-                                            me@aryagading.com
-                                        </a>
-                                    </div>
-                                </div>
-                                <div className="flex items-start gap-4">
-                                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                                        <MapPin className="h-5 w-5" />
-                                    </div>
-                                    <div>
-                                        <h3 className="font-medium">Location</h3>
-                                        <p className="text-muted-foreground">
-                                            Indonesia
-                                        </p>
-                                    </div>
-                                </div>
+                        <div className="mt-10 border-t border-border">
+                            <a
+                                href="mailto:me@aryagading.com"
+                                className="group flex items-center justify-between gap-4 border-b border-border py-5 transition-colors hover:text-primary"
+                            >
+                                <span className="flex items-center gap-3">
+                                    <Mail className="h-5 w-5 text-primary" />
+                                    <span className="font-heading text-xl font-semibold tracking-[-0.02em]">me@aryagading.com</span>
+                                </span>
+                                <ArrowUpRight className="h-5 w-5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                            </a>
+                            <div className="flex items-center justify-between gap-4 border-b border-border py-5">
+                                <span className="flex items-center gap-3">
+                                    <MapPin className="h-5 w-5 text-primary" />
+                                    <span className="font-heading text-xl font-semibold tracking-[-0.02em]">Indonesia</span>
+                                </span>
+                                <span className="font-mono text-sm text-muted-foreground">
+                                    <LiveClock timeZone="Asia/Jakarta" /> · GMT+7
+                                </span>
                             </div>
                         </div>
+
+                        <Mascot pose="wave" className="mt-8 hidden h-56 w-48 lg:block" />
                     </FadeIn>
 
                     {/* Contact Form */}
                     <FadeIn delay={0.2}>
-                        <div className="rounded-2xl border border-border bg-card p-8 shadow-sm">
+                        <div className="rounded-3xl border border-border bg-card p-8 md:p-10">
                             <form onSubmit={handleContactSubmit} className="space-y-4">
                                 {/* Honeypot field - hidden from users, bots will fill it */}
                                 <div className="absolute -left-[9999px] opacity-0" aria-hidden="true">
@@ -257,10 +247,8 @@ export default function ContactIndex() {
                                         onChange={(e) => handleFieldChange('name', e.target.value)}
                                         onBlur={() => handleFieldBlur('name')}
                                         placeholder="Your name"
-                                        autoComplete='off'
-                                        className={cn(
-                                            hasError('name') && 'border-destructive focus-visible:ring-destructive'
-                                        )}
+                                        autoComplete="off"
+                                        className={cn(hasError('name') && 'border-destructive focus-visible:ring-destructive')}
                                     />
                                     <FieldError message={getError('name')} />
                                 </div>
@@ -275,10 +263,8 @@ export default function ContactIndex() {
                                         onChange={(e) => handleFieldChange('email', e.target.value)}
                                         onBlur={() => handleFieldBlur('email')}
                                         placeholder="your@email.com"
-                                        autoComplete='off'
-                                        className={cn(
-                                            hasError('email') && 'border-destructive focus-visible:ring-destructive'
-                                        )}
+                                        autoComplete="off"
+                                        className={cn(hasError('email') && 'border-destructive focus-visible:ring-destructive')}
                                     />
                                     <FieldError message={getError('email')} />
                                 </div>
@@ -294,32 +280,31 @@ export default function ContactIndex() {
                                         placeholder="Tell me about your project..."
                                         rows={5}
                                         className={cn(
-                                            'w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 transition-colors',
-                                            hasError('message') && 'border-destructive focus-visible:ring-destructive'
+                                            'w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background transition-colors placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none',
+                                            hasError('message') && 'border-destructive focus-visible:ring-destructive',
                                         )}
                                     />
-                                    <div className="flex items-center justify-between mt-1.5">
+                                    <div className="mt-1.5 flex items-center justify-between">
                                         <FieldError message={getError('message')} />
-                                        <span className={cn(
-                                            'text-xs',
-                                            data.message.length > 5000 ? 'text-destructive' : 'text-muted-foreground'
-                                        )}>
+                                        <span className={cn('text-xs', data.message.length > 5000 ? 'text-destructive' : 'text-muted-foreground')}>
                                             {data.message.length}/5000
                                         </span>
                                     </div>
                                 </div>
-                                <Button type="submit" className="w-full" disabled={processing}>
-                                    <Send className="mr-2 h-4 w-4" />
-                                    {processing ? 'Sending...' : 'Send Message'}
-                                </Button>
-                                <p className="text-xs text-center text-muted-foreground mt-4">
-                                    Your information is secure and will never be shared.
-                                </p>
+                                <button
+                                    type="submit"
+                                    disabled={processing}
+                                    className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-full bg-primary px-6 font-semibold text-primary-foreground transition-shadow hover:shadow-lg hover:shadow-primary/30 disabled:opacity-60"
+                                >
+                                    <Send className="h-4 w-4" />
+                                    {processing ? 'Sending...' : 'Send message'}
+                                </button>
+                                <p className="mt-4 text-center text-xs text-muted-foreground">Your information is secure and will never be shared.</p>
                             </form>
                         </div>
                     </FadeIn>
                 </div>
-            </div>
+            </PageContainer>
         </GuestLayout>
     );
 }

@@ -5,7 +5,6 @@ import { ImagePreviewModal } from '@/components/image-preview-modal';
 import { Seo } from '@/components/seo';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
-import { Spotlight } from '@/components/ui/spotlight-new';
 import { useImageCompression } from '@/hooks/use-image-compression';
 import GuestLayout from '@/layouts/guest-layout';
 import { downloadAllAsZip, downloadImage, formatFileSize } from '@/lib/image-compression';
@@ -481,20 +480,13 @@ export default function ImageCompressor() {
                 ]}
             />
 
-            {/* Ambient Background */}
-            <div className="pointer-events-none fixed inset-0 z-0 hidden overflow-hidden dark:block">
-                <div className="absolute -top-[20%] -right-[10%] h-[70vh] w-[70vh] rounded-full bg-blue-600/20 opacity-20 blur-[100px]" />
-                <div className="absolute top-[40%] -left-[10%] h-[50vh] w-[50vh] rounded-full bg-cyan-600/20 opacity-20 blur-[100px]" />
-            </div>
-
             {/* Header */}
-            <section className="relative pt-24 pb-8">
-                <Spotlight />
-                <div className="container mx-auto px-4">
+            <section className="relative pt-28 pb-8 md:pt-36">
+                <div className="mx-auto w-full max-w-6xl px-4 sm:px-6">
                     {/* Back Link */}
                     <Link
                         href="/tools"
-                        className="mb-6 inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-primary"
+                        className="mb-8 inline-flex min-h-11 items-center gap-2 font-mono text-xs tracking-[0.14em] text-muted-foreground uppercase transition-colors hover:text-primary"
                     >
                         <ArrowLeft className="h-4 w-4" />
                         Back to Tools
@@ -506,7 +498,7 @@ export default function ImageCompressor() {
                                 <ImageLucide className="h-7 w-7" />
                             </div>
                             <div>
-                                <h1 className="font-heading text-2xl font-bold md:text-3xl">Image Compressor</h1>
+                                <h1 className="font-heading text-3xl font-extrabold tracking-[-0.04em] md:text-5xl">Image Compressor</h1>
                                 <p className="text-sm text-muted-foreground">Compress images locally • 100% private</p>
                             </div>
                         </div>
@@ -531,7 +523,7 @@ export default function ImageCompressor() {
 
             {/* Main Content */}
             <section className="my-10 pb-24">
-                <div className="container mx-auto space-y-6 px-4">
+                <div className="mx-auto w-full max-w-6xl space-y-6 px-4 sm:px-6">
                     {/* Compression Settings - Always Visible */}
                     <CompressionSettings
                         quality={quality}
@@ -614,7 +606,7 @@ export default function ImageCompressor() {
                     {images.length === 0 && (
                         <div className="mt-4 grid gap-4 md:grid-cols-3">
                             <div className="rounded-xl border border-border bg-card p-6">
-                                <div className="mb-3 inline-flex h-10 w-10 items-center justify-center rounded-lg bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400">
+                                <div className="mb-3 inline-flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
                                     <Zap className="h-5 w-5" />
                                 </div>
                                 <h3 className="font-medium">Fast Compression</h3>
@@ -622,7 +614,7 @@ export default function ImageCompressor() {
                             </div>
 
                             <div className="rounded-xl border border-border bg-card p-6">
-                                <div className="mb-3 inline-flex h-10 w-10 items-center justify-center rounded-lg bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400">
+                                <div className="mb-3 inline-flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
                                     <Pencil className="h-5 w-5" />
                                 </div>
                                 <h3 className="font-medium">Edit Before Export</h3>
@@ -630,7 +622,7 @@ export default function ImageCompressor() {
                             </div>
 
                             <div className="rounded-xl border border-border bg-card p-6">
-                                <div className="mb-3 inline-flex h-10 w-10 items-center justify-center rounded-lg bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400">
+                                <div className="mb-3 inline-flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
                                     <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                                         <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
                                     </svg>

@@ -2,7 +2,6 @@
 
 import { Seo } from '@/components/seo';
 import { Button } from '@/components/ui/button';
-import { Spotlight } from '@/components/ui/spotlight-new';
 import GuestLayout from '@/layouts/guest-layout';
 import { downloadAsZip, downloadBlob, formatFileSize, getPdfPages, splitPdf, splitPdfToIndividual } from '@/lib/pdf-utils';
 import { cn } from '@/lib/utils';
@@ -155,12 +154,11 @@ export default function PdfSplit() {
                 <div className="absolute top-[40%] -left-[10%] h-[50vh] w-[50vh] rounded-full bg-rose-600/20 opacity-20 blur-[100px]" />
             </div>
 
-            <section className="relative pt-24 pb-8">
-                <Spotlight />
-                <div className="container mx-auto px-4">
+            <section className="relative pt-28 pb-8 md:pt-36">
+                <div className="mx-auto w-full max-w-6xl px-4 sm:px-6">
                     <Link
                         href="/tools"
-                        className="mb-6 inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-primary"
+                        className="mb-8 inline-flex min-h-11 items-center gap-2 font-mono text-xs tracking-[0.14em] text-muted-foreground uppercase transition-colors hover:text-primary"
                     >
                         <ArrowLeft className="h-4 w-4" />
                         Back to Tools
@@ -172,7 +170,7 @@ export default function PdfSplit() {
                                 <Scissors className="h-7 w-7" />
                             </div>
                             <div>
-                                <h1 className="font-heading text-2xl font-bold md:text-3xl">PDF Split</h1>
+                                <h1 className="font-heading text-3xl font-extrabold tracking-[-0.04em] md:text-5xl">PDF Split</h1>
                                 <p className="text-sm text-muted-foreground">Extract pages from PDF • 100% private</p>
                             </div>
                         </div>
@@ -190,7 +188,7 @@ export default function PdfSplit() {
             </section>
 
             <section className="my-10 pb-24">
-                <div className="container mx-auto space-y-6 px-4">
+                <div className="mx-auto w-full max-w-6xl space-y-6 px-4 sm:px-6">
                     {!file ? (
                         <>
                             {/* Drop Zone */}
@@ -223,7 +221,7 @@ export default function PdfSplit() {
                             {/* Feature Cards */}
                             <div className="mt-4 grid gap-4 md:grid-cols-3">
                                 <div className="rounded-xl border border-border bg-card p-6">
-                                    <div className="mb-3 inline-flex h-10 w-10 items-center justify-center rounded-lg bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400">
+                                    <div className="mb-3 inline-flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
                                         <Zap className="h-5 w-5" />
                                     </div>
                                     <h3 className="font-medium">Visual Page Selection</h3>
@@ -232,7 +230,7 @@ export default function PdfSplit() {
                                     </p>
                                 </div>
                                 <div className="rounded-xl border border-border bg-card p-6">
-                                    <div className="mb-3 inline-flex h-10 w-10 items-center justify-center rounded-lg bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400">
+                                    <div className="mb-3 inline-flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
                                         <Package className="h-5 w-5" />
                                     </div>
                                     <h3 className="font-medium">Split All Pages</h3>
@@ -241,7 +239,7 @@ export default function PdfSplit() {
                                     </p>
                                 </div>
                                 <div className="rounded-xl border border-border bg-card p-6">
-                                    <div className="mb-3 inline-flex h-10 w-10 items-center justify-center rounded-lg bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400">
+                                    <div className="mb-3 inline-flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10 text-primary">
                                         <Shield className="h-5 w-5" />
                                     </div>
                                     <h3 className="font-medium">100% Private</h3>

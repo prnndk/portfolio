@@ -223,7 +223,7 @@ export function ExpandableCard({ items, className }: ExpandableCardProps) {
                         layoutId={`card-${item.id}-${id}`}
                         key={item.id}
                         onClick={() => setActive(item)}
-                        className="group cursor-pointer overflow-hidden rounded-xl border border-border/50 bg-card transition-all hover:border-primary/50 hover:shadow-lg"
+                        className="group cursor-pointer overflow-hidden rounded-3xl border border-border bg-card transition-colors hover:border-primary"
                     >
                         <motion.div layoutId={`image-${item.id}-${id}`} className="relative overflow-hidden">
                             {item.image ? (

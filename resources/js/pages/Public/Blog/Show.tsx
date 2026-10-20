@@ -1,6 +1,5 @@
 'use client';
 
-import { useRef } from 'react';
 import { FadeIn } from '@/components/aceternity/text-reveal';
 import { MDXContent } from '@/components/mdx-content';
 import { ScrollProgress } from '@/components/portfolio/scroll-progress';
@@ -11,7 +10,8 @@ import { Button } from '@/components/ui/button';
 import GuestLayout from '@/layouts/guest-layout';
 import { type Post } from '@/types';
 import { Head, Link } from '@inertiajs/react';
-import { ArrowLeft, Calendar, Clock, Facebook, Linkedin, Link as LinkIcon, Tag as TagIcon, Twitter } from 'lucide-react';
+import { ArrowLeft, Calendar, Clock, Facebook, Linkedin, Link as LinkIcon, Twitter } from 'lucide-react';
+import { useRef } from 'react';
 import { toast } from 'sonner';
 
 interface Props {
@@ -131,22 +131,25 @@ export default function BlogShow({ post, relatedPosts = [] }: Props) {
             <TableOfContents content={post.content} />
 
             <article ref={articleRef} className="min-h-screen">
-                <div className="container mx-auto px-4 py-24">
+                <div className="mx-auto w-full max-w-6xl px-4 pt-28 pb-24 sm:px-6 md:pt-36 md:pb-32">
                     <FadeIn>
                         <Link
                             href="/blog"
-                            className="mb-8 inline-flex items-center text-sm text-muted-foreground transition-colors hover:text-primary"
+                            className="mb-8 inline-flex min-h-11 items-center gap-2 font-mono text-xs tracking-[0.14em] text-muted-foreground uppercase transition-colors hover:text-primary"
                         >
-                            <ArrowLeft className="mr-2 h-4 w-4" />
+                            <ArrowLeft className="h-4 w-4" />
                             Back to Blog
                         </Link>
                     </FadeIn>
 
                     <FadeIn delay={0.1}>
                         <header className="mx-auto max-w-3xl">
-                            <h1 className="font-heading text-3xl leading-tight font-bold md:text-4xl lg:text-5xl">{post.title}</h1>
-                            {post.excerpt && <p className="mt-4 text-lg leading-relaxed text-muted-foreground">{post.excerpt}</p>}
-                            <div className="mt-6 flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
+                            <h1 className="font-heading text-4xl leading-[0.98] font-extrabold tracking-[-0.05em] text-balance md:text-6xl">
+                                {post.title}
+                                <span className="text-primary">.</span>
+                            </h1>
+                            {post.excerpt && <p className="mt-6 text-xl leading-relaxed text-pretty text-muted-foreground">{post.excerpt}</p>}
+                            <div className="mt-6 flex flex-wrap items-center gap-4 font-mono text-xs text-muted-foreground">
                                 <span className="flex items-center gap-1.5">
                                     <Calendar className="h-4 w-4" />
                                     {formatDate(post.published_at)}
@@ -159,16 +162,14 @@ export default function BlogShow({ post, relatedPosts = [] }: Props) {
 
                             {/* Tags */}
                             {post.tags && post.tags.length > 0 && (
-                                <div className="mt-4 flex flex-wrap items-center gap-2">
-                                    <TagIcon className="h-3.5 w-3.5 text-muted-foreground" />
+                                <div className="mt-5 flex flex-wrap items-center gap-2">
                                     {post.tags.map((tag) => (
-                                        <Link key={tag.id} href={`/blog?tag=${tag.slug}`}>
-                                            <Badge
-                                                variant="secondary"
-                                                className="cursor-pointer transition-colors hover:bg-primary hover:text-primary-foreground"
-                                            >
-                                                {tag.name}
-                                            </Badge>
+                                        <Link
+                                            key={tag.id}
+                                            href={`/blog?tag=${tag.slug}`}
+                                            className="inline-flex min-h-9 items-center rounded-full border border-border px-3 font-mono text-xs transition-colors hover:border-primary hover:text-primary"
+                                        >
+                                            #{tag.name}
                                         </Link>
                                     ))}
                                 </div>
@@ -176,17 +177,35 @@ export default function BlogShow({ post, relatedPosts = [] }: Props) {
 
                             {/* Share buttons */}
                             <div className="mt-6 flex items-center gap-2">
-                                <span className="mr-2 text-sm text-muted-foreground">Share:</span>
-                                <Button variant="outline" size="icon" className="h-8 w-8" onClick={shareOnTwitter} title="Share on Twitter">
+                                <span className="mr-2 font-mono text-xs tracking-[0.14em] text-muted-foreground uppercase">Share</span>
+                                <Button
+                                    variant="outline"
+                                    size="icon"
+                                    className="size-11 rounded-full"
+                                    onClick={shareOnTwitter}
+                                    title="Share on Twitter"
+                                >
                                     <Twitter className="h-4 w-4" />
                                 </Button>
-                                <Button variant="outline" size="icon" className="h-8 w-8" onClick={shareOnFacebook} title="Share on Facebook">
+                                <Button
+                                    variant="outline"
+                                    size="icon"
+                                    className="size-11 rounded-full"
+                                    onClick={shareOnFacebook}
+                                    title="Share on Facebook"
+                                >
                                     <Facebook className="h-4 w-4" />
                                 </Button>
-                                <Button variant="outline" size="icon" className="h-8 w-8" onClick={shareOnLinkedIn} title="Share on LinkedIn">
+                                <Button
+                                    variant="outline"
+                                    size="icon"
+                                    className="size-11 rounded-full"
+                                    onClick={shareOnLinkedIn}
+                                    title="Share on LinkedIn"
+                                >
                                     <Linkedin className="h-4 w-4" />
                                 </Button>
-                                <Button variant="outline" size="icon" className="h-8 w-8" onClick={copyLink} title="Copy link">
+                                <Button variant="outline" size="icon" className="size-11 rounded-full" onClick={copyLink} title="Copy link">
                                     <LinkIcon className="h-4 w-4" />
                                 </Button>
                             </div>
@@ -195,7 +214,7 @@ export default function BlogShow({ post, relatedPosts = [] }: Props) {
 
                     {(post.featured_image || post.featured_image_url) && (
                         <FadeIn delay={0.2}>
-                            <div className="mx-auto mt-10 max-w-4xl overflow-hidden rounded-xl border border-border">
+                            <div className="mx-auto mt-10 max-w-4xl overflow-hidden rounded-3xl border border-border">
                                 <img
                                     src={post.featured_image ? `/storage/${post.featured_image}` : post.featured_image_url!}
                                     alt={post.title}
@@ -232,13 +251,13 @@ export default function BlogShow({ post, relatedPosts = [] }: Props) {
                     {relatedPosts.length > 0 && (
                         <FadeIn delay={0.5}>
                             <div className="mx-auto mt-16 max-w-3xl">
-                                <h2 className="mb-6 font-heading text-2xl font-bold">Related Posts</h2>
+                                <h2 className="mb-6 font-heading text-3xl font-extrabold tracking-[-0.04em]">Related posts</h2>
                                 <div className="grid gap-6 md:grid-cols-2">
                                     {relatedPosts.slice(0, 4).map((relatedPost) => (
                                         <Link
                                             key={relatedPost.id}
                                             href={`/blog/${relatedPost.slug}`}
-                                            className="group block rounded-lg border border-border p-4 transition-colors hover:border-primary/50 hover:bg-muted/50"
+                                            className="group block rounded-2xl border border-border bg-card p-5 transition-colors hover:border-primary"
                                         >
                                             <h3 className="line-clamp-2 font-semibold transition-colors group-hover:text-primary">
                                                 {relatedPost.title}
@@ -265,7 +284,7 @@ export default function BlogShow({ post, relatedPosts = [] }: Props) {
 
                     <FadeIn delay={0.5}>
                         <div className="mx-auto mt-12 max-w-3xl border-t border-border pt-8">
-                            <Link href="/blog" className="inline-flex items-center text-sm text-primary hover:underline">
+                            <Link href="/blog" className="inline-flex min-h-11 items-center font-mono text-sm text-primary hover:underline">
                                 <ArrowLeft className="mr-2 h-4 w-4" />
                                 View all posts
                             </Link>

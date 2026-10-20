@@ -3,7 +3,7 @@
 import { FadeIn } from '@/components/aceternity/text-reveal';
 import { Mascot } from '@/components/portfolio/mascot';
 import { ProjectTile } from '@/components/portfolio/project-tile';
-import { Container, CursorHint, LiveClock, MagneticLink, Marquee, SectionHeader, SpinBadge } from '@/components/portfolio/signal';
+import { Container, CursorHint, EmptyBlock, LiveClock, MagneticLink, Marquee, SectionHeader, SpinBadge } from '@/components/portfolio/signal';
 import { TypedCycle } from '@/components/portfolio/typed-cycle';
 import { Seo } from '@/components/seo';
 import GuestLayout from '@/layouts/guest-layout';
@@ -72,15 +72,6 @@ function LazyGlobe() {
                     <GlobeScene />
                 </Suspense>
             )}
-        </div>
-    );
-}
-
-function EmptyBlock({ text }: { text: string }) {
-    return (
-        <div className="flex flex-col items-center gap-4 rounded-3xl border border-dashed border-border p-12 text-center">
-            <Mascot pose="lost" follow={false} className="h-28 w-24" />
-            <p className="text-muted-foreground">{text}</p>
         </div>
     );
 }
