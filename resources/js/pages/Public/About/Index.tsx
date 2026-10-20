@@ -1,19 +1,16 @@
 'use client';
 
-import { motion } from 'framer-motion';
-import { ArrowRight, Linkedin, Mail, Instagram, Download, MapPin, Code2, Camera, Laptop, Sparkles, Github, Coffee, Gamepad2, BookOpen, Music, MessageSquare, Image as ImageIcon } from 'lucide-react';
-import GuestLayout from '@/layouts/guest-layout';
-import { Spotlight } from '@/components/ui/spotlight-new';
-import { TextReveal, FadeIn } from '@/components/aceternity/text-reveal';
-import { Link } from '@inertiajs/react';
-import { Button } from '@/components/ui/button';
+import { FadeIn } from '@/components/aceternity/text-reveal';
+import { Mascot } from '@/components/portfolio/mascot';
+import { Container, MagneticLink, SectionHeader, TiltCard } from '@/components/portfolio/signal';
 import { Seo } from '@/components/seo';
-import { Highlighter } from '@/components/ui/highlighter';
 import { DraggableCardBody, DraggableCardContainer } from '@/components/ui/draggable-card';
-import { Timeline } from '@/components/ui/timeline';
-import { Floating, FloatingElement } from '@/components/ui/parallax-floating';
 import { Lightbox } from '@/components/ui/lightbox';
-
+import GuestLayout from '@/layouts/guest-layout';
+import { cn } from '@/lib/utils';
+import { Link } from '@inertiajs/react';
+import { motion } from 'framer-motion';
+import { ArrowRight, ArrowUpRight, BookOpen, Code2, Coffee, Download, Gamepad2, Layers, MapPin, Music, Server } from 'lucide-react';
 import { useRef, useState } from 'react';
 
 // Journey type from backend
@@ -35,640 +32,364 @@ interface Props {
     journeys: Journey[];
 }
 
-// Polaroid style photo card component
-const PolaroidCard = ({
-    icon: Icon,
+const strong = 'font-semibold text-foreground';
+
+const expertise = [
+    {
+        icon: Layers,
+        title: 'Full Stack Development',
+        text: 'Building comprehensive web and mobile solutions. I craft interactive interfaces using React/Next.js and integrate them with powerful backends like Laravel and Node.js.',
+    },
+    {
+        icon: Code2,
+        title: 'Backend Engineering',
+        text: 'Designing scalable logic and REST APIs. My focus is on performance and data efficiency using Python, Go, and Node.js, ensuring applications run smoothly under load.',
+    },
+    {
+        icon: Server,
+        title: 'DevOps & Infrastructure',
+        text: 'Bridging development and operations. I manage server deployments using Docker, Nginx, and Linux automation to create secure and reliable production environments.',
+    },
+];
+
+const beyond = [
+    { icon: Coffee, title: 'Coffee lover', text: 'Fuel for late-night coding sessions' },
+    { icon: Gamepad2, title: 'Gamer', text: "Cities Skylines, Assassin's Creed, Football Manager and many more" },
+    { icon: BookOpen, title: 'Learner', text: 'Always exploring new technologies' },
+    { icon: Music, title: 'Music fan', text: 'Coldplay, Sheila on 7, and more' },
+];
+
+const links = [
+    { label: 'Email', handle: 'me@aryagading.com', href: 'mailto:me@aryagading.com' },
+    { label: 'GitHub', handle: '@prnndk', href: 'https://github.com/prnndk' },
+    { label: 'LinkedIn', handle: 'Arya Gading', href: 'https://linkedin.com/in/aryagading' },
+    { label: 'Instagram', handle: '@gadingprinandika', href: 'https://instagram.com/gadingprinandika' },
+];
+
+const formatMonth = (date: string | null) => (date ? new Date(date).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }) : null);
+
+/** Draggable photo card. Drag it around inside the hero. */
+function Polaroid({
     imageUrl,
     label,
     rotation,
-    className,
     constraintRef,
 }: {
-    icon?: React.ElementType;
-    imageUrl?: string;
+    imageUrl: string;
     label: string;
     rotation: string;
-    className?: string;
-    constraintRef?: React.RefObject<Element | null>;
-}) => (
-    <DraggableCardContainer className={className}>
-        <DraggableCardBody
-            constraintRef={constraintRef}
-            className={`flex flex-col items-center justify-between bg-white dark:bg-neutral-900 p-3 min-h-[340px] w-64 shadow-xl ${rotation}`}
-        >
-            {/* Photo area */}
-            <div className="relative flex-1 w-full bg-slate-100 dark:bg-slate-800 overflow-hidden mb-4 h-64">
-                {imageUrl ? (
+    constraintRef: React.RefObject<Element | null>;
+}) {
+    return (
+        <DraggableCardContainer>
+            <DraggableCardBody
+                constraintRef={constraintRef}
+                className={cn('flex min-h-[320px] w-60 flex-col justify-between rounded-2xl border border-border bg-card p-3 shadow-xl', rotation)}
+            >
+                <div className="relative h-60 w-full overflow-hidden rounded-xl bg-muted">
                     <img
                         src={imageUrl}
                         alt={label}
-                        className="absolute inset-0 h-full w-full object-cover pointer-events-none select-none transition-transform duration-500 hover:scale-110"
                         draggable={false}
+                        className="pointer-events-none absolute inset-0 h-full w-full object-cover select-none"
                     />
-                ) : (
-                    <div className="absolute inset-0 bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-800 dark:to-slate-700 flex items-center justify-center">
-                        {Icon && <Icon className="h-16 w-16 text-primary/60" strokeWidth={1.5} />}
-                    </div>
-                )}
-            </div>
-            {/* Label area */}
-            <div className="w-full text-center pb-2">
-                <p className="font-handwriting text-base text-muted-foreground/80">{label}</p>
-            </div>
-        </DraggableCardBody>
-    </DraggableCardContainer>
-);
+                </div>
+                <p className="pt-3 pb-1 text-center font-mono text-xs tracking-[0.14em] text-muted-foreground uppercase">{label}</p>
+            </DraggableCardBody>
+        </DraggableCardContainer>
+    );
+}
 
-// Journey Timeline Item Component with gallery lightbox
-function JourneyTimelineItem({ journey, onGalleryClick }: { journey: Journey; onGalleryClick: (images: string[], index: number) => void }) {
-    const formatDate = (date: string | null) => {
-        if (!date) return null;
-        return new Date(date).toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
-    };
-
-    const galleryImages = journey.all_gallery_images.map(img => img.url);
+function JourneyEntry({ journey, onGalleryClick }: { journey: Journey; onGalleryClick: (images: string[], index: number) => void }) {
+    const gallery = journey.all_gallery_images.map((img) => img.url);
+    const from = formatMonth(journey.start_date);
 
     return (
-        <div>
-            {/* Header with Logo (optional) */}
-            <div className="flex items-start gap-4 mb-3">
-                {/* Only show logo if it exists */}
-                {journey.logo_display_url && (
-                    <div className="h-14 w-14 shrink-0 rounded-xl border border-border bg-white dark:bg-neutral-900 overflow-hidden shadow-sm">
-                        <img
-                            src={journey.logo_display_url}
-                            alt={journey.organization || journey.title}
-                            className="h-full w-full object-contain p-1.5"
-                        />
-                    </div>
+        <div className="grid gap-4 border-b border-border py-10 sm:grid-cols-[160px_1fr] sm:gap-10">
+            <div className="flex flex-col gap-1">
+                <span className="font-heading text-4xl font-extrabold tracking-[-0.05em] text-primary">
+                    {journey.start_date ? new Date(journey.start_date).getFullYear() : 'Now'}
+                </span>
+                {from && (
+                    <span className="font-mono text-xs text-muted-foreground">
+                        {from} – {journey.end_date ? formatMonth(journey.end_date) : 'Present'}
+                    </span>
                 )}
-                <div className="flex-1 min-w-0">
-                    <p className="text-foreground text-sm md:text-base font-semibold">
-                        {journey.title}
-                    </p>
-                    {(journey.subtitle || journey.organization) && (
-                        <p className="text-sm text-muted-foreground">
-                            {journey.subtitle}
-                            {journey.subtitle && journey.organization && ' · '}
-                            {journey.organization}
-                        </p>
-                    )}
-                    {journey.start_date && (
-                        <p className="text-xs text-muted-foreground mt-0.5">
-                            {formatDate(journey.start_date)} - {journey.end_date ? formatDate(journey.end_date) : 'Present'}
-                        </p>
-                    )}
-                </div>
             </div>
 
-            {/* Description - limited to 3 lines */}
-            {journey.description && (
-                <p className="text-muted-foreground text-sm md:text-base mb-4">
-                    {journey.description}
-                </p>
-            )}
-
-            {/* Skills */}
-            {journey.skills && journey.skills.length > 0 && (
-                <div className="flex flex-wrap gap-2 mb-4">
-                    {journey.skills.map((skill, i) => (
-                        <span key={i} className="px-3 py-1 text-xs rounded-full bg-primary/10 text-primary">
-                            {skill}
-                        </span>
-                    ))}
-                </div>
-            )}
-
-            {/* Gallery Preview */}
-            {galleryImages.length > 0 && (
-                <div className="mt-4">
-                    <div className="flex items-center gap-2 mb-2">
-                        <ImageIcon className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-xs text-muted-foreground">
-                            {galleryImages.length} photo{galleryImages.length > 1 ? 's' : ''} - Click to view fullscreen
-                        </span>
+            <div className="flex flex-col gap-4">
+                <div className="flex items-start gap-4">
+                    {journey.logo_display_url && (
+                        <div className="size-14 shrink-0 overflow-hidden rounded-xl border border-border bg-white">
+                            <img
+                                src={journey.logo_display_url}
+                                alt={journey.organization || journey.title}
+                                className="h-full w-full object-contain p-1.5"
+                            />
+                        </div>
+                    )}
+                    <div className="min-w-0">
+                        <h3 className="font-heading text-2xl font-bold tracking-[-0.03em]">{journey.title}</h3>
+                        {(journey.subtitle || journey.organization) && (
+                            <p className="text-muted-foreground">{[journey.subtitle, journey.organization].filter(Boolean).join(' · ')}</p>
+                        )}
                     </div>
-                    <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
-                        {galleryImages.slice(0, 4).map((url, i) => (
+                </div>
+
+                {journey.description && <p className="max-w-2xl leading-relaxed text-pretty text-muted-foreground">{journey.description}</p>}
+
+                {journey.skills && journey.skills.length > 0 && (
+                    <div className="flex flex-wrap gap-2">
+                        {journey.skills.map((skill) => (
+                            <span key={skill} className="rounded-full border border-border px-3 py-1 font-mono text-xs">
+                                {skill}
+                            </span>
+                        ))}
+                    </div>
+                )}
+
+                {gallery.length > 0 && (
+                    <div className="grid max-w-xl grid-cols-4 gap-2">
+                        {gallery.slice(0, 4).map((url, i) => (
                             <button
-                                key={i}
-                                onClick={() => onGalleryClick(galleryImages, i)}
-                                className="group relative aspect-video overflow-hidden rounded-lg border border-border bg-muted cursor-pointer hover:ring-2 hover:ring-primary transition-all"
+                                key={url}
+                                type="button"
+                                onClick={() => onGalleryClick(gallery, i)}
+                                aria-label={`Open photo ${i + 1} of ${journey.title}`}
+                                className="group relative aspect-video overflow-hidden rounded-lg border border-border bg-muted transition-colors hover:border-primary"
                             >
                                 <img
                                     src={url}
-                                    alt={`${journey.title} photo ${i + 1}`}
+                                    alt=""
+                                    loading="lazy"
                                     className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-110"
                                 />
-                                {i === 3 && galleryImages.length > 4 && (
-                                    <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
-                                        <span className="text-white text-lg font-semibold">
-                                            +{galleryImages.length - 4}
-                                        </span>
-                                    </div>
+                                {i === 3 && gallery.length > 4 && (
+                                    <span className="absolute inset-0 flex items-center justify-center bg-black/60 font-semibold text-white">
+                                        +{gallery.length - 4}
+                                    </span>
                                 )}
                             </button>
                         ))}
                     </div>
-                </div>
-            )}
+                )}
+            </div>
         </div>
     );
 }
 
 export default function About({ journeys }: Props) {
     const containerRef = useRef<HTMLElement>(null);
-
-    // Lightbox state
-    const [lightboxOpen, setLightboxOpen] = useState(false);
-    const [lightboxImages, setLightboxImages] = useState<string[]>([]);
-    const [lightboxIndex, setLightboxIndex] = useState(0);
-
-    const openLightbox = (images: string[], index: number) => {
-        setLightboxImages(images);
-        setLightboxIndex(index);
-        setLightboxOpen(true);
-    };
-
-    // Convert journeys to timeline data format
-    const timelineData = journeys.map((journey) => {
-        // Get year from start_date for title
-        const year = journey.start_date
-            ? new Date(journey.start_date).getFullYear().toString()
-            : 'Present';
-
-        return {
-            title: year,
-            content: (
-                <JourneyTimelineItem
-                    journey={journey}
-                    onGalleryClick={openLightbox}
-                />
-            ),
-        };
-    });
-
-    // Fallback if no journeys
-    const fallbackTimelineData = [
-        {
-            title: "2024",
-            content: (
-                <div>
-                    <p className="text-foreground text-sm md:text-base font-semibold mb-2">
-                        Full-Stack Developer & Tech Lead
-                    </p>
-                    <p className="text-muted-foreground text-sm md:text-base mb-4">
-                        Leading development of enterprise applications, implementing microservices architecture,
-                        and mentoring junior developers. Built scalable systems handling thousands of concurrent users.
-                    </p>
-                    <div className="flex flex-wrap gap-2">
-                        <span className="px-3 py-1 text-xs rounded-full bg-primary/10 text-primary">Laravel</span>
-                        <span className="px-3 py-1 text-xs rounded-full bg-primary/10 text-primary">React</span>
-                        <span className="px-3 py-1 text-xs rounded-full bg-primary/10 text-primary">Go</span>
-                        <span className="px-3 py-1 text-xs rounded-full bg-primary/10 text-primary">Kubernetes</span>
-                    </div>
-                </div>
-            ),
-        },
-    ];
+    const [lightbox, setLightbox] = useState<{ open: boolean; images: string[]; index: number }>({ open: false, images: [], index: 0 });
+    const openLightbox = (images: string[], index: number) => setLightbox({ open: true, images, index });
 
     return (
         <GuestLayout>
-            {/* Ambient Background */}
-            <div className="pointer-events-none fixed inset-0 z-0 hidden dark:block overflow-hidden transition-opacity duration-700">
-                <div className="absolute -top-[20%] -right-[10%] h-[70vh] w-[70vh] rounded-full bg-blue-600/20 blur-[100px] opacity-20" />
-                <div className="absolute top-[30%] -left-[10%] h-[50vh] w-[50vh] rounded-full bg-indigo-600/20 blur-[100px] opacity-20" />
-                <div className="absolute -bottom-[20%] right-[20%] h-[60vh] w-[60vh] rounded-full bg-violet-600/20 blur-[100px] opacity-20" />
-            </div>
-
             <Seo
                 title="About Me | Portfolio Arya Gading Prinandika"
                 description="Learn more about Arya Gading Prinandika - a passionate software engineer specializing in modern web development."
             />
 
-            {/* Hero Section with Draggable Polaroid Photos */}
-            <section ref={containerRef} className="relative min-h-screen overflow-hidden">
-                <Spotlight />
-
-                <div className="container mx-auto flex min-h-screen flex-col lg:flex-row items-center justify-center gap-8 lg:gap-16 px-4 py-24">
-                    {/* Draggable Polaroid Photos */}
-                    <div className="relative w-full max-w-lg h-[400px] lg:h-[500px] flex-shrink-0">
-                        {/* Instructions */}
-                        <motion.p
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            transition={{ delay: 1.5 }}
-                            className="absolute -top-8 left-1/2 -translate-x-1/2 text-xs text-muted-foreground/60 whitespace-nowrap"
-                        >
-                            Drag the cards around!
-                        </motion.p>
-
-                        {/* Polaroid 1 - Top Left */}
+            {/* Hero */}
+            <section ref={containerRef} className="relative overflow-hidden pt-28 pb-20 md:pt-36">
+                <Container className="grid items-center gap-12 lg:grid-cols-[1fr_1.1fr]">
+                    <div className="relative mx-auto h-[420px] w-full max-w-md lg:h-[500px]">
+                        <p className="absolute -top-6 left-1/2 -translate-x-1/2 font-mono text-xs tracking-[0.14em] whitespace-nowrap text-muted-foreground uppercase">
+                            Drag the cards around
+                        </p>
                         <motion.div
                             initial={{ opacity: 0, scale: 0.8, rotate: -15 }}
                             animate={{ opacity: 1, scale: 1, rotate: -8 }}
                             transition={{ delay: 0.3, duration: 0.5 }}
-                            className="absolute top-0 left-4 md:left-0 z-10"
+                            className="absolute top-0 left-2 z-10 md:left-0"
                         >
-                            <PolaroidCard
-                                icon={Camera}
-                                imageUrl="profile.jpg"
-                                label="Capturing moments"
-                                rotation="rotate-[-8deg]"
-                                constraintRef={containerRef}
-                            />
+                            <Polaroid imageUrl="/profile.jpg" label="Capturing moments" rotation="rotate-[-8deg]" constraintRef={containerRef} />
                         </motion.div>
-
-                        {/* Polaroid 2 - Center */}
                         <motion.div
-                            initial={{ opacity: 0, scale: 0.8, rotate: 0 }}
+                            initial={{ opacity: 0, scale: 0.8 }}
                             animate={{ opacity: 1, scale: 1, rotate: 3 }}
                             transition={{ delay: 0.5, duration: 0.5 }}
-                            className="absolute top-12 left-1/2 -translate-x-1/2 md:translate-x-0 md:top-16 md:left-28 z-20"
+                            className="absolute top-12 left-1/2 z-20 -translate-x-1/2 md:top-16 md:left-24 md:translate-x-0"
                         >
-                            <PolaroidCard
-                                icon={Laptop}
-                                imageUrl="profile.jpg"
-                                label="Building things"
-                                rotation="rotate-[3deg]"
-                                constraintRef={containerRef}
-                            />
+                            <Polaroid imageUrl="/profile.jpg" label="Building things" rotation="rotate-[3deg]" constraintRef={containerRef} />
                         </motion.div>
-
-                        {/* Polaroid 3 - Bottom Right */}
                         <motion.div
                             initial={{ opacity: 0, scale: 0.8, rotate: 10 }}
                             animate={{ opacity: 1, scale: 1, rotate: 6 }}
                             transition={{ delay: 0.7, duration: 0.5 }}
-                            className="absolute top-24 right-4 md:top-32 md:right-0 z-30"
+                            className="absolute top-24 right-2 z-30 md:top-32 md:right-0"
                         >
-                            <PolaroidCard
-                                icon={Sparkles}
-                                imageUrl="profile.jpg"
-                                label="Creating magic"
-                                rotation="rotate-[6deg]"
-                                constraintRef={containerRef}
-                            />
+                            <Polaroid imageUrl="/profile.jpg" label="Creating magic" rotation="rotate-[6deg]" constraintRef={containerRef} />
                         </motion.div>
                     </div>
 
-                    {/* Content Section */}
-                    <div className="flex-1 text-center lg:text-left max-w-xl">
-                        <TextReveal delay={0.2}>
-                            <span className="mb-4 inline-block rounded-full bg-primary/10 px-4 py-1.5 text-sm font-medium text-primary">
-                                About Me
+                    <div className="flex [animation:var(--animate-fade-up)] flex-col gap-6">
+                        <span className="section-index">
+                            <span className="text-primary">00 / </span>About
+                        </span>
+                        <h1 className="font-heading text-[clamp(3rem,7vw,6rem)] leading-[0.9] font-extrabold tracking-[-0.06em] text-balance">
+                            I&apos;m Arya Gading&nbsp;P<span className="text-primary">.</span>
+                        </h1>
+                        <p className="text-lg leading-relaxed text-muted-foreground">
+                            Hi, I&apos;m <strong className={strong}>Arya</strong>. I am a passionate{' '}
+                            <strong className={strong}>Developer and Student</strong> based in <strong className={strong}>Indonesia</strong> who loves
+                            challenges and learning new things.
+                        </p>
+                        <p className="leading-relaxed text-muted-foreground">
+                            I specialize in building <strong className={strong}>Web and Mobile Applications</strong> using modern tech stacks, with
+                            additional expertise in <strong className={strong}>DevOps and Cloud Infrastructure</strong>. Just like normal human, i
+                            like playing games, listening to music, and watching movies when i&apos;m not coding.
+                        </p>
+                        <div className="flex flex-wrap gap-2 font-mono text-xs">
+                            <span className="inline-flex items-center gap-2 rounded-full border border-border px-3 py-1.5">
+                                <MapPin className="h-3.5 w-3.5 text-primary" />
+                                Indonesia
                             </span>
-                        </TextReveal>
-
-                        <TextReveal delay={0.4}>
-                            <h1 className="font-heading text-4xl font-bold leading-tight md:text-5xl lg:text-6xl">
-                                I'm <Highlighter action="underline" color="#87CEFA" delay={900}>Arya Gading P.</Highlighter>
-                            </h1>
-                        </TextReveal>
-
-                        <TextReveal delay={0.6}>
-                            <p className="mt-6 text-lg text-muted-foreground leading-relaxed">
-                                Hi, I'm <strong className="font-semibold text-foreground">Arya</strong>. I am a passionate <strong className="font-semibold text-foreground">Developer and Student</strong> based in <strong className="font-semibold text-foreground">Indonesia</strong> who loves challenges and learning new things.
-
-                            </p>
-                        </TextReveal>
-
-                        <TextReveal delay={0.8}>
-                            <p className="mt-4 text-muted-foreground leading-relaxed">
-                                I specialize in building <strong className="font-semibold text-foreground">Web and Mobile Applications</strong> using modern tech stacks, with additional expertise in <strong className="font-semibold text-foreground">DevOps and Cloud Infrastructure</strong>.
-                                Just like normal human, i like playing games, listening to music, and watching movies when i'm not coding.
-                            </p>
-                        </TextReveal>
-
-                        <TextReveal delay={1}>
-                            <div className="mt-8 flex flex-wrap justify-center lg:justify-start gap-4">
-                                <div className="flex items-center gap-2 text-muted-foreground">
-                                    <MapPin className="h-4 w-4 text-primary" />
-                                    <span className="text-sm">Indonesia</span>
-                                </div>
-                                <div className="flex items-center gap-2 text-muted-foreground">
-                                    <Code2 className="h-4 w-4 text-primary" />
-                                    <span className="text-sm">3+ Years Experience</span>
-                                </div>
-                            </div>
-                        </TextReveal>
-
-                        <TextReveal delay={1.2}>
-                            <div className="mt-8 flex flex-wrap justify-center lg:justify-start gap-4">
-                                <Button size="lg" asChild>
-                                    <Link href="/contact">
-                                        Get In Touch
-                                        <ArrowRight className="ml-2 h-4 w-4" />
-                                    </Link>
-                                </Button>
-                                <Button size="lg" variant="outline" asChild>
-                                    <a href="/resume.pdf" download>
-                                        <Download className="mr-2 h-4 w-4" />
-                                        Download CV
-                                    </a>
-                                </Button>
-                            </div>
-                        </TextReveal>
+                            <span className="inline-flex items-center gap-2 rounded-full border border-border px-3 py-1.5">
+                                <Code2 className="h-3.5 w-3.5 text-primary" />
+                                3+ years experience
+                            </span>
+                        </div>
+                        <div className="flex flex-wrap items-center gap-3">
+                            <MagneticLink
+                                href="/contact"
+                                className="inline-flex min-h-12 items-center gap-2 rounded-full bg-primary px-6 font-semibold text-primary-foreground transition-shadow hover:shadow-lg hover:shadow-primary/30"
+                            >
+                                Get in touch
+                                <ArrowRight className="h-4 w-4" />
+                            </MagneticLink>
+                            <a
+                                href="/resume.pdf"
+                                download
+                                className="inline-flex min-h-12 items-center gap-2 rounded-full border border-border px-6 font-semibold transition-colors hover:border-primary hover:text-primary"
+                            >
+                                <Download className="h-4 w-4" />
+                                Download CV
+                            </a>
+                        </div>
                     </div>
-                </div>
+                </Container>
             </section>
 
-            {/* What I Do Section */}
-            <section className="py-24 border-t border-border bg-card">
-                <div className="container mx-auto px-4">
+            {/* What I do */}
+            <section className="border-t border-border py-24 md:py-32">
+                <Container>
                     <FadeIn>
-                        <div className="text-center mb-16">
-                            <h2 className="font-heading text-3xl font-bold md:text-4xl">
-                                What I Do
-                            </h2>
-                            <p className="mt-4 text-muted-foreground max-w-2xl mx-auto text-lg">
-                                As a <span className="text-primary font-semibold">University Student & Developer</span>, I bridge the gap between academic theory and real-world application. I love exploring new technologies to build robust software, from concept to deployment.
-                            </p>
-                        </div>
+                        <SectionHeader index="01" label="Expertise" title="What I do" className="mb-6" />
+                        <p className="mb-12 max-w-2xl text-lg leading-relaxed text-pretty text-muted-foreground">
+                            As a <span className="font-semibold text-primary">University Student &amp; Developer</span>, I bridge the gap between
+                            academic theory and real-world application. I love exploring new technologies to build robust software, from concept to
+                            deployment.
+                        </p>
                     </FadeIn>
-
-                    <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-                        {/* Card 1: Full Stack Focus */}
-                        <FadeIn delay={0.1}>
-                            <div className="group h-full rounded-2xl border border-border bg-background p-8 transition-all hover:border-primary/50 hover:shadow-lg">
-                                <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400">
-                                    <Code2 className="h-6 w-6" />
-                                </div>
-                                <h3 className="font-heading text-xl font-semibold">Full Stack Development</h3>
-                                <p className="mt-2 text-muted-foreground leading-relaxed">
-                                    Building comprehensive web and mobile solutions. I craft interactive interfaces using React/Next.js and integrate them with powerful backends like Laravel and Node.js.
-                                </p>
-                            </div>
-                        </FadeIn>
-
-                        {/* Card 2: Backend Focus */}
-                        <FadeIn delay={0.2}>
-                            <div className="group h-full rounded-2xl border border-border bg-background p-8 transition-all hover:border-primary/50 hover:shadow-lg">
-                                <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400">
-                                    <svg className="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                        <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
-                                    </svg>
-                                </div>
-                                <h3 className="font-heading text-xl font-semibold">Backend Engineering</h3>
-                                <p className="mt-2 text-muted-foreground leading-relaxed">
-                                    Designing scalable logic and REST APIs. My focus is on performance and data efficiency using Python, Go, and Node.js, ensuring applications run smoothly under load.
-                                </p>
-                            </div>
-                        </FadeIn>
-
-                        {/* Card 3: DevOps Focus */}
-                        <FadeIn delay={0.3}>
-                            <div className="group h-full rounded-2xl border border-border bg-background p-8 transition-all hover:border-primary/50 hover:shadow-lg">
-                                <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-xl bg-cyan-100 text-cyan-600 dark:bg-cyan-900/30 dark:text-cyan-400">
-                                    <svg className="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                                        <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
-                                    </svg>
-                                </div>
-                                <h3 className="font-heading text-xl font-semibold">DevOps & Infrastructure</h3>
-                                <p className="mt-2 text-muted-foreground leading-relaxed">
-                                    Bridging development and operations. I manage server deployments using Docker, Nginx, and Linux automation to create secure and reliable production environments.
-                                </p>
-                            </div>
-                        </FadeIn>
+                    <div className="grid gap-5 md:grid-cols-3">
+                        {expertise.map(({ icon: Icon, title, text }, i) => (
+                            <FadeIn key={title} delay={i * 0.1}>
+                                <TiltCard max={5} className="h-full">
+                                    <div className="flex h-full flex-col gap-4 rounded-3xl border border-border bg-card p-8 transition-colors hover:border-primary">
+                                        <div className="flex items-center justify-between">
+                                            <span className="flex size-12 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+                                                <Icon className="h-6 w-6" />
+                                            </span>
+                                            <span className="font-mono text-xs text-muted-foreground">{String(i + 1).padStart(2, '0')}</span>
+                                        </div>
+                                        <h3 className="font-heading text-2xl font-bold tracking-[-0.03em]">{title}</h3>
+                                        <p className="leading-relaxed text-muted-foreground">{text}</p>
+                                    </div>
+                                </TiltCard>
+                            </FadeIn>
+                        ))}
                     </div>
-                </div>
+                </Container>
             </section>
 
-            {/* Timeline / Journey Section */}
-            <section className="border-t border-border">
-                <Timeline
-                    data={timelineData.length > 0 ? timelineData : fallbackTimelineData}
-                    title="My Journey"
-                    description="From curious beginner to building production-grade applications. Here's how my story unfolded."
-                />
-            </section>
-
-            {/* Fun Facts Section */}
-            <section className="py-24 border-t border-border bg-card">
-                <div className="container mx-auto px-4">
+            {/* Journey */}
+            <section className="border-t border-border py-24 md:py-32">
+                <Container>
                     <FadeIn>
-                        <div className="text-center mb-16">
-                            <h2 className="font-heading text-3xl font-bold md:text-4xl">
-                                Beyond The Code
-                            </h2>
-                            <p className="mt-2 text-muted-foreground">
-                                A few things that keep me going
-                            </p>
-                        </div>
+                        <SectionHeader index="02" label="Journey" title="How my story unfolded" className="mb-6" />
+                        <p className="mb-8 max-w-2xl text-lg text-pretty text-muted-foreground">
+                            From curious beginner to building production-grade applications.
+                        </p>
                     </FadeIn>
-
-                    <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 max-w-5xl mx-auto">
-                        <FadeIn delay={0.1}>
-                            <div className="h-full min-h-[180px] text-center p-6 rounded-2xl border border-border bg-background hover:border-primary/50 transition-all flex flex-col items-center">
-                                <div className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400 mb-3">
-                                    <Coffee className="h-6 w-6" />
-                                </div>
-                                <h3 className="font-heading font-semibold">Coffee Lover</h3>
-                                <p className="text-sm text-muted-foreground mt-1 flex-1">Fuel for late-night coding sessions</p>
-                            </div>
-                        </FadeIn>
-                        <FadeIn delay={0.2}>
-                            <div className="h-full min-h-[180px] text-center p-6 rounded-2xl border border-border bg-background hover:border-primary/50 transition-all flex flex-col items-center">
-                                <div className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400 mb-3">
-                                    <Gamepad2 className="h-6 w-6" />
-                                </div>
-                                <h3 className="font-heading font-semibold">Gamer</h3>
-                                <p className="text-sm text-muted-foreground mt-1 flex-1">Cities Skylines, Assassin's Creed, Football Manager and many more</p>
-                            </div>
-                        </FadeIn>
-                        <FadeIn delay={0.3}>
-                            <div className="h-full min-h-[180px] text-center p-6 rounded-2xl border border-border bg-background hover:border-primary/50 transition-all flex flex-col items-center">
-                                <div className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400 mb-3">
-                                    <BookOpen className="h-6 w-6" />
-                                </div>
-                                <h3 className="font-heading font-semibold">Learner</h3>
-                                <p className="text-sm text-muted-foreground mt-1 flex-1">Always exploring new technologies</p>
-                            </div>
-                        </FadeIn>
-                        <FadeIn delay={0.4}>
-                            <div className="h-full min-h-[180px] text-center p-6 rounded-2xl border border-border bg-background hover:border-primary/50 transition-all flex flex-col items-center">
-                                <div className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400 mb-3">
-                                    <Music className="h-6 w-6" />
-                                </div>
-                                <h3 className="font-heading font-semibold">Music Fan</h3>
-                                <p className="text-sm text-muted-foreground mt-1 flex-1">Coldplay, Sheila on 7, and more</p>
-                            </div>
-                        </FadeIn>
-                    </div>
-                </div>
+                    {journeys.length > 0 ? (
+                        <div className="border-t border-border">
+                            {journeys.map((journey) => (
+                                <FadeIn key={journey.id}>
+                                    <JourneyEntry journey={journey} onGalleryClick={openLightbox} />
+                                </FadeIn>
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="flex flex-col items-center gap-4 rounded-3xl border border-dashed border-border p-12 text-center">
+                            <Mascot pose="coding" follow={false} className="h-28 w-24" />
+                            <p className="text-muted-foreground">My journey will appear here once it&apos;s added from the dashboard.</p>
+                        </div>
+                    )}
+                </Container>
             </section>
 
-            {/* Contact CTA Section */}
-            <section className="py-24 border-t border-border">
-                <div className="container mx-auto px-4">
+            {/* Beyond the code */}
+            <section className="border-t border-border py-24 md:py-32">
+                <Container>
                     <FadeIn>
-                        <div className="text-center mb-12">
-                            <h2 className="font-heading text-3xl font-bold md:text-4xl">
-                                Let's Connect
-                            </h2>
-                            <p className="mt-4 text-lg text-muted-foreground max-w-xl mx-auto">
-                                Whether you have a project in mind, want to discuss opportunities,
-                                or just want to say hi — I'd love to hear from you!
-                            </p>
-                        </div>
+                        <SectionHeader index="03" label="Off the clock" title="Beyond the code" />
                     </FadeIn>
-
-                    {/* Social Links Grid */}
-                    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 max-w-4xl mx-auto">
-                        <FadeIn delay={0.1}>
-                            <a
-                                href="mailto:me@aryagading.com"
-                                className="group flex flex-col items-center gap-3 rounded-2xl border border-border bg-card p-6 transition-all hover:border-primary/50 hover:shadow-lg hover:-translate-y-1"
-                            >
-                                <div className="flex h-14 w-14 items-center justify-center rounded-full bg-red-100 text-red-600 transition-colors group-hover:bg-red-600 group-hover:text-white dark:bg-red-900/30 dark:text-red-400 dark:group-hover:bg-red-600 dark:group-hover:text-white">
-                                    <Mail className="h-6 w-6" />
+                    <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+                        {beyond.map(({ icon: Icon, title, text }, i) => (
+                            <FadeIn key={title} delay={i * 0.08}>
+                                <div className="flex h-full min-h-48 flex-col gap-3 rounded-3xl border border-border bg-card p-6 transition-colors hover:border-primary">
+                                    <Icon className="h-7 w-7 text-primary" />
+                                    <h3 className="mt-auto font-heading text-xl font-bold tracking-[-0.02em]">{title}</h3>
+                                    <p className="text-sm leading-relaxed text-muted-foreground">{text}</p>
                                 </div>
-                                <div className="text-center">
-                                    <h3 className="font-semibold">Email</h3>
-                                    <p className="text-sm text-muted-foreground">me@aryagading.com</p>
-                                </div>
-                            </a>
-                        </FadeIn>
-
-                        <FadeIn delay={0.2}>
-                            <a
-                                href="https://github.com/prnndk"
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="group flex flex-col items-center gap-3 rounded-2xl border border-border bg-card p-6 transition-all hover:border-primary/50 hover:shadow-lg hover:-translate-y-1"
-                            >
-                                <div className="flex h-14 w-14 items-center justify-center rounded-full bg-gray-100 text-gray-800 transition-colors group-hover:bg-gray-800 group-hover:text-white dark:bg-gray-800 dark:text-gray-200 dark:group-hover:bg-gray-700">
-                                    <Github className="h-6 w-6" />
-                                </div>
-                                <div className="text-center">
-                                    <h3 className="font-semibold">GitHub</h3>
-                                    <p className="text-sm text-muted-foreground">@prnndk</p>
-                                </div>
-                            </a>
-                        </FadeIn>
-
-                        <FadeIn delay={0.3}>
-                            <a
-                                href="https://linkedin.com/in/aryagading"
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="group flex flex-col items-center gap-3 rounded-2xl border border-border bg-card p-6 transition-all hover:border-primary/50 hover:shadow-lg hover:-translate-y-1"
-                            >
-                                <div className="flex h-14 w-14 items-center justify-center rounded-full bg-blue-100 text-blue-600 transition-colors group-hover:bg-blue-600 group-hover:text-white dark:bg-blue-900/30 dark:text-blue-400 dark:group-hover:bg-blue-600 dark:group-hover:text-white">
-                                    <Linkedin className="h-6 w-6" />
-                                </div>
-                                <div className="text-center">
-                                    <h3 className="font-semibold">LinkedIn</h3>
-                                    <p className="text-sm text-muted-foreground">Arya Gading</p>
-                                </div>
-                            </a>
-                        </FadeIn>
-
-                        <FadeIn delay={0.4}>
-                            <a
-                                href="https://instagram.com/gadingprinandika"
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="group flex flex-col items-center gap-3 rounded-2xl border border-border bg-card p-6 transition-all hover:border-primary/50 hover:shadow-lg hover:-translate-y-1"
-                            >
-                                <div className="flex h-14 w-14 items-center justify-center rounded-full bg-pink-100 text-pink-600 transition-colors group-hover:bg-gradient-to-br group-hover:from-purple-500 group-hover:via-pink-500 group-hover:to-orange-500 group-hover:text-white dark:bg-pink-900/30 dark:text-pink-400">
-                                    <Instagram className="h-6 w-6" />
-                                </div>
-                                <div className="text-center">
-                                    <h3 className="font-semibold">Instagram</h3>
-                                    <p className="text-sm text-muted-foreground">@gadingprinandika</p>
-                                </div>
-                            </a>
-                        </FadeIn>
+                            </FadeIn>
+                        ))}
                     </div>
-
-                    {/* Main CTA Button with Floating Accessories */}
-                    <FadeIn delay={0.5}>
-                        <div className="mt-16 text-center flex justify-center w-full">
-                            <Floating sensitivity={-0.5} className="h-60 w-full max-w-2xl flex items-center justify-center relative">
-                                {/* 1. Image: Tech (Top Left) */}
-                                <FloatingElement depth={0.5} className="absolute top-0 left-[15%]">
-                                    <div className="h-14 w-14 overflow-hidden rounded-2xl shadow-lg rotate-[-6deg] opacity-90 grayscale hover:grayscale-0 transition-all duration-500 border border-white/10">
-                                        <img
-                                            src="https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=100&h=100&fit=crop&q=80"
-                                            alt="Tech"
-                                            className="h-full w-full object-cover"
-                                        />
-                                    </div>
-                                </FloatingElement>
-
-                                {/* 2. Icon: Mail (Top Center-Right) */}
-                                <FloatingElement depth={1} className="absolute -top-4 right-[30%]">
-                                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/10 backdrop-blur-md shadow-lg border border-white/20 rotate-[12deg]">
-                                        <Mail className="h-6 w-6 text-blue-500" />
-                                    </div>
-                                </FloatingElement>
-
-                                {/* 3. Image: Abstract (Right) */}
-                                <FloatingElement depth={2} className="absolute top-8 right-[10%]">
-                                    <div className="h-16 w-16 overflow-hidden rounded-2xl shadow-lg rotate-[6deg] opacity-90 grayscale hover:grayscale-0 transition-all duration-500 border border-white/10">
-                                        <img
-                                            src="https://images.unsplash.com/photo-1534972195531-d756b9bfa9f2?w=100&h=100&fit=crop&q=80"
-                                            alt="Abstract"
-                                            className="h-full w-full object-cover"
-                                        />
-                                    </div>
-                                </FloatingElement>
-
-                                {/* 4. Icon: Message (Bottom Left) */}
-                                <FloatingElement depth={1.5} className="absolute bottom-2 left-[20%]">
-                                    <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/10 backdrop-blur-md shadow-lg border border-white/20 rotate-[-12deg]">
-                                        <MessageSquare className="h-5 w-5 text-purple-500" />
-                                    </div>
-                                </FloatingElement>
-
-                                {/* 5. Image: Matrix (Bottom Right) */}
-                                <FloatingElement depth={0.8} className="absolute bottom-0 right-[20%]">
-                                    <div className="h-20 w-20 overflow-hidden rounded-2xl shadow-lg rotate-[-3deg] opacity-90 grayscale hover:grayscale-0 transition-all duration-500 border border-white/10">
-                                        <img
-                                            src="https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=100&h=100&fit=crop&q=80"
-                                            alt="Matrix"
-                                            className="h-full w-full object-cover"
-                                        />
-                                    </div>
-                                </FloatingElement>
-
-                                {/* 6. Image: Fluid (Left) */}
-                                <FloatingElement depth={2.5} className="absolute top-1/2 left-[5%] -translate-y-1/2">
-                                    <div className="h-12 w-12 overflow-hidden rounded-xl shadow-lg rotate-[15deg] opacity-80 grayscale hover:grayscale-0 transition-all duration-500 border border-white/10">
-                                        <img
-                                            src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=100&h=100&fit=crop&q=80"
-                                            alt="Fluid"
-                                            className="h-full w-full object-cover"
-                                        />
-                                    </div>
-                                </FloatingElement>
-
-                                {/* 7. Icon: Sparkles (Top Left scattered) */}
-                                <FloatingElement depth={0.3} className="absolute top-10 left-[25%] opacity-50">
-                                    <Sparkles className="h-6 w-6 text-amber-400 rotate-12" />
-                                </FloatingElement>
-
-                                <FloatingElement depth={0.2} className="relative z-10">
-                                    <Button size="lg" className="px-10 py-6 text-lg rounded-xl shadow-2xl hover:shadow-primary/30 hover:-translate-y-1 transition-all" asChild>
-                                        <Link href="/contact">
-                                            Get In Touch
-                                            <ArrowRight className="ml-2 h-5 w-5" />
-                                        </Link>
-                                    </Button>
-                                </FloatingElement>
-                            </Floating>
-                        </div>
-                    </FadeIn>
-                </div>
+                </Container>
             </section>
 
-            {/* Lightbox for gallery images */}
+            {/* Connect */}
+            <section className="border-t border-border py-24 md:py-32">
+                <Container className="grid items-start gap-12 lg:grid-cols-[1fr_1.4fr]">
+                    <FadeIn>
+                        <SectionHeader index="04" label="Connect" title="Let's connect" className="mb-6" />
+                        <p className="max-w-md text-lg leading-relaxed text-pretty text-muted-foreground">
+                            Whether you have a project in mind, want to discuss opportunities, or just want to say hi — I&apos;d love to hear from
+                            you!
+                        </p>
+                        <Mascot pose="wave" className="mt-8 hidden h-56 w-48 lg:block" />
+                    </FadeIn>
+                    <div className="border-t border-border">
+                        {links.map((link) => (
+                            <a
+                                key={link.label}
+                                href={link.href}
+                                target={link.href.startsWith('http') ? '_blank' : undefined}
+                                rel="noopener noreferrer"
+                                className="group grid items-center gap-2 border-b border-border py-6 transition-all hover:bg-card sm:grid-cols-[140px_1fr_auto] sm:gap-6 sm:hover:px-4"
+                            >
+                                <span className="font-mono text-xs tracking-[0.14em] text-muted-foreground uppercase">{link.label}</span>
+                                <span className="font-heading text-xl font-semibold tracking-[-0.02em] md:text-2xl">{link.handle}</span>
+                                <ArrowUpRight className="hidden h-6 w-6 text-primary transition-transform group-hover:translate-x-1 group-hover:-translate-y-1 sm:block" />
+                            </a>
+                        ))}
+                        <Link
+                            href="/contact"
+                            className="mt-6 inline-flex min-h-12 items-center gap-2 rounded-full bg-primary px-6 font-semibold text-primary-foreground"
+                        >
+                            Or use the contact form
+                            <ArrowRight className="h-4 w-4" />
+                        </Link>
+                    </div>
+                </Container>
+            </section>
+
             <Lightbox
-                images={lightboxImages}
-                initialIndex={lightboxIndex}
-                isOpen={lightboxOpen}
-                onClose={() => setLightboxOpen(false)}
+                images={lightbox.images}
+                initialIndex={lightbox.index}
+                isOpen={lightbox.open}
+                onClose={() => setLightbox((s) => ({ ...s, open: false }))}
             />
         </GuestLayout>
     );

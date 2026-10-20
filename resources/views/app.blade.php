@@ -65,14 +65,15 @@
         })();
     </script>
 
-    {{-- Preloader gate: first public page view per session; skipped for reduced motion and the admin/auth area --}}
+    {{-- Loader gate: public pages only, and not for reduced motion. First visit of a session gets the full intro, later hard loads the quick one --}}
     <script>
         (function () {
             try {
-                var skip = sessionStorage.getItem('preloaded')
-                    || window.matchMedia('(prefers-reduced-motion: reduce)').matches
+                var skip = window.matchMedia('(prefers-reduced-motion: reduce)').matches
                     || /^\/(admin|login|register|dashboard|settings|forgot-password|reset-password|verify-email|confirm-password|two-factor-challenge)/.test(location.pathname);
-                if (!skip) document.documentElement.classList.add('is-loading');
+                if (skip) return;
+                document.documentElement.classList.add('is-loading');
+                if (sessionStorage.getItem('preloaded')) document.documentElement.classList.add('is-quick');
             } catch (e) { }
         })();
     </script>
