@@ -1,7 +1,7 @@
 'use client';
 
 import { MascotMark } from '@/components/portfolio/mascot';
-import { Container } from '@/components/portfolio/signal';
+import { Container, CustomCursor } from '@/components/portfolio/signal';
 import { AnimatedThemeToggler } from '@/components/ui/animated-theme-toggler';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -468,6 +468,7 @@ export default function GuestLayout({ children }: GuestLayoutProps) {
                     </div>
                 </Container>
             </footer>
+            <CustomCursor />
             <Toaster />
         </div>
     );

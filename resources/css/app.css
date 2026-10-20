@@ -194,6 +194,26 @@
     --animate-mascot-blink: mascotBlink 4.5s infinite;
     --animate-wave: wave 1.4s ease-in-out infinite;
     --animate-tilt: tilt 3s ease-in-out infinite;
+    --animate-spin-slow: spinSlow 18s linear infinite;
+    --animate-cursor-hint: cursorHint 3.2s ease-in-out infinite;
+    --animate-ripple: ripple 3.2s ease-out infinite;
+
+    @keyframes spinSlow {
+        to { transform: rotate(360deg); }
+    }
+
+    @keyframes cursorHint {
+        0%, 100% { transform: translate(-14px, 8px); }
+        35%      { transform: translate(10px, -6px); }
+        60%      { transform: translate(10px, -6px) scale(0.86); }
+        70%      { transform: translate(10px, -6px) scale(1); }
+    }
+
+    @keyframes ripple {
+        0%, 55% { opacity: 0; transform: scale(0.3); }
+        62%     { opacity: 0.7; }
+        100%    { opacity: 0; transform: scale(1.6); }
+    }
 
     @keyframes bob {
         0%, 100% { transform: translateY(0); }

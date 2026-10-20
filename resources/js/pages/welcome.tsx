@@ -2,7 +2,7 @@
 
 import { FadeIn } from '@/components/aceternity/text-reveal';
 import { Mascot } from '@/components/portfolio/mascot';
-import { Container, MagneticLink, Marquee, SectionHeader, TiltCard } from '@/components/portfolio/signal';
+import { Container, CursorHint, LiveClock, MagneticLink, Marquee, SectionHeader, SpinBadge, TiltCard } from '@/components/portfolio/signal';
 import { TypedCycle } from '@/components/portfolio/typed-cycle';
 import { Seo } from '@/components/seo';
 import GuestLayout from '@/layouts/guest-layout';
@@ -10,11 +10,13 @@ import { getProjectImage } from '@/lib/project-utils';
 import { cn } from '@/lib/utils';
 import { type Activity, type Favorite, type Post, type Project, type TechStack } from '@/types';
 import { Link } from '@inertiajs/react';
+import { motion, useInView, useScroll, useTransform } from 'framer-motion';
 import { ArrowRight, ArrowUpRight, BookOpen, Film, Github, Instagram, Linkedin, Mail, Music } from 'lucide-react';
-import { lazy, Suspense, useEffect, useState } from 'react';
+import { lazy, Suspense, useEffect, useRef, useState } from 'react';
 
 // three.js is only fetched in the browser, after hydration
 const HeroScene = lazy(() => import('@/components/portfolio/hero-scene'));
+const GlobeScene = lazy(() => import('@/components/portfolio/globe-scene'));
 
 interface Props {
     projects?: Project[];
@@ -58,6 +60,22 @@ function useWebGL() {
     return ok;
 }
 
+/** Mounts the globe only once it scrolls into view, so the WebGL context isn't paid for up front. */
+function LazyGlobe() {
+    const ref = useRef<HTMLDivElement>(null);
+    const seen = useInView(ref, { once: true, margin: '200px' });
+    const webgl = useWebGL();
+    return (
+        <div ref={ref} className="h-full w-full">
+            {seen && webgl && (
+                <Suspense fallback={null}>
+                    <GlobeScene />
+                </Suspense>
+            )}
+        </div>
+    );
+}
+
 function EmptyBlock({ text }: { text: string }) {
     return (
         <div className="flex flex-col items-center gap-4 rounded-3xl border border-dashed border-border p-12 text-center">
@@ -69,6 +87,11 @@ function EmptyBlock({ text }: { text: string }) {
 
 export default function Welcome({ projects = [], activities = [], posts = [], techStacks = [], favorites = [] }: Props) {
     const webgl = useWebGL();
+    const heroRef = useRef<HTMLElement>(null);
+    const { scrollYProgress } = useScroll({ target: heroRef, offset: ['start start', 'end start'] });
+    const sceneY = useTransform(scrollYProgress, [0, 1], [0, 140]);
+    const sceneScale = useTransform(scrollYProgress, [0, 1], [1, 0.82]);
+    const nameY = useTransform(scrollYProgress, [0, 1], [0, -60]);
     const stackGroups = Object.entries(
         techStacks.reduce<Record<string, TechStack[]>>((acc, stack) => {
             (acc[stack.category || 'Other'] ??= []).push(stack);
@@ -81,7 +104,7 @@ export default function Welcome({ projects = [], activities = [], posts = [], te
             <Seo title="Home" description="Software Engineer specializing in modern web development with Laravel, React, and Golang." />
 
             {/* Hero */}
-            <section id="hero" className="relative overflow-hidden pt-28 pb-16 md:pt-36">
+            <section id="hero" ref={heroRef} className="relative overflow-hidden pt-28 pb-16 md:pt-36">
                 <Container className="grid items-center gap-10 lg:grid-cols-[1.1fr_1fr]">
                     <div className="flex [animation:var(--animate-fade-up)] flex-col gap-7">
                         <span className="inline-flex items-center gap-2 section-index">
@@ -89,10 +112,16 @@ export default function Welcome({ projects = [], activities = [], posts = [], te
                             Open to new projects
                         </span>
 
-                        <h1 className="font-heading text-6xl leading-[0.88] font-extrabold tracking-[-0.06em] sm:text-7xl lg:text-8xl">
-                            Arya Gading
-                            <span className="block text-muted-foreground/60">Prinandika</span>
-                        </h1>
+                        <motion.h1
+                            style={{ y: nameY }}
+                            className="font-heading text-[clamp(3.5rem,9.5vw,8.25rem)] leading-[0.86] font-extrabold tracking-[-0.065em]"
+                        >
+                            Arya
+                            <span className="block lg:pl-[0.6em]">
+                                Gading<span className="text-primary">*</span>
+                            </span>
+                            <span className="block text-[0.42em] leading-none tracking-[-0.04em] text-muted-foreground/70">Prinandika</span>
+                        </motion.h1>
 
                         <p className="flex flex-wrap items-baseline gap-x-3 text-xl md:text-2xl">
                             <span className="text-muted-foreground">I build</span>
@@ -135,7 +164,7 @@ export default function Welcome({ projects = [], activities = [], posts = [], te
                         </div>
                     </div>
 
-                    <div className="relative h-80 sm:h-[440px] lg:h-[560px]">
+                    <motion.div style={{ y: sceneY, scale: sceneScale }} className="relative h-80 sm:h-[440px] lg:h-[560px]">
                         <div className="absolute inset-8 rounded-full bg-primary/15 blur-3xl" aria-hidden="true" />
                         {webgl ? (
                             <Suspense fallback={<Mascot className="relative mx-auto h-full" />}>
@@ -144,8 +173,12 @@ export default function Welcome({ projects = [], activities = [], posts = [], te
                         ) : (
                             <Mascot className="relative mx-auto h-full" />
                         )}
-                        <p className="absolute right-0 bottom-0 hidden section-index sm:block">Move your cursor · click me</p>
-                    </div>
+                        {webgl && <CursorHint className="absolute bottom-0 left-1/2 hidden -translate-x-1/2 sm:flex" />}
+                        <SpinBadge
+                            text="WEB · MOBILE · INFRA · AI · WEB · MOBILE · INFRA · AI ·"
+                            className="absolute top-0 right-0 hidden size-28 lg:block"
+                        />
+                    </motion.div>
                 </Container>
             </section>
 
@@ -318,12 +351,35 @@ export default function Welcome({ projects = [], activities = [], posts = [], te
                 </Container>
             </section>
 
+            {/* Location */}
+            <section className="border-t border-border py-24 md:py-32">
+                <Container className="grid items-center gap-10 lg:grid-cols-2">
+                    <FadeIn>
+                        <SectionHeader index="05" label="Location" title="Based in Indonesia. Working anywhere." className="mb-8" />
+                        <div className="flex items-baseline gap-4">
+                            <LiveClock
+                                timeZone="Asia/Jakarta"
+                                className="font-heading text-5xl font-extrabold tracking-[-0.05em] text-primary md:text-6xl"
+                            />
+                            <span className="section-index">GMT+7 · local time</span>
+                        </div>
+                        <p className="mt-6 max-w-md text-lg leading-relaxed text-pretty text-muted-foreground">
+                            Remote-friendly and happy to overlap with your hours. Drag your cursor over the globe.
+                        </p>
+                    </FadeIn>
+                    <div className="relative mx-auto aspect-square w-full max-w-md">
+                        <div className="absolute inset-6 rounded-full bg-accent2/20 blur-3xl" aria-hidden="true" />
+                        <LazyGlobe />
+                    </div>
+                </Container>
+            </section>
+
             {/* Tools + favorites */}
             <section id="favorites" className="border-t border-border py-24 md:py-32">
                 <Container className="grid gap-5 lg:grid-cols-12">
                     <FadeIn className="lg:col-span-7">
                         <div className="flex h-full flex-col gap-6 rounded-3xl bg-accent2 p-8 text-accent2-foreground md:p-10">
-                            <span className="font-mono text-xs tracking-[0.14em] uppercase opacity-80">05 / Tools · free</span>
+                            <span className="font-mono text-xs tracking-[0.14em] uppercase opacity-80">06 / Tools · free</span>
                             <h2 className="font-heading text-4xl leading-[0.95] font-extrabold tracking-[-0.045em] md:text-5xl">
                                 7 tools. Zero uploads. Your files never leave the browser.
                             </h2>
