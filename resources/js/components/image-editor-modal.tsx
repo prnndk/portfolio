@@ -137,7 +137,7 @@ export function ImageEditorModal({ image, isOpen, onClose, onSave }: ImageEditor
                 setCropBox({ x, y, width: newWidth, height: newHeight });
             }
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+         
     }, [selectedRatio, isCropping]);
 
     const handleRotateCW = () => setRotation((r) => (r + 90) % 360);

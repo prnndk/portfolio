@@ -84,7 +84,7 @@
     <link rel="canonical" href="{{ url()->current() }}">
 
     <link rel="preconnect" href="https://fonts.bunny.net">
-    <link href="https://fonts.bunny.net/css?family=inter:400,500,600|space-grotesk:500,600,700" rel="stylesheet" />
+    <link href="https://fonts.bunny.net/css?family=dm-mono:300,400|inter:400,500,600|space-grotesk:500,600,700" rel="stylesheet" />
 
     @routes
     @viteReactRefresh

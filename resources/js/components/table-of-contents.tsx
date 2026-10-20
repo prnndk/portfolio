@@ -284,7 +284,7 @@ export function TableOfContents({ content, className }: TableOfContentsProps) {
                             </div>
 
                             {/* Content */}
-                            <nav className="flex-1 overflow-y-auto p-4">
+                            <nav className="scrollbar-slim flex-1 overflow-y-auto p-4">
                                 <div className="space-y-1">
                                     {tree.map(item => renderItem(item, 0))}
                                 </div>

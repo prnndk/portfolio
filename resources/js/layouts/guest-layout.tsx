@@ -216,24 +216,30 @@ export default function GuestLayout({ children }: GuestLayoutProps) {
 
     // Calculate background color based on scroll and theme
     const getNavBackground = () => {
-        if (!isScrolled) {
-            return 'transparent';
+        // Scrolled — denser glass; idle — subtle glass
+        if (isDark) {
+            return isScrolled ? 'rgba(17, 34, 64, 0.55)' : 'rgba(17, 34, 64, 0.30)';
         }
-        return isDark ? 'rgba(10, 22, 40, 0.9)' : 'rgba(255, 255, 255, 0.9)';
+        return isScrolled ? 'rgba(255, 255, 255, 0.65)' : 'rgba(255, 255, 255, 0.45)';
     };
 
     return (
         <div className="min-h-screen bg-background">
-            {/* Navbar */}
-            <header
-                className={cn('fixed top-0 z-50 w-full backdrop-blur-md transition-colors duration-300')}
-                style={{
-                    backgroundColor: getNavBackground(),
-                }}
-            >
-                <div className="container mx-auto flex h-16 items-center justify-between px-4">
-                    <Link href="/" className="font-heading text-xl font-bold text-primary">
-                        Gading's Portfolio
+            {/* Floating glassmorphism navbar */}
+            <header className="fixed inset-x-0 top-3 z-50 flex justify-center px-3 sm:top-5 sm:px-4">
+                <motion.div
+                    initial={{ opacity: 0, y: -16 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, ease: [0.25, 0.4, 0.25, 1] }}
+                    style={{ backgroundColor: getNavBackground() }}
+                    className={cn(
+                        'flex w-full max-w-6xl items-center justify-between gap-2 rounded-2xl border border-white/15 px-4 py-2 shadow-lg shadow-black/5 backdrop-blur-xl backdrop-saturate-150 transition-all duration-300 sm:rounded-full sm:px-5 sm:py-2',
+                        isScrolled && 'shadow-xl shadow-black/10 dark:border-white/10',
+                        isDark ? 'dark:border-white/10' : '',
+                    )}
+                >
+                    <Link href="/" className="font-heading text-base font-bold text-primary sm:text-lg">
+                        Gading<span className="text-foreground">.</span>
                     </Link>
 
                     {/* Desktop Nav */}
@@ -243,7 +249,13 @@ export default function GuestLayout({ children }: GuestLayoutProps) {
                                 {navItems.map((item) => (
                                     <NavigationMenuItem key={item.label}>
                                         <NavigationMenuLink asChild>
-                                            <Link href={item.href} className={cn(navigationMenuTriggerStyle(), 'bg-transparent')}>
+                                            <Link
+                                                href={item.href}
+                                                className={cn(
+                                                    navigationMenuTriggerStyle(),
+                                                    'h-9 rounded-full bg-transparent px-3 text-sm font-medium hover:bg-primary/10 hover:text-primary',
+                                                )}
+                                            >
                                                 {item.label}
                                             </Link>
                                         </NavigationMenuLink>
@@ -252,7 +264,9 @@ export default function GuestLayout({ children }: GuestLayoutProps) {
 
                                 {/* More Dropdown with Bento Grid */}
                                 <NavigationMenuItem>
-                                    <NavigationMenuTrigger className="bg-transparent">More</NavigationMenuTrigger>
+                                    <NavigationMenuTrigger className="h-9 rounded-full bg-transparent px-3 text-sm font-medium hover:bg-primary/10 hover:text-primary data-[state=open]:bg-primary/10 data-[state=open]:text-primary">
+                                        More
+                                    </NavigationMenuTrigger>
                                     <NavigationMenuContent>
                                         <div className="w-[400px] p-4 md:w-[500px]">
                                             {/* Header */}
@@ -290,38 +304,56 @@ export default function GuestLayout({ children }: GuestLayoutProps) {
                             </NavigationMenuList>
                         </NavigationMenu>
 
-                        <div className="ml-2 flex h-9 w-9 items-center justify-center">
-                            <Button variant="ghost" size="icon" className="h-9 w-9" onClick={() => setIsSearchOpen(true)} title="Search (Ctrl+K)">
-                                <Search className="h-4 w-4" />
-                            </Button>
-                        </div>
+                        <div className="ml-1 h-5 w-px bg-border/60" />
+
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-9 w-9 rounded-full hover:bg-primary/10 hover:text-primary"
+                            onClick={() => setIsSearchOpen(true)}
+                            title="Search (Ctrl+K)"
+                        >
+                            <Search className="h-4 w-4" />
+                        </Button>
                         <div className="flex h-9 w-9 items-center justify-center">
                             <AnimatedThemeToggler />
                         </div>
                     </div>
 
-                    <div className="flex items-center gap-2 md:hidden">
-                        <Button variant="ghost" size="icon" onClick={() => setIsSearchOpen(true)}>
-                            <Search className="h-5 w-5" />
+                    {/* Mobile actions */}
+                    <div className="flex items-center gap-1 md:hidden">
+                        <Button variant="ghost" size="icon" className="h-9 w-9 rounded-full" onClick={() => setIsSearchOpen(true)}>
+                            <Search className="h-4 w-4" />
                         </Button>
                         <div className="flex h-9 w-9 items-center justify-center">
                             <AnimatedThemeToggler />
                         </div>
-                        <Button variant="ghost" size="icon" onClick={() => setIsMenuOpen(!isMenuOpen)}>
-                            {isMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+                        <Button variant="ghost" size="icon" className="h-9 w-9 rounded-full" onClick={() => setIsMenuOpen(!isMenuOpen)}>
+                            {isMenuOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
                         </Button>
                     </div>
-                </div>
+                </motion.div>
+            </header>
 
-                {/* Mobile Menu */}
-                <motion.nav initial={false} animate={{ height: isMenuOpen ? 'auto' : 0 }} className="overflow-hidden md:hidden">
-                    <div className="container mx-auto space-y-2 px-4 pb-4">
+            {/* Mobile Menu — rendered as a separate floating panel below the navbar */}
+            <motion.nav
+                initial={false}
+                animate={{
+                    opacity: isMenuOpen ? 1 : 0,
+                    y: isMenuOpen ? 0 : -8,
+                    pointerEvents: isMenuOpen ? 'auto' : 'none',
+                }}
+                transition={{ duration: 0.2 }}
+                className="fixed inset-x-3 top-[68px] z-40 overflow-hidden md:hidden"
+            >
+                <div className="rounded-2xl border border-white/15 bg-background/85 p-4 shadow-xl shadow-black/10 backdrop-blur-xl backdrop-saturate-150 dark:border-white/10">
+                    <div className="space-y-1">
                         {navItems.map((item) =>
                             isInternalLink(item.href) ? (
                                 <Link
                                     key={item.label}
                                     href={item.href}
-                                    className="block py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
+                                    className="block rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-primary/10 hover:text-primary"
                                     onClick={() => setIsMenuOpen(false)}
                                 >
                                     {item.label}
@@ -330,7 +362,7 @@ export default function GuestLayout({ children }: GuestLayoutProps) {
                                 <a
                                     key={item.label}
                                     href={item.href}
-                                    className="block py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
+                                    className="block rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-primary/10 hover:text-primary"
                                     onClick={() => setIsMenuOpen(false)}
                                 >
                                     {item.label}
@@ -339,20 +371,20 @@ export default function GuestLayout({ children }: GuestLayoutProps) {
                         )}
 
                         {/* Mobile More Section */}
-                        <div className="border-t border-border pt-2">
+                        <div className="mt-2 border-t border-border/60 pt-2">
                             <button
                                 onClick={() => setIsMobileMoreOpen(!isMobileMoreOpen)}
-                                className="flex w-full items-center justify-between py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-primary"
+                                className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-primary/10 hover:text-primary"
                             >
                                 More
                                 <ChevronDown className={cn('h-4 w-4 transition-transform', isMobileMoreOpen && 'rotate-180')} />
                             </button>
                             <motion.div initial={false} animate={{ height: isMobileMoreOpen ? 'auto' : 0 }} className="overflow-hidden">
-                                <div className="space-y-2 py-2 pl-4">
-                                    <p className="text-xs tracking-wider text-muted-foreground/70 uppercase">Tools</p>
+                                <div className="space-y-1 py-2 pl-4">
+                                    <p className="px-2 pb-1 font-mono text-[0.65rem] tracking-wider text-muted-foreground/70 uppercase">Tools</p>
                                     <Link
                                         href="/tools"
-                                        className="flex items-center gap-2 py-1.5 text-sm text-muted-foreground hover:text-primary"
+                                        className="flex items-center gap-2 rounded-lg px-3 py-1.5 text-sm text-muted-foreground hover:bg-primary/10 hover:text-primary"
                                         onClick={() => setIsMenuOpen(false)}
                                     >
                                         <Wrench className="h-4 w-4" />
@@ -362,7 +394,7 @@ export default function GuestLayout({ children }: GuestLayoutProps) {
                                         <Link
                                             key={tool.href}
                                             href={tool.href}
-                                            className="flex items-center gap-2 py-1.5 text-sm text-muted-foreground hover:text-primary"
+                                            className="flex items-center gap-2 rounded-lg px-3 py-1.5 text-sm text-muted-foreground hover:bg-primary/10 hover:text-primary"
                                             onClick={() => setIsMenuOpen(false)}
                                         >
                                             <tool.icon className="h-4 w-4" />
@@ -373,8 +405,8 @@ export default function GuestLayout({ children }: GuestLayoutProps) {
                             </motion.div>
                         </div>
                     </div>
-                </motion.nav>
-            </header>
+                </div>
+            </motion.nav>
 
             <main>{children}</main>
 

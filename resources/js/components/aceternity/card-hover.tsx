@@ -1,16 +1,17 @@
 'use client';
 
 import { cn } from '@/lib/utils';
-import { motion } from 'framer-motion';
-import { type ReactNode, useState } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
+import { useEffect, useState, type ReactNode } from 'react';
 
 interface HoverCardProps {
     children: ReactNode;
     className?: string;
     onClick?: () => void;
+    onHoverChange?: (hovering: boolean) => void;
 }
 
-export function HoverCard({ children, className = '', onClick }: HoverCardProps) {
+export function HoverCard({ children, className = '', onClick, onHoverChange }: HoverCardProps) {
     const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
     const [isHovering, setIsHovering] = useState(false);
 
@@ -22,6 +23,11 @@ export function HoverCard({ children, className = '', onClick }: HoverCardProps)
         });
     };
 
+    const setHover = (v: boolean) => {
+        setIsHovering(v);
+        onHoverChange?.(v);
+    };
+
     return (
         <motion.div
             className={cn(
@@ -29,8 +35,8 @@ export function HoverCard({ children, className = '', onClick }: HoverCardProps)
                 className
             )}
             onMouseMove={handleMouseMove}
-            onMouseEnter={() => setIsHovering(true)}
-            onMouseLeave={() => setIsHovering(false)}
+            onMouseEnter={() => setHover(true)}
+            onMouseLeave={() => setHover(false)}
             onClick={onClick}
             whileHover={{ scale: 1.02 }}
             transition={{ duration: 0.2 }}
@@ -40,7 +46,7 @@ export function HoverCard({ children, className = '', onClick }: HoverCardProps)
                 className="pointer-events-none absolute -inset-px z-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100"
                 style={{
                     background: isHovering
-                        ? `radial-gradient(400px circle at ${mousePosition.x}px ${mousePosition.y}px, rgba(96, 165, 250, 0.1), transparent 40%)`
+                        ? `radial-gradient(400px circle at ${mousePosition.x}px ${mousePosition.y}px, color-mix(in oklch, var(--primary) 12%, transparent), transparent 40%)`
                         : 'none',
                 }}
             />
@@ -53,6 +59,7 @@ interface ProjectCardProps {
     title: string;
     description: string;
     image?: string | null;
+    gallery?: string[];
     tags?: string[];
     onClick?: () => void;
 }
@@ -61,20 +68,57 @@ export function ProjectCard({
     title,
     description,
     image,
+    gallery = [],
     tags = [],
     onClick,
 }: ProjectCardProps) {
+    const images = gallery.length > 0 ? gallery : image ? [image] : [];
+    const [imageIdx, setImageIdx] = useState(0);
+    const [isHovering, setIsHovering] = useState(false);
+
+    useEffect(() => {
+        if (!isHovering || images.length < 2) return;
+        const id = setInterval(() => {
+            setImageIdx((i) => (i + 1) % images.length);
+        }, 1500);
+        return () => clearInterval(id);
+    }, [isHovering, images.length]);
+
+    useEffect(() => {
+        if (!isHovering) setImageIdx(0);
+    }, [isHovering]);
+
+    const currentSrc = images[imageIdx];
+
     return (
-        <HoverCard className="cursor-pointer" onClick={onClick}>
-            {image && (
-                <div className="mb-4 aspect-video overflow-hidden rounded-lg">
-                    <motion.img
-                        src={image}
-                        alt={title}
-                        className="h-full w-full object-cover"
-                        whileHover={{ scale: 1.05 }}
-                        transition={{ duration: 0.3 }}
-                    />
+        <HoverCard className="cursor-pointer" onClick={onClick} onHoverChange={setIsHovering}>
+            {currentSrc && (
+                <div className="relative mb-4 aspect-video overflow-hidden rounded-lg bg-muted">
+                    <AnimatePresence mode="sync">
+                        <motion.img
+                            key={currentSrc}
+                            src={currentSrc}
+                            alt={title}
+                            className="absolute inset-0 h-full w-full object-cover"
+                            initial={{ opacity: 0, scale: 1.02 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0 }}
+                            transition={{ duration: 0.45 }}
+                        />
+                    </AnimatePresence>
+                    {images.length > 1 && (
+                        <div className="pointer-events-none absolute bottom-2 left-1/2 flex -translate-x-1/2 gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+                            {images.map((_, i) => (
+                                <span
+                                    key={i}
+                                    className={cn(
+                                        'h-1 w-4 rounded-full bg-white/50 transition-colors',
+                                        i === imageIdx && 'bg-primary',
+                                    )}
+                                />
+                            ))}
+                        </div>
+                    )}
                 </div>
             )}
             <h3 className="font-heading text-lg font-semibold">{title}</h3>
@@ -84,7 +128,7 @@ export function ProjectCard({
                     {tags.slice(0, 4).map((tag) => (
                         <span
                             key={tag}
-                            className="rounded-full bg-primary/10 px-2 py-0.5 text-xs text-primary"
+                            className="rounded-full bg-primary/10 px-2 py-0.5 font-mono text-xs text-primary"
                         >
                             {tag}
                         </span>

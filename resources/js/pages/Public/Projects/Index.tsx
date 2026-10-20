@@ -2,10 +2,11 @@ import { ProjectCard } from '@/components/aceternity/card-hover';
 import { FadeIn } from '@/components/aceternity/text-reveal';
 import { Pagination } from '@/components/pagination';
 import { PageHeader } from '@/components/portfolio/page-header';
+import { ScrollToTop } from '@/components/portfolio/scroll-to-top';
 import { Seo } from '@/components/seo';
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/components/ui/empty';
 import GuestLayout from '@/layouts/guest-layout';
-import { getProjectImage } from '@/lib/project-utils';
+import { getProjectGallery, getProjectImage } from '@/lib/project-utils';
 import { type PaginatedData, type Project } from '@/types';
 import { Link } from '@inertiajs/react';
 import { FolderOpen } from 'lucide-react';
@@ -22,6 +23,7 @@ export default function ProjectsIndex({ projects }: Props) {
                 description="A showcase of my work, side projects, and open source contributions."
                 url="/projects"
             />
+            <ScrollToTop />
 
             <div className="container mx-auto px-4 py-24">
                 <PageHeader title="All Projects" description="A showcase of my work, side projects, and open source contributions." />
@@ -36,6 +38,7 @@ export default function ProjectsIndex({ projects }: Props) {
                                             title={project.title}
                                             description={project.description}
                                             image={getProjectImage(project)}
+                                            gallery={getProjectGallery(project)}
                                             tags={project.tech_tags || []}
                                         />
                                     </Link>

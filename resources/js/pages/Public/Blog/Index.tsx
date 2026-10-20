@@ -3,6 +3,7 @@
 import { FadeIn } from '@/components/aceternity/text-reveal';
 import { Pagination } from '@/components/pagination';
 import { PageHeader } from '@/components/portfolio/page-header';
+import { ScrollToTop } from '@/components/portfolio/scroll-to-top';
 import { BlogCard } from '@/components/portfolio/sections';
 import { Seo } from '@/components/seo';
 import { Badge } from '@/components/ui/badge';
@@ -22,6 +23,7 @@ export default function BlogIndex({ posts, tags, activeTag }: Props) {
     return (
         <GuestLayout>
             <Seo title="Blog | Arya Gading Prinandika" description="Thoughts, tutorials, and insights on software development." url="/blog" />
+            <ScrollToTop />
 
             <div className="container mx-auto px-4 py-24">
                 <PageHeader title="Blog" description="Thoughts, tutorials, and insights on software development." />

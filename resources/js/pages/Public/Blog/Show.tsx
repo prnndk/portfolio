@@ -1,7 +1,10 @@
 'use client';
 
+import { useRef } from 'react';
 import { FadeIn } from '@/components/aceternity/text-reveal';
 import { MDXContent } from '@/components/mdx-content';
+import { ScrollProgress } from '@/components/portfolio/scroll-progress';
+import { ScrollToTop } from '@/components/portfolio/scroll-to-top';
 import { TableOfContents } from '@/components/table-of-contents';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -17,6 +20,7 @@ interface Props {
 }
 
 export default function BlogShow({ post, relatedPosts = [] }: Props) {
+    const articleRef = useRef<HTMLElement>(null);
     const appUrl = import.meta.env.VITE_APP_URL || 'https://aryagading.com';
     const postUrl = `${appUrl}/blog/${post.slug}`;
     // Always use auto-generated OG image as requested
@@ -117,10 +121,16 @@ export default function BlogShow({ post, relatedPosts = [] }: Props) {
                 <script type="application/ld+json">{JSON.stringify(jsonLd)}</script>
             </Head>
 
+            {/* Scroll progress indicator — bound to the article body */}
+            <ScrollProgress target={articleRef} />
+
+            {/* Scroll to top button (appears after 400px) */}
+            <ScrollToTop />
+
             {/* Table of Contents - Floating sidebar */}
             <TableOfContents content={post.content} />
 
-            <article className="min-h-screen">
+            <article ref={articleRef} className="min-h-screen">
                 <div className="container mx-auto px-4 py-24">
                     <FadeIn>
                         <Link

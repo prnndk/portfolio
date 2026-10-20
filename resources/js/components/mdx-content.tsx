@@ -6,12 +6,18 @@ import remarkGfm from 'remark-gfm';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { oneDark, oneLight } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { useAppearance } from '@/hooks/use-appearance';
+import { motion } from 'framer-motion';
 import { Check, Copy } from 'lucide-react';
 
 interface MDXContentProps {
     content: string;
     className?: string;
 }
+
+const REVEAL_VIEWPORT = { once: true, amount: 0.15, margin: '0px 0px -10% 0px' } as const;
+const REVEAL_TRANSITION = { duration: 0.45, ease: [0.25, 0.4, 0.25, 1] as [number, number, number, number] };
+const REVEAL_INITIAL = { opacity: 0, y: 18 };
+const REVEAL_ANIMATE = { opacity: 1, y: 0 };
 
 // Code block component with syntax highlighting and copy button
 function CodeBlock({ language, value }: { language: string; value: string }) {
@@ -26,9 +32,15 @@ function CodeBlock({ language, value }: { language: string; value: string }) {
     };
 
     return (
-        <div className="group relative my-6 overflow-hidden rounded-lg border border-border bg-slate-50 dark:bg-slate-900/50">
+        <motion.div
+            className="group relative my-6 overflow-hidden rounded-lg border border-border bg-slate-50 dark:bg-transparent"
+            initial={REVEAL_INITIAL}
+            whileInView={REVEAL_ANIMATE}
+            viewport={REVEAL_VIEWPORT}
+            transition={REVEAL_TRANSITION}
+        >
             {/* Header with language label and copy button */}
-            <div className="flex items-center justify-between border-b border-border bg-slate-100 dark:bg-slate-900/80 px-4 py-2">
+            <div className="flex items-center justify-between border-b border-border bg-slate-100 dark:border-border/60 dark:bg-transparent px-4 py-2">
                 <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">
                     {language || 'code'}
                 </span>
@@ -52,7 +64,7 @@ function CodeBlock({ language, value }: { language: string; value: string }) {
             </div>
             {/* Code content */}
             <SyntaxHighlighter
-                language={language}
+                language={language || 'text'}
                 style={isDark ? oneDark : oneLight}
                 customStyle={{
                     margin: 0,
@@ -61,17 +73,21 @@ function CodeBlock({ language, value }: { language: string; value: string }) {
                     fontSize: '0.875rem',
                     lineHeight: '1.7',
                 }}
+                codeTagProps={{
+                    style: { background: 'transparent' },
+                }}
                 showLineNumbers={value.split('\n').length > 3}
                 lineNumberStyle={{
                     minWidth: '2.5rem',
                     paddingRight: '1rem',
                     color: isDark ? '#636d83' : '#9ca3af',
                     userSelect: 'none',
+                    background: 'transparent',
                 }}
             >
                 {value}
             </SyntaxHighlighter>
-        </div>
+        </motion.div>
     );
 }
 
@@ -103,60 +119,100 @@ export function MDXContent({ content, className = '' }: MDXContentProps) {
             return <>{children}</>;
         },
         // Headings with anchor links
-        h1({ children, ...props }) {
+        h1({ children }) {
             const text = typeof children === 'string' ? children : '';
             const id = text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
             return (
-                <h1 id={id} className="group scroll-mt-24 mt-8 mb-4 text-3xl font-bold" {...props}>
+                <motion.h1
+                    id={id}
+                    className="group scroll-mt-24 mt-8 mb-4 text-3xl font-bold"
+                    initial={REVEAL_INITIAL}
+                    whileInView={REVEAL_ANIMATE}
+                    viewport={REVEAL_VIEWPORT}
+                    transition={REVEAL_TRANSITION}
+                >
                     {children}
                     <a href={`#${id}`} className="ml-2 opacity-0 transition-opacity group-hover:opacity-100 text-muted-foreground hover:text-primary">#</a>
-                </h1>
+                </motion.h1>
             );
         },
-        h2({ children, ...props }) {
+        h2({ children }) {
             const text = typeof children === 'string' ? children : '';
             const id = text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
             return (
-                <h2 id={id} className="group scroll-mt-24 mt-8 mb-4 text-2xl font-bold" {...props}>
+                <motion.h2
+                    id={id}
+                    className="group scroll-mt-24 mt-8 mb-4 text-2xl font-bold"
+                    initial={REVEAL_INITIAL}
+                    whileInView={REVEAL_ANIMATE}
+                    viewport={REVEAL_VIEWPORT}
+                    transition={REVEAL_TRANSITION}
+                >
                     {children}
                     <a href={`#${id}`} className="ml-2 opacity-0 transition-opacity group-hover:opacity-100 text-muted-foreground hover:text-primary">#</a>
-                </h2>
+                </motion.h2>
             );
         },
-        h3({ children, ...props }) {
+        h3({ children }) {
             const text = typeof children === 'string' ? children : '';
             const id = text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
             return (
-                <h3 id={id} className="group scroll-mt-24 mt-6 mb-3 text-xl font-bold" {...props}>
+                <motion.h3
+                    id={id}
+                    className="group scroll-mt-24 mt-6 mb-3 text-xl font-bold"
+                    initial={REVEAL_INITIAL}
+                    whileInView={REVEAL_ANIMATE}
+                    viewport={REVEAL_VIEWPORT}
+                    transition={REVEAL_TRANSITION}
+                >
                     {children}
                     <a href={`#${id}`} className="ml-2 opacity-0 transition-opacity group-hover:opacity-100 text-muted-foreground hover:text-primary">#</a>
-                </h3>
+                </motion.h3>
             );
         },
-        h4({ children, ...props }) {
+        h4({ children }) {
             const text = typeof children === 'string' ? children : '';
             const id = text.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
             return (
-                <h4 id={id} className="group scroll-mt-24 mt-6 mb-2 text-lg font-bold" {...props}>
+                <motion.h4
+                    id={id}
+                    className="group scroll-mt-24 mt-6 mb-2 text-lg font-bold"
+                    initial={REVEAL_INITIAL}
+                    whileInView={REVEAL_ANIMATE}
+                    viewport={REVEAL_VIEWPORT}
+                    transition={REVEAL_TRANSITION}
+                >
                     {children}
                     <a href={`#${id}`} className="ml-2 opacity-0 transition-opacity group-hover:opacity-100 text-muted-foreground hover:text-primary">#</a>
-                </h4>
+                </motion.h4>
             );
         },
         // Blockquote
-        blockquote({ children, ...props }) {
+        blockquote({ children }) {
             return (
-                <blockquote className="my-6 border-l-4 border-primary/50 bg-muted/30 pl-6 py-4 italic text-muted-foreground" {...props}>
+                <motion.blockquote
+                    className="my-6 border-l-4 border-primary/50 bg-muted/30 pl-6 py-4 italic text-muted-foreground"
+                    initial={REVEAL_INITIAL}
+                    whileInView={REVEAL_ANIMATE}
+                    viewport={REVEAL_VIEWPORT}
+                    transition={REVEAL_TRANSITION}
+                >
                     {children}
-                </blockquote>
+                </motion.blockquote>
             );
         },
         // Tables
         table({ children, ...props }) {
             return (
-                <div className="my-6 overflow-x-auto rounded-lg border border-border">
+                <motion.div
+                    className="my-6 overflow-x-auto rounded-lg border border-border"
+                    initial={REVEAL_INITIAL}
+                    whileInView={REVEAL_ANIMATE}
+                    viewport={REVEAL_VIEWPORT}
+                    transition={REVEAL_TRANSITION}
+                >
                     <table className="w-full text-sm" {...props}>{children}</table>
-                </div>
+                </motion.div>
             );
         },
         thead({ children, ...props }) {
@@ -221,8 +277,18 @@ export function MDXContent({ content, className = '' }: MDXContentProps) {
             return <hr className="my-8 border-t border-border" {...props} />;
         },
         // Paragraphs
-        p({ children, ...props }) {
-            return <p className="my-4 leading-relaxed" {...props}>{children}</p>;
+        p({ children }) {
+            return (
+                <motion.p
+                    className="my-4 leading-relaxed"
+                    initial={REVEAL_INITIAL}
+                    whileInView={REVEAL_ANIMATE}
+                    viewport={REVEAL_VIEWPORT}
+                    transition={REVEAL_TRANSITION}
+                >
+                    {children}
+                </motion.p>
+            );
         },
         // Strong/Bold
         strong({ children, ...props }) {
