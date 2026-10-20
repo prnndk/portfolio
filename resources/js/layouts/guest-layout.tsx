@@ -1,5 +1,7 @@
 'use client';
 
+import { MascotMark } from '@/components/portfolio/mascot';
+import { Container } from '@/components/portfolio/signal';
 import { AnimatedThemeToggler } from '@/components/ui/animated-theme-toggler';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -13,11 +15,11 @@ import {
     navigationMenuTriggerStyle,
 } from '@/components/ui/navigation-menu';
 import { Toaster } from '@/components/ui/sonner';
-import { initializeTheme, useAppearance } from '@/hooks/use-appearance';
+import { initializeTheme } from '@/hooks/use-appearance';
 import { cn } from '@/lib/utils';
 import { Link, router } from '@inertiajs/react';
 import { motion, useMotionValueEvent, useScroll } from 'framer-motion';
-import { ChevronDown, FileText, Image, Menu, Search, Wrench, X } from 'lucide-react';
+import { ChevronDown, FileText, Github, Image, Instagram, Linkedin, Mail, Menu, Search, Wrench, X } from 'lucide-react';
 import { type ReactNode, useEffect, useRef, useState } from 'react';
 
 interface GuestLayoutProps {
@@ -140,7 +142,6 @@ export default function GuestLayout({ children }: GuestLayoutProps) {
     const [searchQuery, setSearchQuery] = useState('');
     const searchInputRef = useRef<HTMLInputElement>(null);
     const { scrollY } = useScroll();
-    const { appearance } = useAppearance();
     const initializedRef = useRef(false);
     const [isScrolled, setIsScrolled] = useState(false);
 
@@ -196,11 +197,6 @@ export default function GuestLayout({ children }: GuestLayoutProps) {
         }
     };
 
-    // Determine if dark mode - safe for SSR
-    const isDark =
-        typeof window !== 'undefined' &&
-        (appearance === 'dark' || (appearance === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches));
-
     const navItems = [
         { label: 'Home', href: '/' },
         { label: 'About', href: '/about' },
@@ -214,14 +210,12 @@ export default function GuestLayout({ children }: GuestLayoutProps) {
     // Helper to determine if link is internal (not a hash link)
     const isInternalLink = (href: string) => href.startsWith('/') && !href.includes('#');
 
-    // Calculate background color based on scroll and theme
-    const getNavBackground = () => {
-        // Scrolled — denser glass; idle — subtle glass
-        if (isDark) {
-            return isScrolled ? 'rgba(17, 34, 64, 0.55)' : 'rgba(17, 34, 64, 0.30)';
-        }
-        return isScrolled ? 'rgba(255, 255, 255, 0.65)' : 'rgba(255, 255, 255, 0.45)';
-    };
+    const socials = [
+        { label: 'GitHub', href: 'https://github.com/prnndk', icon: Github },
+        { label: 'LinkedIn', href: 'https://linkedin.com/in/aryagading', icon: Linkedin },
+        { label: 'Instagram', href: 'https://instagram.com/gadingprinandika', icon: Instagram },
+        { label: 'Email', href: 'mailto:me@aryagading.com', icon: Mail },
+    ];
 
     return (
         <div className="min-h-screen bg-background">
@@ -231,15 +225,16 @@ export default function GuestLayout({ children }: GuestLayoutProps) {
                     initial={{ opacity: 0, y: -16 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5, ease: [0.25, 0.4, 0.25, 1] }}
-                    style={{ backgroundColor: getNavBackground() }}
                     className={cn(
-                        'flex w-full max-w-6xl items-center justify-between gap-2 rounded-2xl border border-white/15 px-4 py-2 shadow-lg shadow-black/5 backdrop-blur-xl backdrop-saturate-150 transition-all duration-300 sm:rounded-full sm:px-5 sm:py-2',
-                        isScrolled && 'shadow-xl shadow-black/10 dark:border-white/10',
-                        isDark ? 'dark:border-white/10' : '',
+                        'flex w-full max-w-6xl items-center justify-between gap-2 rounded-2xl border border-transparent px-3 py-2 transition-all duration-300 sm:rounded-full sm:px-4',
+                        isScrolled && 'border-border bg-background/75 shadow-lg shadow-black/5 backdrop-blur-xl backdrop-saturate-150',
                     )}
                 >
-                    <Link href="/" className="font-heading text-base font-bold text-primary sm:text-lg">
-                        Gading<span className="text-foreground">.</span>
+                    <Link href="/" className="flex items-center gap-2 font-heading text-lg font-extrabold tracking-[-0.04em]">
+                        <MascotMark className="size-8" />
+                        <span>
+                            gading<span className="text-primary">.</span>
+                        </span>
                     </Link>
 
                     {/* Desktop Nav */}
@@ -346,7 +341,7 @@ export default function GuestLayout({ children }: GuestLayoutProps) {
                 transition={{ duration: 0.2 }}
                 className="fixed inset-x-3 top-[68px] z-40 overflow-hidden md:hidden"
             >
-                <div className="rounded-2xl border border-white/15 bg-background/85 p-4 shadow-xl shadow-black/10 backdrop-blur-xl backdrop-saturate-150 dark:border-white/10">
+                <div className="rounded-2xl border border-border bg-background/95 p-4 shadow-xl shadow-black/10 backdrop-blur-xl">
                     <div className="space-y-1">
                         {navItems.map((item) =>
                             isInternalLink(item.href) ? (
@@ -437,10 +432,41 @@ export default function GuestLayout({ children }: GuestLayoutProps) {
                 </div>
             )}
 
-            <footer className="border-t border-border bg-card py-12">
-                <div className="container mx-auto px-4 text-center">
-                    <p className="text-sm text-muted-foreground">© {new Date().getFullYear()} Developed by Prnndk.</p>
-                </div>
+            <footer className="border-t border-border py-12">
+                <Container className="flex flex-col gap-10">
+                    <div className="flex flex-wrap items-start justify-between gap-8">
+                        <Link href="/" className="flex items-center gap-3 font-heading text-2xl font-extrabold tracking-[-0.04em]">
+                            <MascotMark className="size-11" />
+                            <span>
+                                gading<span className="text-primary">.</span>
+                            </span>
+                        </Link>
+                        <nav aria-label="Footer" className="grid grid-cols-2 gap-x-10 gap-y-1 text-sm sm:grid-cols-3">
+                            {[...navItems.slice(1), { label: 'Tools', href: '/tools' }].map((item) => (
+                                <Link key={item.href} href={item.href} className="py-1.5 text-muted-foreground transition-colors hover:text-primary">
+                                    {item.label}
+                                </Link>
+                            ))}
+                        </nav>
+                    </div>
+                    <div className="flex flex-wrap items-center justify-between gap-4 border-t border-border pt-6">
+                        <p className="font-mono text-xs text-muted-foreground">© {new Date().getFullYear()} Arya Gading Prinandika</p>
+                        <div className="flex gap-1">
+                            {socials.map(({ label, href, icon: Icon }) => (
+                                <a
+                                    key={label}
+                                    href={href}
+                                    target={href.startsWith('http') ? '_blank' : undefined}
+                                    rel="noopener noreferrer"
+                                    aria-label={label}
+                                    className="flex size-11 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-primary/10 hover:text-primary"
+                                >
+                                    <Icon className="h-4 w-4" />
+                                </a>
+                            ))}
+                        </div>
+                    </div>
+                </Container>
             </footer>
             <Toaster />
         </div>

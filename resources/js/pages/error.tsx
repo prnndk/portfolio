@@ -4,6 +4,7 @@ import { useState } from 'react';
 import GuestLayout from '@/layouts/guest-layout';
 import { Spotlight } from '@/components/aceternity/spotlight';
 import { FadeIn, TextReveal } from '@/components/aceternity/text-reveal';
+import { Mascot } from '@/components/portfolio/mascot';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -71,12 +72,13 @@ export default function ErrorPage({ status, message, exception, file, line }: Pr
 
                 <div className="container px-4 flex flex-col items-center text-center">
                     <FadeIn>
-                        <h1 className="font-heading text-[10rem] font-bold text-primary/10 md:text-[12rem] leading-none">
-                            {status}
-                        </h1>
+                        <div className="flex items-end gap-2">
+                            <Mascot pose={status === 404 ? 'lost' : 'coding'} className="h-48 w-40 md:h-60 md:w-52" />
+                            <h1 className="font-heading text-8xl leading-none font-extrabold tracking-[-0.06em] text-primary md:text-9xl">{status}</h1>
+                        </div>
                     </FadeIn>
 
-                    <div className="relative -mt-16 md:-mt-24 flex flex-col items-center">
+                    <div className="relative mt-8 flex flex-col items-center">
                         <TextReveal delay={0.2}>
                             <h2 className="font-heading text-2xl font-semibold md:text-4xl">
                                 {title}

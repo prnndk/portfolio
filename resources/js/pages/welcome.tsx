@@ -1,44 +1,20 @@
 'use client';
 
-import { ProjectCard } from '@/components/aceternity/card-hover';
 import { FadeIn } from '@/components/aceternity/text-reveal';
-import { DotGridBg } from '@/components/portfolio/dot-grid-bg';
-import { FloatingBadge } from '@/components/portfolio/floating-badge';
-import { ScrollToTop } from '@/components/portfolio/scroll-to-top';
-import { BlogCard, TimelineItem } from '@/components/portfolio/sections';
-import { StatsBar } from '@/components/portfolio/stats-bar';
-import { TerminalCard } from '@/components/portfolio/terminal-card';
+import { Mascot } from '@/components/portfolio/mascot';
+import { Container, MagneticLink, Marquee, SectionHeader, TiltCard } from '@/components/portfolio/signal';
 import { TypedCycle } from '@/components/portfolio/typed-cycle';
-import { Floating, FloatingElement } from '@/components/ui/parallax-floating';
-import { Spotlight } from '@/components/ui/spotlight-new';
-import GuestLayout from '@/layouts/guest-layout';
-import { Link } from '@inertiajs/react';
-import { motion } from 'framer-motion';
-import {
-    ArrowRight,
-    BookOpen,
-    Briefcase,
-    ChevronDown,
-    FileText,
-    Film,
-    FolderOpen,
-    Github,
-    Instagram,
-    Linkedin,
-    Mail,
-    MessageSquare,
-    Music,
-    Sparkles,
-    Star,
-} from 'lucide-react';
-
 import { Seo } from '@/components/seo';
-import { TechStackGrid } from '@/components/tech-stack-grid';
-import { TechStackOrbit } from '@/components/tech-stack-orbit';
-import { Button } from '@/components/ui/button';
-import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from '@/components/ui/empty';
-import { getProjectGallery, getProjectImage } from '@/lib/project-utils';
+import GuestLayout from '@/layouts/guest-layout';
+import { getProjectImage } from '@/lib/project-utils';
+import { cn } from '@/lib/utils';
 import { type Activity, type Favorite, type Post, type Project, type TechStack } from '@/types';
+import { Link } from '@inertiajs/react';
+import { ArrowRight, ArrowUpRight, BookOpen, Film, Github, Instagram, Linkedin, Mail, Music } from 'lucide-react';
+import { lazy, Suspense, useEffect, useState } from 'react';
+
+// three.js is only fetched in the browser, after hydration
+const HeroScene = lazy(() => import('@/components/portfolio/hero-scene'));
 
 interface Props {
     projects?: Project[];
@@ -48,457 +24,396 @@ interface Props {
     favorites?: Favorite[];
 }
 
+const words = ['Web Applications', 'Mobile Apps', 'Infrastructure', 'AI Integration', 'System Architecture', 'Business Solutions'];
+
+const socials = [
+    { label: 'GitHub', href: 'https://github.com/prnndk', icon: Github },
+    { label: 'LinkedIn', href: 'https://linkedin.com/in/aryagading', icon: Linkedin },
+    { label: 'Instagram', href: 'https://instagram.com/gadingprinandika', icon: Instagram },
+    { label: 'Email', href: 'mailto:me@aryagading.com', icon: Mail },
+];
+
+const tools = [
+    { label: 'Image compress', href: '/tools/image-compress' },
+    { label: 'JPG → PDF', href: '/tools/jpg-to-pdf' },
+    { label: 'PDF merge', href: '/tools/pdf-merge' },
+    { label: 'PDF split', href: '/tools/pdf-split' },
+    { label: 'PDF → images', href: '/tools/pdf-to-images' },
+    { label: 'PDF compress', href: '/tools/pdf-compress' },
+    { label: 'PDF rotate', href: '/tools/pdf-rotate' },
+];
+
+// Bento rhythm for the 12-column work grid
+const workSpans = ['lg:col-span-7', 'lg:col-span-5', 'lg:col-span-5', 'lg:col-span-7', 'lg:col-span-6', 'lg:col-span-6'];
+
+const favoriteIcon = { movie: Film, music: Music, book: BookOpen };
+
+const formatMonth = (date: string | null) => (date ? new Date(date).toLocaleDateString('en-US', { year: 'numeric', month: 'short' }) : '');
+
+function useWebGL() {
+    const [ok, setOk] = useState(false);
+    useEffect(() => {
+        setOk(!!document.createElement('canvas').getContext('webgl2'));
+    }, []);
+    return ok;
+}
+
+function EmptyBlock({ text }: { text: string }) {
+    return (
+        <div className="flex flex-col items-center gap-4 rounded-3xl border border-dashed border-border p-12 text-center">
+            <Mascot pose="lost" follow={false} className="h-28 w-24" />
+            <p className="text-muted-foreground">{text}</p>
+        </div>
+    );
+}
+
 export default function Welcome({ projects = [], activities = [], posts = [], techStacks = [], favorites = [] }: Props) {
-    // Removed unused form logic
-    const words = [
-        'Web Applications',
-        'Mobile Apps',
-        'Software Application',
-        'Infrastructure',
-        'AI Integration',
-        'Business Solutions',
-        'Database Solutions',
-        'System Architecture',
-    ];
+    const webgl = useWebGL();
+    const stackGroups = Object.entries(
+        techStacks.reduce<Record<string, TechStack[]>>((acc, stack) => {
+            (acc[stack.category || 'Other'] ??= []).push(stack);
+            return acc;
+        }, {}),
+    );
 
     return (
         <GuestLayout>
             <Seo title="Home" description="Software Engineer specializing in modern web development with Laravel, React, and Golang." />
 
-            <ScrollToTop />
-
-            <section id="hero" className="relative min-h-screen overflow-hidden">
-                <DotGridBg />
-                <Spotlight />
-
-                <div className="relative z-10 container mx-auto grid min-h-screen items-center gap-12 px-4 pt-24 pb-16 lg:grid-cols-2 lg:gap-16 lg:pb-0">
-                    {/* LEFT — text + CTAs */}
-                    <div className="flex [animation:var(--animate-fade-up)] flex-col gap-6">
-                        <span className="inline-flex w-fit items-center gap-2 rounded-full border border-primary/60 bg-primary/10 px-4 py-1.5 font-mono text-[0.7rem] tracking-[0.08em] text-primary uppercase">
-                            <span className="size-1.5 [animation:var(--animate-pulse-dot)] rounded-full bg-primary" />
-                            Full-Stack Developer
+            {/* Hero */}
+            <section id="hero" className="relative overflow-hidden pt-28 pb-16 md:pt-36">
+                <Container className="grid items-center gap-10 lg:grid-cols-[1.1fr_1fr]">
+                    <div className="flex [animation:var(--animate-fade-up)] flex-col gap-7">
+                        <span className="inline-flex items-center gap-2 section-index">
+                            <span className="size-2 [animation:var(--animate-pulse-dot)] rounded-full bg-emerald-500" />
+                            Open to new projects
                         </span>
 
-                        <p className="text-base text-muted-foreground md:text-lg">Hello, World! 👋</p>
-
-                        <h1 className="font-heading text-4xl leading-[1.05] font-bold tracking-[-0.04em] md:text-6xl lg:text-7xl">
-                            Hi, I&apos;m Arya{' '}
-                            <span className="relative inline-block text-primary">
-                                Gading
-                                <span className="absolute inset-x-0 -bottom-0.5 h-[3px] origin-left scale-x-0 [animation:var(--animate-underline-in)] rounded-sm bg-primary" />
-                            </span>
-                            <br />
-                            Prinandika
+                        <h1 className="font-heading text-6xl leading-[0.88] font-extrabold tracking-[-0.06em] sm:text-7xl lg:text-8xl">
+                            Arya Gading
+                            <span className="block text-muted-foreground/60">Prinandika</span>
                         </h1>
 
-                        <div className="flex flex-wrap items-baseline gap-x-3 text-xl md:text-2xl">
+                        <p className="flex flex-wrap items-baseline gap-x-3 text-xl md:text-2xl">
                             <span className="text-muted-foreground">I build</span>
-                            <TypedCycle words={words} className="font-heading font-semibold tracking-[-0.02em] text-[color:var(--accent2)]" />
-                        </div>
-
-                        <p className="max-w-lg leading-relaxed text-pretty text-muted-foreground">
-                            Passionate about building scalable ecosystems from code to cloud. I specialize in developing modern web and mobile
-                            applications, implementing AI solutions, and managing the underlying deployment infrastructure.
+                            <TypedCycle words={words} className="font-heading font-bold tracking-[-0.02em] text-primary" />
                         </p>
 
-                        <div className="flex flex-wrap items-center gap-4">
-                            <Button size="lg" asChild>
-                                <Link href="/projects">
-                                    View My Work
-                                    <ArrowRight className="ml-2 h-4 w-4" />
-                                </Link>
-                            </Button>
-                            <Button size="lg" variant="outline" asChild>
-                                <Link href="/contact">Get In Touch</Link>
-                            </Button>
-                        </div>
+                        <p className="max-w-lg text-lg leading-relaxed text-pretty text-muted-foreground">
+                            Building scalable ecosystems from code to cloud — modern web &amp; mobile apps, AI integrations, and the infrastructure
+                            underneath.
+                        </p>
 
-                        <div className="flex flex-wrap gap-2">
-                            <Button variant="outline" size="icon" className="rounded-full" asChild>
-                                <a href="https://github.com/prnndk" target="_blank" rel="noopener noreferrer" aria-label="GitHub">
-                                    <Github className="h-5 w-5" />
-                                </a>
-                            </Button>
-                            <Button variant="outline" size="icon" className="rounded-full" asChild>
-                                <a href="https://linkedin.com/in/aryagading" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">
-                                    <Linkedin className="h-5 w-5" />
-                                </a>
-                            </Button>
-                            <Button variant="outline" size="icon" className="rounded-full" asChild>
-                                <a href="https://instagram.com/gadingprinandika" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
-                                    <Instagram className="h-5 w-5" />
-                                </a>
-                            </Button>
-                            <Button variant="outline" size="icon" className="rounded-full" asChild>
-                                <a href="mailto:me@aryagading.com" aria-label="Email">
-                                    <Mail className="h-5 w-5" />
-                                </a>
-                            </Button>
+                        <div className="flex flex-wrap items-center gap-3">
+                            <MagneticLink
+                                href="/projects"
+                                className="inline-flex min-h-12 items-center gap-2 rounded-full bg-primary px-6 font-semibold text-primary-foreground transition-shadow hover:shadow-lg hover:shadow-primary/30"
+                            >
+                                View my work
+                                <ArrowRight className="h-4 w-4" />
+                            </MagneticLink>
+                            <Link
+                                href="/contact"
+                                className="inline-flex min-h-12 items-center rounded-full border border-border px-6 font-semibold transition-colors hover:border-primary hover:text-primary"
+                            >
+                                Get in touch
+                            </Link>
+                            <div className="flex">
+                                {socials.map(({ label, href, icon: Icon }) => (
+                                    <a
+                                        key={label}
+                                        href={href}
+                                        target={href.startsWith('http') ? '_blank' : undefined}
+                                        rel="noopener noreferrer"
+                                        aria-label={label}
+                                        className="flex size-11 items-center justify-center rounded-full text-muted-foreground transition-colors hover:text-primary"
+                                    >
+                                        <Icon className="h-5 w-5" />
+                                    </a>
+                                ))}
+                            </div>
                         </div>
                     </div>
 
-                    {/* RIGHT — terminal + floating badges */}
-                    <div className="relative flex items-center justify-center">
-                        <FloatingBadge
-                            label="React · Next.js"
-                            dotColor="primary"
-                            className="absolute -top-4 right-2 rotate-[-3deg] sm:-right-6"
-                            delay="0s"
-                        />
-                        <FloatingBadge
-                            label="Node · Python"
-                            dotColor="accent2"
-                            className="absolute bottom-6 left-2 rotate-[2deg] sm:-left-7"
-                            delay="1.5s"
-                        />
-                        <FloatingBadge
-                            label="AWS · Docker"
-                            dotColor="emerald"
-                            className="absolute top-1/2 right-2 -translate-y-1/2 rotate-[-2deg] sm:-right-8"
-                            delay="0.8s"
-                        />
-                        <TerminalCard />
+                    <div className="relative h-80 sm:h-[440px] lg:h-[560px]">
+                        <div className="absolute inset-8 rounded-full bg-primary/15 blur-3xl" aria-hidden="true" />
+                        {webgl ? (
+                            <Suspense fallback={<Mascot className="relative mx-auto h-full" />}>
+                                <HeroScene />
+                            </Suspense>
+                        ) : (
+                            <Mascot className="relative mx-auto h-full" />
+                        )}
+                        <p className="absolute right-0 bottom-0 hidden section-index sm:block">Move your cursor · click me</p>
                     </div>
-                </div>
-
-                {/* Scroll Indicator */}
-                <motion.div
-                    className="absolute bottom-8 left-1/2 z-20 -translate-x-1/2"
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 1.5, duration: 0.5 }}
-                >
-                    <motion.a
-                        href="#projects"
-                        className="flex cursor-pointer flex-col items-center gap-2 text-muted-foreground transition-colors hover:text-primary"
-                        animate={{ y: [0, 8, 0] }}
-                        transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
-                    >
-                        <span className="font-mono text-[0.65rem] tracking-[0.15em] uppercase">Scroll</span>
-                        <ChevronDown className="h-5 w-5" />
-                    </motion.a>
-                </motion.div>
+                </Container>
             </section>
 
-            {/* Stats bar */}
-            <StatsBar />
+            <Marquee
+                items={words}
+                className="border-y border-border bg-primary py-4 font-heading text-2xl font-bold tracking-[-0.03em] text-primary-foreground md:text-3xl"
+            />
 
-            {/* Projects Section */}
-            <section id="projects" className="py-24">
-                <div className="container mx-auto px-4">
+            {/* Work */}
+            <section id="projects" className="py-24 md:py-32">
+                <Container>
                     <FadeIn>
-                        <h2 className="font-heading text-3xl font-bold md:text-4xl">Featured Projects</h2>
-                        <p className="mt-2 text-muted-foreground">Some of the things I've built</p>
+                        <SectionHeader index="01" label="Work" title="Selected projects" action={{ href: '/projects', label: 'All projects' }} />
                     </FadeIn>
 
                     {projects.length > 0 ? (
-                        <div className="mt-12 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                            {projects.map((project, index) => (
-                                <FadeIn key={project.id} delay={index * 0.1}>
-                                    <Link href={`/projects/${project.slug}`}>
-                                        <ProjectCard
-                                            title={project.title}
-                                            description={project.description}
-                                            image={getProjectImage(project)}
-                                            gallery={getProjectGallery(project)}
-                                            tags={project.tech_tags || []}
-                                        />
-                                    </Link>
-                                </FadeIn>
-                            ))}
-                        </div>
-                    ) : (
-                        <FadeIn delay={0.2}>
-                            <div className="mt-12 rounded-2xl border border-dashed border-border/50 bg-card/50 p-12">
-                                <Empty>
-                                    <EmptyHeader>
-                                        <EmptyMedia variant="icon">
-                                            <FolderOpen className="h-6 w-6" />
-                                        </EmptyMedia>
-                                        <EmptyTitle>No projects yet</EmptyTitle>
-                                        <EmptyDescription>Projects will appear here once added from the admin dashboard.</EmptyDescription>
-                                    </EmptyHeader>
-                                </Empty>
-                            </div>
-                        </FadeIn>
-                    )}
-                </div>
-            </section>
-
-            {/* Tech Stack Section */}
-            <section id="tech" className="overflow-hidden border-y border-border bg-card py-20">
-                <div className="container mx-auto px-4">
-                    <FadeIn>
-                        <div className="text-center">
-                            <h2 className="font-heading text-3xl font-bold md:text-4xl">Tech Stack</h2>
-                            <p className="mt-2 text-muted-foreground">Technologies I work with</p>
-                        </div>
-                    </FadeIn>
-
-                    <FadeIn delay={0.2}>
-                        <TechStackOrbit techStacks={techStacks} />
-                    </FadeIn>
-
-                    {techStacks.length > 0 && (
-                        <FadeIn delay={0.3}>
-                            <div className="mt-8">
-                                <p className="mb-6 text-center text-sm text-muted-foreground">All Technologies</p>
-                                <TechStackGrid techStacks={techStacks} className="mx-auto max-w-4xl" />
-                            </div>
-                        </FadeIn>
-                    )}
-                </div>
-            </section>
-
-            <section id="resume" className="py-24">
-                <div className="container mx-auto px-4">
-                    <FadeIn>
-                        <h2 className="font-heading text-3xl font-bold md:text-4xl">Experience & Activities</h2>
-                        <p className="mt-2 text-muted-foreground">My journey so far</p>
-                    </FadeIn>
-
-                    {activities.length > 0 ? (
-                        <div className="mt-12 max-w-3xl">
-                            {activities.map((activity, index) => (
-                                <TimelineItem key={activity.id} activity={activity} isLast={index === activities.length - 1} />
-                            ))}
-                        </div>
-                    ) : (
-                        <FadeIn delay={0.2}>
-                            <div className="mt-12 rounded-2xl border border-dashed border-border/50 bg-card/50 p-12">
-                                <Empty>
-                                    <EmptyHeader>
-                                        <EmptyMedia variant="icon">
-                                            <Briefcase className="h-6 w-6" />
-                                        </EmptyMedia>
-                                        <EmptyTitle>No activities yet</EmptyTitle>
-                                        <EmptyDescription>Experience and activities will appear here once added from the dashboard.</EmptyDescription>
-                                    </EmptyHeader>
-                                </Empty>
-                            </div>
-                        </FadeIn>
-                    )}
-                </div>
-            </section>
-            <section className="border-t border-border bg-card py-24">
-                <div className="container mx-auto px-4">
-                    <FadeIn>
-                        <div className="flex items-center justify-between">
-                            <div>
-                                <h2 className="font-heading text-3xl font-bold md:text-4xl">Latest Posts</h2>
-                                <p className="mt-2 text-muted-foreground">Thoughts and tutorials</p>
-                            </div>
-                            <Button variant="outline" asChild>
-                                <Link href="/blog">View All</Link>
-                            </Button>
-                        </div>
-                    </FadeIn>
-
-                    {posts.length > 0 ? (
-                        <div className="mt-12 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                            {posts.slice(0, 3).map((post, index) => (
-                                <FadeIn key={post.id} delay={index * 0.1}>
-                                    <BlogCard post={post} />
-                                </FadeIn>
-                            ))}
-                        </div>
-                    ) : (
-                        <FadeIn delay={0.2}>
-                            <div className="mt-12 rounded-2xl border border-dashed border-border/50 bg-card/50 p-12">
-                                <Empty>
-                                    <EmptyHeader>
-                                        <EmptyMedia variant="icon">
-                                            <FileText className="h-6 w-6" />
-                                        </EmptyMedia>
-                                        <EmptyTitle>No blog posts yet</EmptyTitle>
-                                        <EmptyDescription>Stay tuned! New articles and tutorials are coming soon.</EmptyDescription>
-                                    </EmptyHeader>
-                                </Empty>
-                            </div>
-                        </FadeIn>
-                    )}
-                </div>
-            </section>
-
-            <section id="favorites" className="border-t border-border bg-card py-24">
-                <div className="container mx-auto px-4">
-                    <FadeIn>
-                        <div className="flex items-center justify-between">
-                            <div>
-                                <h2 className="font-heading text-3xl font-bold md:text-4xl">My Favorites</h2>
-                                <p className="mt-2 text-muted-foreground">Movies, music, and books that inspire me</p>
-                            </div>
-                            <Button variant="outline" asChild>
-                                <Link href="/favorites">View All</Link>
-                            </Button>
-                        </div>
-                    </FadeIn>
-
-                    {favorites.length > 0 ? (
-                        <div className="mt-12 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                            {favorites.slice(0, 6).map((favorite, index) => (
-                                <FadeIn key={favorite.id} delay={index * 0.1}>
-                                    <Link href="/favorites" className="group block">
-                                        <div className="overflow-hidden rounded-xl border border-border bg-background transition-all hover:border-primary/50 hover:shadow-lg">
-                                            {favorite.image ? (
-                                                <div className="aspect-[4/3] overflow-hidden">
-                                                    <img
-                                                        src={`/storage/${favorite.image}`}
-                                                        alt={favorite.title}
-                                                        className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-                                                    />
-                                                </div>
-                                            ) : (
-                                                <div className="flex aspect-[4/3] items-center justify-center bg-muted">
-                                                    {favorite.type === 'movie' && <Film className="h-12 w-12 text-muted-foreground" />}
-                                                    {favorite.type === 'music' && <Music className="h-12 w-12 text-muted-foreground" />}
-                                                    {favorite.type === 'book' && <BookOpen className="h-12 w-12 text-muted-foreground" />}
-                                                </div>
-                                            )}
-                                            <div className="p-4">
-                                                <div className="mb-2 flex items-center gap-2">
-                                                    <span
-                                                        className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ${
-                                                            favorite.type === 'movie'
-                                                                ? 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400'
-                                                                : favorite.type === 'music'
-                                                                  ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
-                                                                  : 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
-                                                        }`}
-                                                    >
-                                                        {favorite.type === 'movie' && <Film className="h-3 w-3" />}
-                                                        {favorite.type === 'music' && <Music className="h-3 w-3" />}
-                                                        {favorite.type === 'book' && <BookOpen className="h-3 w-3" />}
-                                                        {favorite.type.charAt(0).toUpperCase() + favorite.type.slice(1)}
-                                                    </span>
-                                                    {favorite.rating && (
-                                                        <span className="flex items-center gap-1 text-xs text-amber-500">
-                                                            <Star className="h-3 w-3 fill-current" />
-                                                            {favorite.rating}/10
-                                                        </span>
+                        <div className="grid gap-5 lg:grid-cols-12">
+                            {projects.slice(0, 6).map((project, i) => {
+                                const image = getProjectImage(project);
+                                return (
+                                    <FadeIn key={project.id} delay={i * 0.08} className={workSpans[i]}>
+                                        <TiltCard max={5} className="h-full">
+                                            <Link
+                                                href={`/projects/${project.slug}`}
+                                                className="group flex h-full flex-col overflow-hidden rounded-3xl border border-border bg-card transition-colors hover:border-primary"
+                                            >
+                                                <div className="aspect-[16/10] overflow-hidden bg-muted">
+                                                    {image && (
+                                                        <img
+                                                            src={image}
+                                                            alt={project.title}
+                                                            loading="lazy"
+                                                            className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+                                                        />
                                                     )}
                                                 </div>
-                                                <h3 className="line-clamp-1 font-heading font-semibold transition-colors group-hover:text-primary">
-                                                    {favorite.title}
-                                                </h3>
-                                                {favorite.creator && (
-                                                    <p className="mt-1 line-clamp-1 text-sm text-muted-foreground">{favorite.creator}</p>
-                                                )}
-                                            </div>
+                                                <div className="flex flex-1 flex-col gap-3 p-6">
+                                                    <div className="flex items-center justify-between font-mono text-xs text-muted-foreground">
+                                                        <span>{String(i + 1).padStart(2, '0')}</span>
+                                                        <ArrowUpRight className="h-5 w-5 transition-all group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-primary" />
+                                                    </div>
+                                                    <h3 className="font-heading text-2xl font-bold tracking-[-0.03em]">{project.title}</h3>
+                                                    <p className="line-clamp-2 text-muted-foreground">{project.description}</p>
+                                                    {project.tech_tags && project.tech_tags.length > 0 && (
+                                                        <div className="mt-auto flex flex-wrap gap-2 pt-2">
+                                                            {project.tech_tags.slice(0, 4).map((tag) => (
+                                                                <span
+                                                                    key={tag}
+                                                                    className="rounded-full border border-border px-3 py-1 font-mono text-xs"
+                                                                >
+                                                                    {tag}
+                                                                </span>
+                                                            ))}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </Link>
+                                        </TiltCard>
+                                    </FadeIn>
+                                );
+                            })}
+                        </div>
+                    ) : (
+                        <EmptyBlock text="Projects will appear here once added from the dashboard." />
+                    )}
+                </Container>
+            </section>
+
+            {/* Stack */}
+            {stackGroups.length > 0 && (
+                <section id="tech" className="border-t border-border py-24 md:py-32">
+                    <Container className="grid gap-12 lg:grid-cols-[1fr_2fr]">
+                        <FadeIn>
+                            <SectionHeader index="02" label="Stack" title="Tools I reach for" className="mb-0" />
+                        </FadeIn>
+                        <div className="border-t border-border">
+                            {stackGroups.map(([category, stacks], i) => (
+                                <FadeIn key={category} delay={i * 0.05}>
+                                    <div className="grid gap-4 border-b border-border py-6 sm:grid-cols-[160px_1fr]">
+                                        <span className="pt-2 section-index">{category}</span>
+                                        <div className="flex flex-wrap gap-2">
+                                            {stacks.map((stack) => {
+                                                const icon = stack.icon ? `/storage/${stack.icon}` : stack.icon_url;
+                                                return (
+                                                    <span
+                                                        key={stack.id}
+                                                        className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-4 py-2 font-medium transition-colors hover:border-primary"
+                                                    >
+                                                        {icon && (
+                                                            <img
+                                                                src={icon}
+                                                                alt=""
+                                                                width={18}
+                                                                height={18}
+                                                                loading="lazy"
+                                                                className="size-[18px] object-contain"
+                                                            />
+                                                        )}
+                                                        {stack.name}
+                                                    </span>
+                                                );
+                                            })}
                                         </div>
+                                    </div>
+                                </FadeIn>
+                            ))}
+                        </div>
+                    </Container>
+                </section>
+            )}
+
+            {/* Journey */}
+            <section id="resume" className="border-t border-border py-24 md:py-32">
+                <Container>
+                    <FadeIn>
+                        <SectionHeader index="03" label="Journey" title="Where I've been" action={{ href: '/activities', label: 'All activities' }} />
+                    </FadeIn>
+                    {activities.length > 0 ? (
+                        <div className="grid border-t-2 border-foreground sm:grid-cols-2 lg:grid-cols-4">
+                            {activities.slice(0, 4).map((activity, i) => (
+                                <FadeIn key={activity.id} delay={i * 0.08}>
+                                    <Link href={`/activities/${activity.id}`} className="group relative flex flex-col gap-2 py-8 pr-6">
+                                        <span
+                                            className={cn(
+                                                'absolute -top-[9px] left-0 size-4 rounded-full border-2 border-foreground transition-colors group-hover:bg-primary',
+                                                i === 0 ? 'border-primary bg-primary' : 'bg-background',
+                                            )}
+                                        />
+                                        <span className={cn('mt-2 font-mono text-xs', i === 0 ? 'text-primary' : 'text-muted-foreground')}>
+                                            {formatMonth(activity.start_date)}
+                                            {activity.start_date && (activity.end_date ? ` – ${formatMonth(activity.end_date)}` : ' – Now')}
+                                        </span>
+                                        <span className="font-heading text-xl font-bold tracking-[-0.02em] transition-colors group-hover:text-primary">
+                                            {activity.role || activity.title}
+                                        </span>
+                                        <span className="text-muted-foreground">{activity.organization || activity.title}</span>
                                     </Link>
                                 </FadeIn>
                             ))}
                         </div>
                     ) : (
-                        <FadeIn delay={0.2}>
-                            <div className="mt-12 rounded-2xl border border-dashed border-border/50 bg-background/50 p-12">
-                                <Empty>
-                                    <EmptyHeader>
-                                        <EmptyMedia variant="icon">
-                                            <Star className="h-6 w-6" />
-                                        </EmptyMedia>
-                                        <EmptyTitle>No favorites yet</EmptyTitle>
-                                        <EmptyDescription>My favorite movies, music, and books will appear here soon.</EmptyDescription>
-                                    </EmptyHeader>
-                                </Empty>
-                            </div>
-                        </FadeIn>
+                        <EmptyBlock text="Experience and activities will appear here soon." />
                     )}
-                </div>
+                </Container>
             </section>
 
-            {/* Contact CTA Section */}
-            <section className="py-24">
-                <div className="container mx-auto px-4">
-                    <div className="mx-auto max-w-2xl text-center">
-                        <FadeIn>
-                            <h2 className="font-heading text-3xl font-bold md:text-4xl">Let's Work Together</h2>
-                            <p className="mt-4 text-lg text-muted-foreground">
-                                Have a project in mind or want to discuss a new opportunity? I'd love to hear from you.
-                            </p>
-                            <div className="mt-8 flex w-full justify-center">
-                                <Floating sensitivity={-0.5} className="relative flex h-60 w-full max-w-2xl items-center justify-center">
-                                    {/* 1. Image: Tech (Top Left) */}
-                                    <FloatingElement depth={0.5} className="absolute top-0 left-[15%]">
-                                        <div className="h-14 w-14 rotate-[-6deg] overflow-hidden rounded-2xl border border-white/10 opacity-90 shadow-lg grayscale transition-all duration-500 hover:grayscale-0">
-                                            <img
-                                                src="https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=100&h=100&fit=crop&q=80"
-                                                alt="Tech"
-                                                className="h-full w-full object-cover"
-                                            />
-                                        </div>
-                                    </FloatingElement>
+            {/* Writing */}
+            <section id="writing" className="border-t border-border py-24 md:py-32">
+                <Container>
+                    <FadeIn>
+                        <SectionHeader index="04" label="Writing" title="Notes & tutorials" action={{ href: '/blog', label: 'All posts' }} />
+                    </FadeIn>
+                    {posts.length > 0 ? (
+                        <div className="border-t border-border">
+                            {posts.slice(0, 4).map((post) => (
+                                <Link
+                                    key={post.id}
+                                    href={`/blog/${post.slug}`}
+                                    className="group grid items-center gap-2 border-b border-border py-6 transition-all hover:bg-card sm:grid-cols-[140px_1fr_auto] sm:gap-6 sm:hover:px-4"
+                                >
+                                    <span className="font-mono text-xs text-muted-foreground">{formatMonth(post.published_at)}</span>
+                                    <span className="font-heading text-xl font-semibold tracking-[-0.02em] md:text-2xl">{post.title}</span>
+                                    <ArrowUpRight className="hidden h-6 w-6 text-primary transition-transform group-hover:translate-x-1 group-hover:-translate-y-1 sm:block" />
+                                </Link>
+                            ))}
+                        </div>
+                    ) : (
+                        <EmptyBlock text="New articles and tutorials are coming soon." />
+                    )}
+                </Container>
+            </section>
 
-                                    {/* 2. Icon: Mail (Top Center-Right) */}
-                                    <FloatingElement depth={1} className="absolute -top-4 right-[30%]">
-                                        <div className="flex h-12 w-12 rotate-[12deg] items-center justify-center rounded-2xl border border-white/20 bg-white/10 shadow-lg backdrop-blur-md">
-                                            <Mail className="h-6 w-6 text-blue-500" />
-                                        </div>
-                                    </FloatingElement>
-
-                                    {/* 3. Image: Abstract (Right) */}
-                                    <FloatingElement depth={2} className="absolute top-8 right-[10%]">
-                                        <div className="h-16 w-16 rotate-[6deg] overflow-hidden rounded-2xl border border-white/10 opacity-90 shadow-lg grayscale transition-all duration-500 hover:grayscale-0">
-                                            <img
-                                                src="https://images.unsplash.com/photo-1534972195531-d756b9bfa9f2?w=100&h=100&fit=crop&q=80"
-                                                alt="Abstract"
-                                                className="h-full w-full object-cover"
-                                            />
-                                        </div>
-                                    </FloatingElement>
-
-                                    {/* 4. Icon: Message (Bottom Left) */}
-                                    <FloatingElement depth={1.5} className="absolute bottom-2 left-[20%]">
-                                        <div className="flex h-10 w-10 rotate-[-12deg] items-center justify-center rounded-xl border border-white/20 bg-white/10 shadow-lg backdrop-blur-md">
-                                            <MessageSquare className="h-5 w-5 text-purple-500" />
-                                        </div>
-                                    </FloatingElement>
-
-                                    {/* 5. Image: Matrix (Bottom Right) */}
-                                    <FloatingElement depth={0.8} className="absolute right-[20%] bottom-0">
-                                        <div className="h-20 w-20 rotate-[-3deg] overflow-hidden rounded-2xl border border-white/10 opacity-90 shadow-lg grayscale transition-all duration-500 hover:grayscale-0">
-                                            <img
-                                                src="https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=100&h=100&fit=crop&q=80"
-                                                alt="Matrix"
-                                                className="h-full w-full object-cover"
-                                            />
-                                        </div>
-                                    </FloatingElement>
-
-                                    {/* 6. Image: Fluid (Left) */}
-                                    <FloatingElement depth={2.5} className="absolute top-1/2 left-[5%] -translate-y-1/2">
-                                        <div className="h-12 w-12 rotate-[15deg] overflow-hidden rounded-xl border border-white/10 opacity-80 shadow-lg grayscale transition-all duration-500 hover:grayscale-0">
-                                            <img
-                                                src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=100&h=100&fit=crop&q=80"
-                                                alt="Fluid"
-                                                className="h-full w-full object-cover"
-                                            />
-                                        </div>
-                                    </FloatingElement>
-
-                                    {/* 7. Icon: Sparkles (Top Left scattered) */}
-                                    <FloatingElement depth={0.3} className="absolute top-10 left-[25%] opacity-50">
-                                        <Sparkles className="h-6 w-6 rotate-12 text-amber-400" />
-                                    </FloatingElement>
-
-                                    <FloatingElement depth={0.2} className="relative z-10">
-                                        <Button
-                                            size="lg"
-                                            className="rounded-xl px-10 py-6 text-lg shadow-2xl transition-all hover:-translate-y-1 hover:shadow-primary/30"
-                                            asChild
-                                        >
-                                            <Link href="/contact">
-                                                Get In Touch
-                                                <ArrowRight className="ml-2 h-5 w-5" />
-                                            </Link>
-                                        </Button>
-                                    </FloatingElement>
-                                </Floating>
+            {/* Tools + favorites */}
+            <section id="favorites" className="border-t border-border py-24 md:py-32">
+                <Container className="grid gap-5 lg:grid-cols-12">
+                    <FadeIn className="lg:col-span-7">
+                        <div className="flex h-full flex-col gap-6 rounded-3xl bg-accent2 p-8 text-accent2-foreground md:p-10">
+                            <span className="font-mono text-xs tracking-[0.14em] uppercase opacity-80">05 / Tools · free</span>
+                            <h2 className="font-heading text-4xl leading-[0.95] font-extrabold tracking-[-0.045em] md:text-5xl">
+                                7 tools. Zero uploads. Your files never leave the browser.
+                            </h2>
+                            <div className="mt-auto flex flex-wrap gap-2">
+                                {tools.map((tool) => (
+                                    <Link
+                                        key={tool.href}
+                                        href={tool.href}
+                                        className="inline-flex min-h-11 items-center rounded-full bg-background/90 px-4 text-sm font-medium text-foreground transition-colors hover:bg-background"
+                                    >
+                                        {tool.label}
+                                    </Link>
+                                ))}
                             </div>
-                        </FadeIn>
-                    </div>
-                </div>
+                        </div>
+                    </FadeIn>
+
+                    <FadeIn delay={0.1} className="flex flex-col gap-3 lg:col-span-5">
+                        <div className="flex items-center justify-between">
+                            <span className="section-index">On rotation</span>
+                            <Link href="/favorites" className="inline-flex min-h-11 items-center font-mono text-xs hover:text-primary">
+                                All favorites →
+                            </Link>
+                        </div>
+                        {favorites.length > 0 ? (
+                            favorites.slice(0, 3).map((favorite) => {
+                                const Icon = favoriteIcon[favorite.type];
+                                return (
+                                    <Link
+                                        key={favorite.id}
+                                        href="/favorites"
+                                        className="group flex items-center gap-4 rounded-2xl border border-border bg-card p-3 transition-colors hover:border-primary"
+                                    >
+                                        <div className="flex size-16 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-muted">
+                                            {favorite.image ? (
+                                                <img
+                                                    src={`/storage/${favorite.image}`}
+                                                    alt=""
+                                                    loading="lazy"
+                                                    className="h-full w-full object-cover"
+                                                />
+                                            ) : (
+                                                <Icon className="h-6 w-6 text-muted-foreground" />
+                                            )}
+                                        </div>
+                                        <div className="min-w-0">
+                                            <span className="font-mono text-[0.7rem] tracking-[0.14em] text-primary uppercase">{favorite.type}</span>
+                                            <p className="truncate font-heading text-lg font-semibold">{favorite.title}</p>
+                                            {favorite.creator && <p className="truncate text-sm text-muted-foreground">{favorite.creator}</p>}
+                                        </div>
+                                    </Link>
+                                );
+                            })
+                        ) : (
+                            <p className="rounded-2xl border border-dashed border-border p-6 text-muted-foreground">Favorites coming soon.</p>
+                        )}
+                    </FadeIn>
+                </Container>
+            </section>
+
+            {/* Contact */}
+            <section className="pb-24 md:pb-32">
+                <Container>
+                    <FadeIn>
+                        <div className="relative grid items-end gap-8 overflow-hidden rounded-[2rem] bg-primary p-8 text-primary-foreground md:grid-cols-[1fr_auto] md:p-14">
+                            <div className="flex flex-col gap-8">
+                                <span className="font-mono text-xs tracking-[0.14em] uppercase opacity-80">Got an idea?</span>
+                                <h2 className="font-heading text-5xl leading-[0.88] font-extrabold tracking-[-0.06em] md:text-8xl">
+                                    Let&apos;s build something good.
+                                </h2>
+                                <div className="flex flex-wrap items-center gap-4">
+                                    <MagneticLink
+                                        href="/contact"
+                                        className="inline-flex min-h-12 items-center gap-2 rounded-full bg-foreground px-6 font-semibold text-background"
+                                    >
+                                        Start a project
+                                        <ArrowRight className="h-4 w-4" />
+                                    </MagneticLink>
+                                    <a
+                                        href="mailto:me@aryagading.com"
+                                        className="border-b-2 border-current pb-0.5 font-heading text-xl font-semibold md:text-2xl"
+                                    >
+                                        me@aryagading.com
+                                    </a>
+                                </div>
+                            </div>
+                            <Mascot pose="wave" className="hidden h-64 w-56 md:block" />
+                        </div>
+                    </FadeIn>
+                </Container>
             </section>
         </GuestLayout>
     );
