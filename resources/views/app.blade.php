@@ -65,14 +65,39 @@
         })();
     </script>
 
+    {{-- Preloader gate: first public page view per session; skipped for reduced motion and the admin/auth area --}}
+    <script>
+        (function () {
+            try {
+                var skip = sessionStorage.getItem('preloaded')
+                    || window.matchMedia('(prefers-reduced-motion: reduce)').matches
+                    || /^\/(admin|login|register|dashboard|settings|forgot-password|reset-password|verify-email|confirm-password|two-factor-challenge)/.test(location.pathname);
+                if (!skip) document.documentElement.classList.add('is-loading');
+            } catch (e) { }
+        })();
+    </script>
+
     {{-- Inline style to set the HTML background color based on our theme in app.css --}}
     <style>
         html {
-            background-color: oklch(1 0 0);
+            background-color: oklch(0.985 0.002 90);
         }
 
         html.dark {
-            background-color: oklch(0.12 0.04 250);
+            background-color: oklch(0.15 0.004 285);
+        }
+
+        /* Solid cover until the React preloader mounts, so the unstyled page never flashes */
+        html.is-loading::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            z-index: 99;
+            background: oklch(0.58 0.19 40);
+        }
+
+        html.dark.is-loading::before {
+            background: oklch(0.7 0.19 40);
         }
     </style>
 

@@ -368,3 +368,29 @@
         scroll-behavior: auto !important;
     }
 }
+
+/* Preloader: freeze page animations and scroll while loading, then ease the content in as the curtain lifts */
+html.is-loading,
+html.is-loading body {
+    overflow: hidden;
+}
+
+html.is-loading #app *:not([data-preloader], [data-preloader] *) {
+    animation-play-state: paused !important;
+}
+
+html.is-revealing #app main,
+html.is-revealing #app footer {
+    animation: pageReveal 1.1s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+@keyframes pageReveal {
+    from {
+        opacity: 0;
+        transform: translateY(48px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
