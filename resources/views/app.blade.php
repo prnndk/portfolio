@@ -6,8 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta name="author" content="Arya Gading Prinandika">
-    <meta name="theme-color" content="#0f172a" media="(prefers-color-scheme: dark)">
-    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+    <meta name="theme-color" content="#0d0d0f" media="(prefers-color-scheme: dark)">
+    <meta name="theme-color" content="#fafaf9" media="(prefers-color-scheme: light)">
     <meta name="keywords"
         content="portfolio, arya gading, arya gading prinandika, gading, prinandika, gading prinandika,software engineer, laravel, react, golang, web development">
     <meta name="description"
@@ -84,7 +84,7 @@
     <link rel="canonical" href="{{ url()->current() }}">
 
     <link rel="preconnect" href="https://fonts.bunny.net">
-    <link href="https://fonts.bunny.net/css?family=dm-mono:300,400|inter:400,500,600|space-grotesk:500,600,700" rel="stylesheet" />
+    <link href="https://fonts.bunny.net/css?family=bricolage-grotesque:400,600,700,800|inter:400,500,600|jetbrains-mono:400,500" rel="stylesheet" />
 
     @routes
     @viteReactRefresh
