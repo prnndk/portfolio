@@ -16,7 +16,7 @@ export function ScrollProgress({ target, className }: ScrollProgressProps) {
             aria-hidden
             style={{ scaleX, transformOrigin: '0% 50%' }}
             className={
-                'fixed left-0 right-0 top-0 z-[60] h-[3px] origin-left bg-gradient-to-r from-primary via-[color:var(--accent2)] to-primary shadow-[0_0_12px_color-mix(in_oklch,var(--primary)_60%,transparent)] ' +
+                'fixed top-0 right-0 left-0 z-[60] h-[3px] origin-left bg-gradient-to-r from-primary via-[color:var(--accent2)] to-primary shadow-[0_0_12px_color-mix(in_oklch,var(--primary)_60%,transparent)] ' +
                 (className ?? '')
             }
         />

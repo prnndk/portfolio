@@ -1,9 +1,9 @@
 'use client';
 
+import { cn } from '@/lib/utils';
 import { AnimatePresence, motion } from 'framer-motion';
 import { ArrowUp } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { cn } from '@/lib/utils';
 
 interface ScrollToTopProps {
     threshold?: number;
@@ -20,8 +20,7 @@ export function ScrollToTop({ threshold = 400, className }: ScrollToTopProps) {
         return () => window.removeEventListener('scroll', onScroll);
     }, [threshold]);
 
-    const scrollToTop = () =>
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+    const scrollToTop = () => window.scrollTo({ top: 0, behavior: 'smooth' });
 
     return (
         <AnimatePresence>
@@ -37,10 +36,10 @@ export function ScrollToTop({ threshold = 400, className }: ScrollToTopProps) {
                     whileHover={{ y: -2 }}
                     whileTap={{ scale: 0.95 }}
                     className={cn(
-                        'fixed bottom-6 right-6 z-40 flex h-11 w-11 items-center justify-center',
+                        'fixed right-6 bottom-6 z-40 flex h-11 w-11 items-center justify-center',
                         'rounded-full border border-border/60 bg-background/80 text-muted-foreground shadow-lg shadow-black/10 backdrop-blur-md backdrop-saturate-150',
                         'transition-colors hover:border-primary/60 hover:text-primary hover:shadow-[0_8px_24px_color-mix(in_oklch,var(--primary)_30%,transparent)]',
-                        'sm:bottom-8 sm:right-8',
+                        'sm:right-8 sm:bottom-8',
                         className,
                     )}
                 >

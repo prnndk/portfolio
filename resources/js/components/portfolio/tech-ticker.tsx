@@ -1,8 +1,8 @@
 'use client';
 
+import { type TechStack as TechStackType } from '@/types';
 import { motion } from 'framer-motion';
 import { Cpu } from 'lucide-react';
-import { type TechStack as TechStackType } from '@/types';
 
 interface TechTickerProps {
     items: TechStackType[];
@@ -53,22 +53,11 @@ function TechCard({ tech }: TechCardProps) {
                 }}
             >
                 {tech.icon ? (
-                    <img
-                        src={`/storage/${tech.icon}`}
-                        alt={tech.name}
-                        className="h-6 w-6 object-contain"
-                    />
+                    <img src={`/storage/${tech.icon}`} alt={tech.name} className="h-6 w-6 object-contain" />
                 ) : tech.icon_url ? (
-                    <img
-                        src={tech.icon_url}
-                        alt={tech.name}
-                        className="h-6 w-6 object-contain"
-                    />
+                    <img src={tech.icon_url} alt={tech.name} className="h-6 w-6 object-contain" />
                 ) : (
-                    <Cpu
-                        className="h-5 w-5"
-                        style={{ color: tech.color || 'currentColor' }}
-                    />
+                    <Cpu className="h-5 w-5" style={{ color: tech.color || 'currentColor' }} />
                 )}
             </div>
 
@@ -76,10 +65,7 @@ function TechCard({ tech }: TechCardProps) {
             <div>
                 <p className="font-medium whitespace-nowrap">{tech.name}</p>
                 {tech.proficiency && (
-                    <p
-                        className="text-xs"
-                        style={{ color: tech.color || 'hsl(var(--muted-foreground))' }}
-                    >
+                    <p className="text-xs" style={{ color: tech.color || 'hsl(var(--muted-foreground))' }}>
                         {tech.proficiency}
                     </p>
                 )}

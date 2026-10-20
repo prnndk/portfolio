@@ -12,8 +12,10 @@
     },
     "devDependencies": {
         "@eslint/js": "^9.19.0",
+        "@types/geojson": "^7946.0.16",
         "@types/node": "^22.13.5",
         "@types/three": "^0.180.0",
+        "@types/topojson-client": "^3.1.5",
         "eslint": "^9.17.0",
         "eslint-config-prettier": "^10.0.1",
         "eslint-plugin-react": "^7.37.3",
@@ -78,8 +80,10 @@
         "tailwindcss": "^4.0.0",
         "tailwindcss-animate": "^1.0.7",
         "three": "^0.180.0",
+        "topojson-client": "^3.1.0",
         "typescript": "^5.7.2",
         "vite": "^6.0",
+        "world-atlas": "^2.0.2",
         "zod": "^4.3.5"
     },
     "optionalDependencies": {

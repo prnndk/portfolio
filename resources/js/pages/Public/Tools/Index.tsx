@@ -1,7 +1,7 @@
 'use client';
 
+import { PageHeader } from '@/components/portfolio/page-header';
 import { Seo } from '@/components/seo';
-import { Spotlight } from '@/components/ui/spotlight-new';
 import GuestLayout from '@/layouts/guest-layout';
 import { cn } from '@/lib/utils';
 import { Tool } from '@/types/image-compressor';
@@ -199,47 +199,16 @@ export default function ToolsIndex() {
                 ]}
             />
 
-            {/* Ambient Background */}
-            <div className="pointer-events-none fixed inset-0 z-0 hidden overflow-hidden dark:block">
-                <div className="absolute -top-[20%] -right-[10%] h-[70vh] w-[70vh] rounded-full bg-blue-600/20 opacity-20 blur-[100px]" />
-                <div className="absolute top-[30%] -left-[10%] h-[50vh] w-[50vh] rounded-full bg-purple-600/20 opacity-20 blur-[100px]" />
-                <div className="absolute right-[20%] -bottom-[20%] h-[60vh] w-[60vh] rounded-full bg-cyan-600/20 opacity-20 blur-[100px]" />
+            <div className="mx-auto w-full max-w-6xl px-4 pt-28 sm:px-6 md:pt-36">
+                <PageHeader
+                    title="Online Tools"
+                    description="Free to use, and your files never leave the browser. Helping me, helping you and helping everyone else."
+                />
             </div>
 
-            {/* Hero Section */}
-            <section className="relative flex min-h-[50vh] items-center justify-center pt-24 pb-12">
-                <Spotlight />
-                <div className="container mx-auto px-4 text-center">
-                    <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
-                        <span className="mb-4 inline-flex items-center gap-2 rounded-full bg-primary/10 px-4 py-1.5 text-sm font-medium text-primary">
-                            <Wand2 className="h-4 w-4" />
-                            Online Tools
-                        </span>
-                    </motion.div>
-
-                    <motion.h1
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.6, delay: 0.1 }}
-                        className="mt-4 font-heading text-4xl font-bold md:text-5xl lg:text-6xl"
-                    >
-                        Online Tools
-                    </motion.h1>
-
-                    <motion.p
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.6, delay: 0.2 }}
-                        className="mx-auto mt-6 max-w-2xl text-lg text-muted-foreground"
-                    >
-                        List of available online tools, free to use. Helping me, helping you and helping everyone else.
-                    </motion.p>
-                </div>
-            </section>
-
             {/* Tools Grid */}
-            <section className="py-16 pb-24">
-                <div className="container mx-auto px-4">
+            <section className="pb-24">
+                <div className="mx-auto w-full max-w-6xl px-4 sm:px-6">
                     <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
                         {tools.map((tool, index) => (
                             <ToolCard key={tool.id} tool={tool} index={index} />

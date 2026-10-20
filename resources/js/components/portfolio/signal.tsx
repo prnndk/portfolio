@@ -44,7 +44,7 @@ export function SectionHeader({ index, label, title, action, className }: Sectio
 }
 
 /** Infinite horizontal ticker. Content is duplicated once so the -50% loop is seamless. */
-export function Marquee({ items, className, duration = 30 }: { items: string[]; className?: string; duration?: number }) {
+export function Marquee({ items, className, duration = 30, reverse }: { items: string[]; className?: string; duration?: number; reverse?: boolean }) {
     const row = (hidden?: boolean) => (
         <div aria-hidden={hidden} className="flex shrink-0 items-center gap-10 pr-10">
             {items.map((item) => (
@@ -58,7 +58,10 @@ export function Marquee({ items, className, duration = 30 }: { items: string[]; 
 
     return (
         <div className={cn('overflow-hidden', className)}>
-            <div className="flex w-max [animation:var(--animate-marquee)]" style={{ ['--marquee-duration' as string]: `${duration}s` }}>
+            <div
+                className="flex w-max [animation:var(--animate-marquee)]"
+                style={{ ['--marquee-duration' as string]: `${duration}s`, animationDirection: reverse ? 'reverse' : undefined }}
+            >
                 {row()}
                 {row(true)}
             </div>

@@ -1,5 +1,5 @@
 import { Canvas, useFrame } from '@react-three/fiber';
-import { useMemo, useRef, useState } from 'react';
+import { type MutableRefObject, useEffect, useMemo, useRef, useState } from 'react';
 import * as THREE from 'three';
 
 const ORANGE = '#FF6A2B';
@@ -11,15 +11,28 @@ const SHIRT = '#1F1F24';
 
 const reduceMotion = typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
+/** Pointer position in -1..1 across the whole window, so the head keeps looking at you outside the canvas too. */
+function useWindowPointer() {
+    const pointer = useRef({ x: 0, y: 0 });
+    useEffect(() => {
+        const move = (e: PointerEvent) => {
+            pointer.current.x = (e.clientX / window.innerWidth) * 2 - 1;
+            pointer.current.y = -((e.clientY / window.innerHeight) * 2 - 1);
+        };
+        window.addEventListener('pointermove', move);
+        return () => window.removeEventListener('pointermove', move);
+    }, []);
+    return pointer;
+}
+
 /** Low-poly 3D take on the mascot, built from primitives. Turns toward the pointer; click to make it hop. */
-function MascotHead() {
+function MascotHead({ hop, pointer }: { hop: MutableRefObject<number>; pointer: MutableRefObject<{ x: number; y: number }> }) {
     const root = useRef<THREE.Group>(null);
     const head = useRef<THREE.Group>(null);
-    const hop = useRef(0);
 
     useFrame((state, delta) => {
         if (!root.current || !head.current) return;
-        const { x, y } = state.pointer;
+        const { x, y } = pointer.current;
         head.current.rotation.y = THREE.MathUtils.damp(head.current.rotation.y, x * 0.6, 4, delta);
         head.current.rotation.x = THREE.MathUtils.damp(head.current.rotation.x, -y * 0.35, 4, delta);
         hop.current = Math.max(0, hop.current - delta * 2.2);
@@ -156,14 +169,16 @@ const TOKENS = [
 ];
 
 export default function HeroScene() {
+    const hop = useRef(0);
+    const pointer = useWindowPointer();
+
     return (
-        // eventSource on body so the head follows the pointer anywhere on the page, not only over the canvas
         <Canvas
             dpr={[1, 2]}
             camera={{ position: [0, 0, 8], fov: 35 }}
             gl={{ antialias: true, alpha: true }}
-            eventSource={document.body}
-            eventPrefix="client"
+            // a click anywhere in the scene (not just on the head) makes the mascot hop
+            onClick={() => (hop.current = 1)}
             aria-hidden="true"
         >
             <ambientLight intensity={0.7} />
@@ -171,7 +186,7 @@ export default function HeroScene() {
             <pointLight position={[-3, 1, -2]} intensity={25} color={ORANGE} />
             <pointLight position={[3, -2, -2]} intensity={15} color={LILAC} />
             <group position={[0, 0.5, 0]} scale={0.9}>
-                <MascotHead />
+                <MascotHead hop={hop} pointer={pointer} />
                 {TOKENS.map((t, i) => (
                     <Token key={i} {...t} />
                 ))}

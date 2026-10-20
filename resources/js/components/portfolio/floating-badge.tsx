@@ -21,7 +21,7 @@ export function FloatingBadge({ label, dotColor = 'primary', className, delay = 
     return (
         <div
             className={cn(
-                'flex items-center gap-2 rounded-xl border border-border bg-card/90 px-3.5 py-2 font-mono text-xs text-muted-foreground shadow-lg shadow-black/30 backdrop-blur-sm [animation:var(--animate-float)]',
+                'flex [animation:var(--animate-float)] items-center gap-2 rounded-xl border border-border bg-card/90 px-3.5 py-2 font-mono text-xs text-muted-foreground shadow-lg shadow-black/30 backdrop-blur-sm',
                 className,
             )}
             style={{ animationDelay: delay }}

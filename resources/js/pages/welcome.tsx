@@ -2,11 +2,11 @@
 
 import { FadeIn } from '@/components/aceternity/text-reveal';
 import { Mascot } from '@/components/portfolio/mascot';
-import { Container, CursorHint, LiveClock, MagneticLink, Marquee, SectionHeader, SpinBadge, TiltCard } from '@/components/portfolio/signal';
+import { ProjectTile } from '@/components/portfolio/project-tile';
+import { Container, CursorHint, LiveClock, MagneticLink, Marquee, SectionHeader, SpinBadge } from '@/components/portfolio/signal';
 import { TypedCycle } from '@/components/portfolio/typed-cycle';
 import { Seo } from '@/components/seo';
 import GuestLayout from '@/layouts/guest-layout';
-import { getProjectImage } from '@/lib/project-utils';
 import { cn } from '@/lib/utils';
 import { type Activity, type Favorite, type Post, type Project, type TechStack } from '@/types';
 import { Link } from '@inertiajs/react';
@@ -182,10 +182,13 @@ export default function Welcome({ projects = [], activities = [], posts = [], te
                 </Container>
             </section>
 
-            <Marquee
-                items={words}
-                className="border-y border-border bg-primary py-4 font-heading text-2xl font-bold tracking-[-0.03em] text-primary-foreground md:text-3xl"
-            />
+            {/* Diagonal ticker — overflow clip keeps the tilt from causing a horizontal scrollbar */}
+            <div className="overflow-hidden py-8">
+                <Marquee
+                    items={words}
+                    className="-mx-6 -rotate-[1.4deg] border-y border-foreground/10 bg-primary py-4 font-heading text-2xl font-bold tracking-[-0.03em] text-primary-foreground md:text-4xl"
+                />
+            </div>
 
             {/* Work */}
             <section id="projects" className="py-24 md:py-32">
@@ -196,50 +199,11 @@ export default function Welcome({ projects = [], activities = [], posts = [], te
 
                     {projects.length > 0 ? (
                         <div className="grid gap-5 lg:grid-cols-12">
-                            {projects.slice(0, 6).map((project, i) => {
-                                const image = getProjectImage(project);
-                                return (
-                                    <FadeIn key={project.id} delay={i * 0.08} className={workSpans[i]}>
-                                        <TiltCard max={5} className="h-full">
-                                            <Link
-                                                href={`/projects/${project.slug}`}
-                                                className="group flex h-full flex-col overflow-hidden rounded-3xl border border-border bg-card transition-colors hover:border-primary"
-                                            >
-                                                <div className="aspect-[16/10] overflow-hidden bg-muted">
-                                                    {image && (
-                                                        <img
-                                                            src={image}
-                                                            alt={project.title}
-                                                            loading="lazy"
-                                                            className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
-                                                        />
-                                                    )}
-                                                </div>
-                                                <div className="flex flex-1 flex-col gap-3 p-6">
-                                                    <div className="flex items-center justify-between font-mono text-xs text-muted-foreground">
-                                                        <span>{String(i + 1).padStart(2, '0')}</span>
-                                                        <ArrowUpRight className="h-5 w-5 transition-all group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-primary" />
-                                                    </div>
-                                                    <h3 className="font-heading text-2xl font-bold tracking-[-0.03em]">{project.title}</h3>
-                                                    <p className="line-clamp-2 text-muted-foreground">{project.description}</p>
-                                                    {project.tech_tags && project.tech_tags.length > 0 && (
-                                                        <div className="mt-auto flex flex-wrap gap-2 pt-2">
-                                                            {project.tech_tags.slice(0, 4).map((tag) => (
-                                                                <span
-                                                                    key={tag}
-                                                                    className="rounded-full border border-border px-3 py-1 font-mono text-xs"
-                                                                >
-                                                                    {tag}
-                                                                </span>
-                                                            ))}
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            </Link>
-                                        </TiltCard>
-                                    </FadeIn>
-                                );
-                            })}
+                            {projects.slice(0, 6).map((project, i) => (
+                                <FadeIn key={project.id} delay={i * 0.08} className={workSpans[i]}>
+                                    <ProjectTile project={project} index={i} />
+                                </FadeIn>
+                            ))}
                         </div>
                     ) : (
                         <EmptyBlock text="Projects will appear here once added from the dashboard." />
@@ -364,7 +328,7 @@ export default function Welcome({ projects = [], activities = [], posts = [], te
                             <span className="section-index">GMT+7 · local time</span>
                         </div>
                         <p className="mt-6 max-w-md text-lg leading-relaxed text-pretty text-muted-foreground">
-                            Remote-friendly and happy to overlap with your hours. Drag your cursor over the globe.
+                            Remote-friendly and happy to overlap with your hours. The arcs are the places I can easily overlap hours with.
                         </p>
                     </FadeIn>
                     <div className="relative mx-auto aspect-square w-full max-w-md">
@@ -444,29 +408,41 @@ export default function Welcome({ projects = [], activities = [], posts = [], te
             <section className="pb-24 md:pb-32">
                 <Container>
                     <FadeIn>
-                        <div className="relative grid items-end gap-8 overflow-hidden rounded-[2rem] bg-primary p-8 text-primary-foreground md:grid-cols-[1fr_auto] md:p-14">
-                            <div className="flex flex-col gap-8">
-                                <span className="font-mono text-xs tracking-[0.14em] uppercase opacity-80">Got an idea?</span>
-                                <h2 className="font-heading text-5xl leading-[0.88] font-extrabold tracking-[-0.06em] md:text-8xl">
-                                    Let&apos;s build something good.
-                                </h2>
-                                <div className="flex flex-wrap items-center gap-4">
-                                    <MagneticLink
-                                        href="/contact"
-                                        className="inline-flex min-h-12 items-center gap-2 rounded-full bg-foreground px-6 font-semibold text-background"
-                                    >
-                                        Start a project
-                                        <ArrowRight className="h-4 w-4" />
-                                    </MagneticLink>
-                                    <a
-                                        href="mailto:me@aryagading.com"
-                                        className="border-b-2 border-current pb-0.5 font-heading text-xl font-semibold md:text-2xl"
-                                    >
-                                        me@aryagading.com
-                                    </a>
-                                </div>
+                        <div className="relative overflow-hidden rounded-[2rem] bg-primary text-primary-foreground">
+                            <div className="overflow-hidden pt-8">
+                                <Marquee
+                                    items={["Let's talk", 'Say hello', 'Start a project', 'Book a call']}
+                                    reverse
+                                    duration={26}
+                                    className="-mx-6 rotate-[1.6deg] bg-foreground py-3 font-mono text-sm tracking-[0.14em] text-background uppercase"
+                                />
                             </div>
-                            <Mascot pose="wave" className="hidden h-64 w-56 md:block" />
+                            <div className="grid items-end gap-8 p-8 md:grid-cols-[1fr_auto] md:p-14">
+                                <div className="flex flex-col gap-8">
+                                    <span className="font-mono text-xs tracking-[0.14em] uppercase opacity-80">Got an idea? →</span>
+                                    <h2 className="font-heading text-[clamp(3.5rem,10vw,9rem)] leading-[0.84] font-extrabold tracking-[-0.065em]">
+                                        Let&apos;s build
+                                        <br />
+                                        something <span className="font-light italic">good.</span>
+                                    </h2>
+                                    <div className="flex flex-wrap items-center justify-between gap-4">
+                                        <a
+                                            href="mailto:me@aryagading.com"
+                                            className="border-b-[3px] border-current pb-1 font-heading text-2xl font-semibold tracking-[-0.03em] md:text-4xl"
+                                        >
+                                            me@aryagading.com
+                                        </a>
+                                        <MagneticLink
+                                            href="/contact"
+                                            className="inline-flex min-h-14 items-center gap-3 rounded-full bg-foreground px-7 text-lg font-bold text-background"
+                                        >
+                                            Start a project
+                                            <ArrowRight className="h-5 w-5" />
+                                        </MagneticLink>
+                                    </div>
+                                </div>
+                                <Mascot pose="wave" className="hidden h-64 w-56 md:block" />
+                            </div>
                         </div>
                     </FadeIn>
                 </Container>

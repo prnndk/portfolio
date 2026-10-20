@@ -19,9 +19,7 @@ export function TerminalCard({ className, filename = 'arya.config.ts' }: Termina
                 <span className="size-3 rounded-full bg-[#ff5f57]" />
                 <span className="size-3 rounded-full bg-[#febc2e]" />
                 <span className="size-3 rounded-full bg-[#28c840]" />
-                <span className="ml-auto mr-auto font-mono text-xs tracking-[0.05em] text-muted-foreground">
-                    {filename}
-                </span>
+                <span className="mr-auto ml-auto font-mono text-xs tracking-[0.05em] text-muted-foreground">{filename}</span>
             </div>
 
             <div className="p-6 font-mono text-[0.82rem] leading-[1.9]">
@@ -92,9 +90,9 @@ export function TerminalCard({ className, filename = 'arya.config.ts' }: Termina
                 </Line>
                 <Blank />
                 <Line>
-                    <span className="select-none text-primary">▸</span>
+                    <span className="text-primary select-none">▸</span>
                     <Plain> Ready to build something great</Plain>
-                    <span className="ml-1 inline-block h-[1.1em] w-[2px] translate-y-[3px] bg-primary [animation:var(--animate-blink)]" />
+                    <span className="ml-1 inline-block h-[1.1em] w-[2px] translate-y-[3px] [animation:var(--animate-blink)] bg-primary" />
                 </Line>
             </div>
         </div>
@@ -130,5 +128,5 @@ function Plain({ children }: { children: React.ReactNode }) {
 }
 
 function Comment({ children }: { children: React.ReactNode }) {
-    return <span className="italic text-muted-foreground">{children}</span>;
+    return <span className="text-muted-foreground italic">{children}</span>;
 }
