@@ -190,6 +190,31 @@
     --animate-pulse-dot: pulseDot 2s ease-in-out infinite;
     --animate-scroll-pulse: scrollPulse 2s ease-in-out infinite;
     --animate-marquee: marquee var(--marquee-duration, 30s) linear infinite;
+    --animate-bob: bob 3s ease-in-out infinite;
+    --animate-mascot-blink: mascotBlink 4.5s infinite;
+    --animate-wave: wave 1.4s ease-in-out infinite;
+    --animate-tilt: tilt 3s ease-in-out infinite;
+
+    @keyframes bob {
+        0%, 100% { transform: translateY(0); }
+        50%      { transform: translateY(-6px); }
+    }
+
+    @keyframes mascotBlink {
+        0%, 92%, 100% { transform: scaleY(1); }
+        96%           { transform: scaleY(0.1); }
+    }
+
+    @keyframes wave {
+        0%, 100% { transform: rotate(0); }
+        25%      { transform: rotate(-18deg); }
+        75%      { transform: rotate(14deg); }
+    }
+
+    @keyframes tilt {
+        0%, 100% { transform: rotate(-4deg); }
+        50%      { transform: rotate(4deg); }
+    }
 
     @keyframes orbit {
         0% {
