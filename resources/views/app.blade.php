@@ -74,6 +74,8 @@
                 if (skip) return;
                 document.documentElement.classList.add('is-loading');
                 if (sessionStorage.getItem('preloaded')) document.documentElement.classList.add('is-quick');
+                // failsafe: if the app bundle never mounts (offline, script error) don't leave the page covered
+                setTimeout(function () { document.documentElement.classList.remove('is-loading', 'is-quick'); }, 12000);
             } catch (e) { }
         })();
     </script>
@@ -99,6 +101,25 @@
 
         html.dark.is-loading::before {
             background: oklch(0.7 0.19 40);
+        }
+
+        /* pulsing dot on the cover while the bundle downloads */
+        html.is-loading::after {
+            content: '';
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            z-index: 99;
+            width: 14px;
+            height: 14px;
+            margin: -7px 0 0 -7px;
+            border-radius: 50%;
+            background: #0d0d0f;
+            animation: coverPulse 1s ease-in-out infinite;
+        }
+
+        @keyframes coverPulse {
+            50% { transform: scale(2.2); opacity: 0.35; }
         }
     </style>
 

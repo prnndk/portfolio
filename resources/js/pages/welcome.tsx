@@ -190,11 +190,15 @@ export default function Welcome({ projects = [], activities = [], posts = [], te
 
                     {projects.length > 0 ? (
                         <div className="grid gap-5 lg:grid-cols-12">
-                            {projects.slice(0, 6).map((project, i) => (
-                                <FadeIn key={project.id} delay={i * 0.08} className={workSpans[i]}>
-                                    <ProjectTile project={project} index={i} />
-                                </FadeIn>
-                            ))}
+                            {projects.slice(0, 6).map((project, i, shown) => {
+                                // a lone last card spans the full row instead of leaving a hole
+                                const wide = i === shown.length - 1 && shown.length % 2 === 1;
+                                return (
+                                    <FadeIn key={project.id} delay={i * 0.08} className={wide ? 'lg:col-span-12' : workSpans[i]}>
+                                        <ProjectTile project={project} index={i} wide={wide} />
+                                    </FadeIn>
+                                );
+                            })}
                         </div>
                     ) : (
                         <EmptyBlock text="Projects will appear here once added from the dashboard." />

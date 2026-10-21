@@ -56,7 +56,8 @@ export function Preloader() {
             const elapsed = now - start;
             const dt = now - last;
             last = now;
-            const ready = elapsed >= minMs && ((loaded && fontsReady) || elapsed >= MAX_MS);
+            // quick variant only covers hydration, so it never waits on fonts or remote images
+            const ready = elapsed >= minMs && (quick || (loaded && fontsReady) || elapsed >= MAX_MS);
             if (quick) {
                 if (ready) return setPhase('done');
             } else {

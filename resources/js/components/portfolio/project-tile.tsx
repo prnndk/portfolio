@@ -1,20 +1,24 @@
 import { getProjectImage } from '@/lib/project-utils';
+import { cn } from '@/lib/utils';
 import { type Project } from '@/types';
 import { Link } from '@inertiajs/react';
 import { ArrowUpRight } from 'lucide-react';
 import { TiltCard } from './signal';
 
 /** Project card shared by the homepage bento and the /projects grid. */
-export function ProjectTile({ project, index }: { project: Project; index: number }) {
+export function ProjectTile({ project, index, wide }: { project: Project; index: number; wide?: boolean }) {
     const image = getProjectImage(project);
 
     return (
         <TiltCard max={5} className="h-full">
             <Link
                 href={`/projects/${project.slug}`}
-                className="group flex h-full flex-col overflow-hidden rounded-3xl border border-border bg-card transition-colors hover:border-primary"
+                className={cn(
+                    'group flex h-full flex-col overflow-hidden rounded-3xl border border-border bg-card transition-colors hover:border-primary',
+                    wide && 'lg:flex-row',
+                )}
             >
-                <div className="aspect-[16/10] overflow-hidden bg-muted">
+                <div className={cn('aspect-[16/10] overflow-hidden bg-muted', wide && 'lg:aspect-auto lg:min-h-80 lg:w-1/2')}>
                     {image && (
                         <img
                             src={image}
