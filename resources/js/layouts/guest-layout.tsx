@@ -1,5 +1,6 @@
 'use client';
 
+import { PixelPal } from '@/components/pixel-pal/pixel-pal';
 import { MascotMark } from '@/components/portfolio/mascot';
 import { Container, CustomCursor } from '@/components/portfolio/signal';
 import { AnimatedThemeToggler } from '@/components/ui/animated-theme-toggler';
@@ -468,6 +469,7 @@ export default function GuestLayout({ children }: GuestLayoutProps) {
                     </div>
                 </Container>
             </footer>
+            <PixelPal />
             <CustomCursor />
             <Toaster />
         </div>
