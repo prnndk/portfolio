@@ -2,7 +2,7 @@
 # Stage 1 — Node: compile frontend assets
 # Pin to a specific minor for reproducible builds; update intentionally.
 # ─────────────────────────────────────────────────────────────────────────────
-FROM node:22-alpine AS node-builder
+FROM node:22-alpine@sha256:fe4f6d74e20370acb04ad889077d14d0f64a9c8ea6a42bc60cddf1e844699914 AS node-builder
 
 WORKDIR /app
 
@@ -18,7 +18,7 @@ RUN npm run build
 # ─────────────────────────────────────────────────────────────────────────────
 # Stage 2 — PHP: production image
 # ─────────────────────────────────────────────────────────────────────────────
-FROM php:8.4-fpm
+FROM php:8.4-fpm@sha256:cc7cdfe4da7d46f6e69ac653e3d3396590bf51d6d6731854d01449d0b32b704c
 
 # Install ONLY the runtime libraries needed — no shells or dev tools
 # removed: git curl (unnecessary attack surface in production runtime)
@@ -53,7 +53,7 @@ RUN { \
 } > /usr/local/etc/php/conf.d/opcache.ini
 
 # Install Composer (no dev tools inside the final image — composer is only used at build time)
-COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+COPY --from=composer:2@sha256:b6dcd72ca98fa19d0e5b8476de179859704891fad06dd9e0b96833d4c430a5fc /usr/bin/composer /usr/bin/composer
 
 WORKDIR /var/www
 
