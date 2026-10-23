@@ -5,7 +5,7 @@
  * Character space: 16 wide, 23 tall, origin at the feet (x centred, y = ground line).
  */
 
-export type PalPose = 'stand' | 'walk' | 'run' | 'sit-code' | 'sit-read' | 'water' | 'sleep' | 'wave';
+export type PalPose = 'stand' | 'walk' | 'run' | 'sit-code' | 'sit-read' | 'water' | 'sleep' | 'wave' | 'climb' | 'sit-edge' | 'point' | 'cheer';
 
 export interface PalDraw {
     x: number;
@@ -65,6 +65,12 @@ interface BodyOpts {
     mouth?: 'smile' | 'open' | 'flat';
     /** Both hands out in front (typing / holding something). */
     handsFront?: number;
+    /** Dangling shins swing for sitting on a ledge. */
+    swing?: number;
+    /** Right arm points down and forward. */
+    point?: boolean;
+    /** Both arms thrown up. */
+    cheer?: boolean;
 }
 
 /** Draws the character with feet on y=0, facing +x. */
@@ -77,8 +83,13 @@ function body(ctx: Ctx, o: BodyOpts) {
     if (legs === 'sit') {
         px(ctx, C.pants, -3, -5, 8, 2); // thighs, rows 18-19
         px(ctx, C.pantsShade, -3, -3, 0, 0);
-        px(ctx, C.pants, 3, -3, 2, 3); // shins
-        px(ctx, C.shoe, 3, -1, 3, 1);
+        px(ctx, C.pants, 3 + (o.swing ?? 0), -3, 2, 3); // shins
+        px(ctx, C.shoe, 3 + (o.swing ?? 0), -1, 3, 1);
+    } else if (o.cheer) {
+        px(ctx, C.pants, -4, -4, 3, 3);
+        px(ctx, C.pants, 1, -4, 3, 3);
+        px(ctx, C.shoe, -4, -1, 3, 1);
+        px(ctx, C.shoe, 1, -1, 3, 1);
     } else {
         const lift = (side: 'l' | 'r') => (legs === 1 && side === 'l') || (legs === 3 && side === 'r');
         px(ctx, C.pants, -3, -4, 3, lift('l') ? 2 : 3);
@@ -97,7 +108,12 @@ function body(ctx: Ctx, o: BodyOpts) {
 
     // arms
     const front = o.handsFront;
-    if (front !== undefined) {
+    if (o.cheer) {
+        px(ctx, C.shirt, -6, y(-17), 2, 6);
+        px(ctx, C.skin, -6, y(-19), 2, 2);
+        px(ctx, C.shirt, 4, y(-17), 2, 6);
+        px(ctx, C.skin, 4, y(-19), 2, 2);
+    } else if (front !== undefined) {
         px(ctx, C.shirt, 3, y(-11) + front, 4, 2);
         px(ctx, C.skin, 7, y(-11) + front, 1, 2);
         px(ctx, C.shirt, -6, y(-11), 2, 3);
@@ -107,7 +123,11 @@ function body(ctx: Ctx, o: BodyOpts) {
         const aR = o.armR ?? 0;
         px(ctx, C.shirt, -6, y(-12) + aL, 2, 4);
         px(ctx, C.skin, -6, y(-8) + aL, 2, 2);
-        if (o.wave !== undefined) {
+        if (o.point) {
+            px(ctx, C.shirt, 4, y(-12), 2, 3);
+            px(ctx, C.shirt, 6, y(-10), 2, 3);
+            px(ctx, C.skin, 7, y(-7), 2, 2);
+        } else if (o.wave !== undefined) {
             const sx = o.wave ? 1 : 0;
             px(ctx, C.shirt, 4, y(-12), 2, 2);
             px(ctx, C.shirt, 6, y(-15), 2, 4);
@@ -142,6 +162,32 @@ function body(ctx: Ctx, o: BodyOpts) {
         px(ctx, C.mouth, 1, y(-14), 3, 1);
         px(ctx, C.skin, 1, y(-14), 0, 0);
     } else px(ctx, C.mouth, 2, y(-14), 1, 1);
+}
+
+/** Back view for climbing: hands up on the rungs, legs alternating. */
+function bodyBack(ctx: Ctx, frame: 0 | 1) {
+    const a = frame === 0;
+    px(ctx, C.pants, -3, -6, 6, 2);
+    px(ctx, C.pants, -3, a ? -5 : -4, 3, a ? 4 : 3);
+    px(ctx, C.pants, 0, -4 - (a ? 0 : 1), 3, a ? 3 : 4);
+    px(ctx, C.shoe, -3, a ? -1 : -2, 3, 1);
+    px(ctx, C.shoe, 0, a ? -2 : -1, 3, 1);
+    px(ctx, C.shirt, -4, -12, 8, 6);
+    px(ctx, C.shirtHi, -1, -11, 2, 1);
+    px(ctx, C.skinShade, -1, -13, 2, 1);
+    // arms: one high, one low, swapping each frame
+    px(ctx, C.shirt, -6, a ? -17 : -14, 2, a ? 5 : 3);
+    px(ctx, C.skin, -6, a ? -19 : -16, 2, 2);
+    px(ctx, C.shirt, 4, a ? -14 : -17, 2, a ? 3 : 5);
+    px(ctx, C.skin, 4, a ? -16 : -19, 2, 2);
+    // head from behind: all hair
+    px(ctx, C.hair, 1, -23, 2, 1);
+    px(ctx, C.hair, -4, -22, 8, 7);
+    px(ctx, C.hair, -5, -20, 1, 3);
+    px(ctx, C.hair, 4, -20, 1, 3);
+    px(ctx, C.hairHi, -2, -22, 3, 1);
+    px(ctx, C.hairHi, -3, -18, 1, 2);
+    px(ctx, C.skin, -3, -15, 6, 2);
 }
 
 function zzz(ctx: Ctx, x: number, y: number, t: number) {
@@ -193,6 +239,25 @@ export function drawPal(ctx: Ctx, { x, groundY, dir, pose, t }: PalDraw) {
         }
         case 'water': {
             body(ctx, { legs: 0, handsFront: 0, eyesClosed: blink });
+            break;
+        }
+        case 'climb': {
+            bodyBack(ctx, (Math.floor(t / 230) % 2) as 0 | 1);
+            break;
+        }
+        case 'sit-edge': {
+            const swing = Math.floor(t / 420) % 2;
+            body(ctx, { legs: 'sit', swing, eyesClosed: blink, mouth: 'smile', armL: 1, armR: 1 });
+            break;
+        }
+        case 'point': {
+            body(ctx, { legs: 0, point: true, mouth: 'open', eyesClosed: false });
+            break;
+        }
+        case 'cheer': {
+            const hop = Math.floor(t / 180) % 2 ? -2 : 0;
+            ctx.translate(0, hop);
+            body(ctx, { legs: 0, cheer: true, mouth: 'open', eyesClosed: false });
             break;
         }
         case 'wave': {
@@ -306,4 +371,55 @@ export function drawGround(ctx: Ctx, width: number, groundY: number) {
         if (rnd() > 0.82) px(ctx, rnd() > 0.5 ? C.orange : C.white, x + 1, groundY - 3, 1, 1);
     }
     ctx.globalAlpha = 1;
+}
+
+/** Ladder from `bottomY` up to `topY`, rails at x and x + 9. */
+export function drawLadder(ctx: Ctx, x: number, topY: number, bottomY: number) {
+    px(ctx, C.woodDark, x, topY, 1, bottomY - topY);
+    px(ctx, C.woodDark, x + 9, topY, 1, bottomY - topY);
+    for (let y = topY + 3; y < bottomY - 1; y += 4) px(ctx, C.wood, x + 1, y, 8, 1);
+}
+
+export interface Confetti {
+    x: number;
+    y: number;
+    vx: number;
+    vy: number;
+    life: number;
+    color: string;
+}
+
+const CONFETTI_COLORS = [C.orange, C.screen, C.white, '#C9C3FF', '#7CFFB2'];
+
+export function spawnConfetti(x: number, y: number, n = 28): Confetti[] {
+    return Array.from({ length: n }, () => ({
+        x,
+        y,
+        vx: (Math.random() - 0.5) * 50,
+        vy: -20 - Math.random() * 40,
+        life: 1.2 + Math.random() * 0.8,
+        color: CONFETTI_COLORS[Math.floor(Math.random() * CONFETTI_COLORS.length)],
+    }));
+}
+
+/** Advances and draws confetti; returns the survivors. */
+export function drawConfetti(ctx: Ctx, list: Confetti[], dt: number): Confetti[] {
+    return list.filter((c) => {
+        c.life -= dt;
+        c.vy += 70 * dt;
+        c.x += c.vx * dt;
+        c.y += c.vy * dt;
+        if (c.life <= 0) return false;
+        px(ctx, c.color, c.x, c.y, 1, 1);
+        return true;
+    });
+}
+
+/** Small grass patch drawn between x0 and x1. */
+export function drawYard(ctx: Ctx, x0: number, x1: number, groundY: number) {
+    px(ctx, C.greenDark, x0, groundY, x1 - x0, 1);
+    for (let x = x0 + 1; x < x1; x += 3) {
+        px(ctx, C.green, x, groundY - 1, 1, 1);
+        if (x % 2 === 0) px(ctx, C.green, x + 1, groundY - 2, 1, 1);
+    }
 }

@@ -1,6 +1,7 @@
 'use client';
 
 import { FadeIn } from '@/components/aceternity/text-reveal';
+import { PixelRoof } from '@/components/pixel-pal/pixel-roof';
 import { Mascot } from '@/components/portfolio/mascot';
 import { ProjectTile } from '@/components/portfolio/project-tile';
 import { Container, CursorHint, EmptyBlock, LiveClock, MagneticLink, Marquee, SectionHeader, SpinBadge } from '@/components/portfolio/signal';
@@ -403,42 +404,45 @@ export default function Welcome({ projects = [], activities = [], posts = [], te
             <section className="pb-24 md:pb-32">
                 <Container>
                     <FadeIn>
-                        <div className="relative overflow-hidden rounded-[2rem] bg-primary text-primary-foreground">
-                            <div className="overflow-hidden pt-8">
-                                <Marquee
-                                    items={["Let's talk", 'Say hello', 'Start a project', 'Book a call']}
-                                    reverse
-                                    duration={26}
-                                    className="-mx-6 rotate-[1.6deg] bg-foreground py-3 font-mono text-sm tracking-[0.14em] text-background uppercase"
-                                />
-                            </div>
-                            <div className="grid items-end gap-8 p-8 md:grid-cols-[1fr_auto] md:p-14">
-                                <div className="flex flex-col gap-8">
-                                    <span className="font-mono text-xs tracking-[0.14em] uppercase opacity-80">Got an idea? →</span>
-                                    <h2 className="font-heading text-[clamp(3.5rem,10vw,9rem)] leading-[0.84] font-extrabold tracking-[-0.065em]">
-                                        Let&apos;s build
-                                        <br />
-                                        something <span className="font-light italic">good.</span>
-                                    </h2>
-                                    <div className="flex flex-wrap items-center justify-between gap-4">
-                                        <a
-                                            href="mailto:me@aryagading.com"
-                                            className="border-b-[3px] border-current pb-1 font-heading text-2xl font-semibold tracking-[-0.03em] md:text-4xl"
-                                        >
-                                            me@aryagading.com
-                                        </a>
-                                        <MagneticLink
-                                            href="/contact"
-                                            className="inline-flex min-h-14 items-center gap-3 rounded-full bg-foreground px-7 text-lg font-bold text-background"
-                                        >
-                                            Start a project
-                                            <ArrowRight className="h-5 w-5" />
-                                        </MagneticLink>
+                        <PixelRoof>
+                            <div className="relative overflow-hidden rounded-[2rem] bg-primary text-primary-foreground">
+                                <div className="overflow-hidden pt-8">
+                                    <Marquee
+                                        items={["Let's talk", 'Say hello', 'Start a project', 'Book a call']}
+                                        reverse
+                                        duration={26}
+                                        className="-mx-6 rotate-[1.6deg] bg-foreground py-3 font-mono text-sm tracking-[0.14em] text-background uppercase"
+                                    />
+                                </div>
+                                <div className="grid items-end gap-8 p-8 md:p-14">
+                                    <div className="flex flex-col gap-8">
+                                        <span className="font-mono text-xs tracking-[0.14em] uppercase opacity-80">Got an idea? →</span>
+                                        <h2 className="font-heading text-[clamp(3.5rem,10vw,9rem)] leading-[0.84] font-extrabold tracking-[-0.065em]">
+                                            Let&apos;s build
+                                            <br />
+                                            something <span className="font-light italic">good.</span>
+                                        </h2>
+                                        <div className="flex flex-wrap items-center justify-between gap-4">
+                                            <a
+                                                href="mailto:me@aryagading.com"
+                                                className="border-b-[3px] border-current pb-1 font-heading text-2xl font-semibold tracking-[-0.03em] md:text-4xl"
+                                            >
+                                                me@aryagading.com
+                                            </a>
+                                            <MagneticLink
+                                                href="/contact"
+                                                data-pixel-target
+                                                data-pixel-say="Go on, click it!"
+                                                className="inline-flex min-h-14 items-center gap-3 rounded-full bg-foreground px-7 text-lg font-bold text-background"
+                                            >
+                                                Start a project
+                                                <ArrowRight className="h-5 w-5" />
+                                            </MagneticLink>
+                                        </div>
                                     </div>
                                 </div>
-                                <Mascot pose="wave" className="hidden h-64 w-56 md:block" />
                             </div>
-                        </div>
+                        </PixelRoof>
                     </FadeIn>
                 </Container>
             </section>

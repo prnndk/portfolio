@@ -1,7 +1,7 @@
 'use client';
 
 import { FadeIn } from '@/components/aceternity/text-reveal';
-import { Mascot } from '@/components/portfolio/mascot';
+import { PixelRoof } from '@/components/pixel-pal/pixel-roof';
 import { LiveClock, PageContainer } from '@/components/portfolio/signal';
 import { Seo } from '@/components/seo';
 import { Input } from '@/components/ui/input';
@@ -128,6 +128,7 @@ export default function ContactIndex() {
         post('/contact', {
             onSuccess: () => {
                 reset();
+                window.dispatchEvent(new Event('pixel:celebrate'));
                 setClientErrors({});
                 setTouched({});
                 // Reset timestamp for next submission
@@ -212,96 +213,102 @@ export default function ContactIndex() {
                                 </span>
                             </div>
                         </div>
-
-                        <Mascot pose="wave" className="mt-8 hidden h-56 w-48 lg:block" />
                     </FadeIn>
 
                     {/* Contact Form */}
                     <FadeIn delay={0.2}>
-                        <div className="rounded-3xl border border-border bg-card p-8 md:p-10">
-                            <form onSubmit={handleContactSubmit} className="space-y-4">
-                                {/* Honeypot field - hidden from users, bots will fill it */}
-                                <div className="absolute -left-[9999px] opacity-0" aria-hidden="true">
-                                    <label htmlFor="website">Website</label>
-                                    <input
-                                        type="text"
-                                        id="website"
-                                        name="website"
-                                        value={data.website}
-                                        onChange={(e) => setData('website', e.target.value)}
-                                        tabIndex={-1}
-                                        autoComplete="off"
-                                    />
-                                </div>
-
-                                {/* Hidden timestamp field */}
-                                <input type="hidden" name="_timestamp" value={data._timestamp} />
-
-                                <div>
-                                    <label htmlFor="name" className="mb-2 block text-sm font-medium">
-                                        Name <span className="text-destructive">*</span>
-                                    </label>
-                                    <Input
-                                        id="name"
-                                        value={data.name}
-                                        onChange={(e) => handleFieldChange('name', e.target.value)}
-                                        onBlur={() => handleFieldBlur('name')}
-                                        placeholder="Your name"
-                                        autoComplete="off"
-                                        className={cn(hasError('name') && 'border-destructive focus-visible:ring-destructive')}
-                                    />
-                                    <FieldError message={getError('name')} />
-                                </div>
-                                <div>
-                                    <label htmlFor="email" className="mb-2 block text-sm font-medium">
-                                        Email <span className="text-destructive">*</span>
-                                    </label>
-                                    <Input
-                                        id="email"
-                                        type="email"
-                                        value={data.email}
-                                        onChange={(e) => handleFieldChange('email', e.target.value)}
-                                        onBlur={() => handleFieldBlur('email')}
-                                        placeholder="your@email.com"
-                                        autoComplete="off"
-                                        className={cn(hasError('email') && 'border-destructive focus-visible:ring-destructive')}
-                                    />
-                                    <FieldError message={getError('email')} />
-                                </div>
-                                <div>
-                                    <label htmlFor="message" className="mb-2 block text-sm font-medium">
-                                        Message <span className="text-destructive">*</span>
-                                    </label>
-                                    <textarea
-                                        id="message"
-                                        value={data.message}
-                                        onChange={(e) => handleFieldChange('message', e.target.value)}
-                                        onBlur={() => handleFieldBlur('message')}
-                                        placeholder="Tell me about your project..."
-                                        rows={5}
-                                        className={cn(
-                                            'w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background transition-colors placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none',
-                                            hasError('message') && 'border-destructive focus-visible:ring-destructive',
-                                        )}
-                                    />
-                                    <div className="mt-1.5 flex items-center justify-between">
-                                        <FieldError message={getError('message')} />
-                                        <span className={cn('text-xs', data.message.length > 5000 ? 'text-destructive' : 'text-muted-foreground')}>
-                                            {data.message.length}/5000
-                                        </span>
+                        <PixelRoof>
+                            <div className="rounded-3xl border border-border bg-card p-8 md:p-10">
+                                <form onSubmit={handleContactSubmit} className="space-y-4">
+                                    {/* Honeypot field - hidden from users, bots will fill it */}
+                                    <div className="absolute -left-[9999px] opacity-0" aria-hidden="true">
+                                        <label htmlFor="website">Website</label>
+                                        <input
+                                            type="text"
+                                            id="website"
+                                            name="website"
+                                            value={data.website}
+                                            onChange={(e) => setData('website', e.target.value)}
+                                            tabIndex={-1}
+                                            autoComplete="off"
+                                        />
                                     </div>
-                                </div>
-                                <button
-                                    type="submit"
-                                    disabled={processing}
-                                    className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-full bg-primary px-6 font-semibold text-primary-foreground transition-shadow hover:shadow-lg hover:shadow-primary/30 disabled:opacity-60"
-                                >
-                                    <Send className="h-4 w-4" />
-                                    {processing ? 'Sending...' : 'Send message'}
-                                </button>
-                                <p className="mt-4 text-center text-xs text-muted-foreground">Your information is secure and will never be shared.</p>
-                            </form>
-                        </div>
+
+                                    {/* Hidden timestamp field */}
+                                    <input type="hidden" name="_timestamp" value={data._timestamp} />
+
+                                    <div>
+                                        <label htmlFor="name" className="mb-2 block text-sm font-medium">
+                                            Name <span className="text-destructive">*</span>
+                                        </label>
+                                        <Input
+                                            id="name"
+                                            value={data.name}
+                                            onChange={(e) => handleFieldChange('name', e.target.value)}
+                                            onBlur={() => handleFieldBlur('name')}
+                                            placeholder="Your name"
+                                            autoComplete="off"
+                                            className={cn(hasError('name') && 'border-destructive focus-visible:ring-destructive')}
+                                        />
+                                        <FieldError message={getError('name')} />
+                                    </div>
+                                    <div>
+                                        <label htmlFor="email" className="mb-2 block text-sm font-medium">
+                                            Email <span className="text-destructive">*</span>
+                                        </label>
+                                        <Input
+                                            id="email"
+                                            type="email"
+                                            value={data.email}
+                                            onChange={(e) => handleFieldChange('email', e.target.value)}
+                                            onBlur={() => handleFieldBlur('email')}
+                                            placeholder="your@email.com"
+                                            autoComplete="off"
+                                            className={cn(hasError('email') && 'border-destructive focus-visible:ring-destructive')}
+                                        />
+                                        <FieldError message={getError('email')} />
+                                    </div>
+                                    <div>
+                                        <label htmlFor="message" className="mb-2 block text-sm font-medium">
+                                            Message <span className="text-destructive">*</span>
+                                        </label>
+                                        <textarea
+                                            id="message"
+                                            value={data.message}
+                                            onChange={(e) => handleFieldChange('message', e.target.value)}
+                                            onBlur={() => handleFieldBlur('message')}
+                                            placeholder="Tell me about your project..."
+                                            rows={5}
+                                            className={cn(
+                                                'w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background transition-colors placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none',
+                                                hasError('message') && 'border-destructive focus-visible:ring-destructive',
+                                            )}
+                                        />
+                                        <div className="mt-1.5 flex items-center justify-between">
+                                            <FieldError message={getError('message')} />
+                                            <span
+                                                className={cn('text-xs', data.message.length > 5000 ? 'text-destructive' : 'text-muted-foreground')}
+                                            >
+                                                {data.message.length}/5000
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <button
+                                        type="submit"
+                                        disabled={processing}
+                                        data-pixel-target
+                                        data-pixel-say="Hit send!"
+                                        className="inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-full bg-primary px-6 font-semibold text-primary-foreground transition-shadow hover:shadow-lg hover:shadow-primary/30 disabled:opacity-60"
+                                    >
+                                        <Send className="h-4 w-4" />
+                                        {processing ? 'Sending...' : 'Send message'}
+                                    </button>
+                                    <p className="mt-4 text-center text-xs text-muted-foreground">
+                                        Your information is secure and will never be shared.
+                                    </p>
+                                </form>
+                            </div>
+                        </PixelRoof>
                     </FadeIn>
                 </div>
             </PageContainer>
