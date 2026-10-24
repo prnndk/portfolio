@@ -80,8 +80,8 @@ if [ -d /var/www-public ]; then
     echo "📁  Copying public/ -> shared volume..."
     cp -rf /var/www/public/. /var/www-public/
 
-    # Ensure nginx can read but not write these files
-    chmod -R 750 /var/www-public 2>/dev/null || true
+    # nginx runs as another uid and mounts this read-only: it needs read+traverse (public assets are public anyway)
+    chmod -R u=rwX,go=rX /var/www-public 2>/dev/null || true
 fi
 
 echo "🚀  Setup complete — starting php-fpm..."
