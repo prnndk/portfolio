@@ -61,7 +61,7 @@
         "clsx": "^2.1.1",
         "concurrently": "^9.0.1",
         "framer-motion": "^12.26.2",
-        "globals": "^15.14.0",
+        "globals": "^17.13.0",
         "heic2any": "^0.0.4",
         "jspdf": "^4.2.0",
         "jszip": "^3.10.1",
