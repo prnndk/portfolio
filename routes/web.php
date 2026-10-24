@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\ActivityController as AdminActivityController;
+use App\Http\Controllers\Admin\DocumentTraceController as AdminDocumentTraceController;
 use App\Http\Controllers\Admin\FavoriteController as AdminFavoriteController;
 use App\Http\Controllers\Admin\JourneyController;
 use App\Http\Controllers\Admin\PostController as AdminPostController;
@@ -15,6 +16,7 @@ use App\Http\Controllers\OpenGraphController;
 use App\Http\Controllers\Public\AboutController;
 use App\Http\Controllers\Public\ActivityController;
 use App\Http\Controllers\Public\BlogController;
+use App\Http\Controllers\Public\DocumentTraceController;
 use App\Http\Controllers\Public\FavoriteController;
 use App\Http\Controllers\Public\ProjectController;
 use App\Http\Controllers\Public\ToolsController;
@@ -67,7 +69,21 @@ Route::prefix('tools')->name('tools.')->group(function () {
     Route::get('/pdf-to-images',  [ToolsController::class, 'pdfToImages'])->name('pdf-to-images');
     Route::get('/pdf-compress',   [ToolsController::class, 'pdfCompress'])->name('pdf-compress');
     Route::get('/pdf-rotate',     [ToolsController::class, 'pdfRotate'])->name('pdf-rotate');
+    Route::get('/watermark',       [ToolsController::class, 'watermark'])->name('watermark');
+    Route::get('/image-watermark', [ToolsController::class, 'imageWatermark'])->name('image-watermark');
+    Route::get('/pdf-sign',        [ToolsController::class, 'pdfSign'])->name('pdf-sign');
+    Route::get('/verify',          [ToolsController::class, 'verify'])->name('verify');
+
+    // Document trace API: only hashes, codes and passphrase-encrypted metadata ever reach the server
+    Route::post('/trace', [DocumentTraceController::class, 'store'])->middleware('throttle:doc-trace-create')->name('trace.store');
+    Route::post('/trace/{code}/finalize', [DocumentTraceController::class, 'finalize'])->middleware('throttle:20,1')->name('trace.finalize');
+    Route::post('/trace/{code}/revoke', [DocumentTraceController::class, 'revoke'])->middleware('throttle:doc-unlock')->name('trace.revoke');
+    Route::post('/verify', [DocumentTraceController::class, 'check'])->middleware('throttle:20,1')->name('verify.check');
+    Route::post('/verify/{code}/unlock', [DocumentTraceController::class, 'unlock'])->middleware('throttle:doc-unlock')->name('verify.unlock');
 });
+
+// QR target printed on traced documents
+Route::get('/v/{code}', [DocumentTraceController::class, 'show'])->middleware('throttle:60,1')->name('verify.show');
 
 // ── Authenticated ─────────────────────────────────────────────────────────────
 Route::middleware(['auth', 'verified'])->group(function () {
@@ -82,6 +98,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::resource('journeys',    JourneyController::class)->except(['show']);
         Route::resource('contacts',    ContactController::class)->only(['index', 'show', 'destroy']);
         Route::resource('short-links', ShortLinkController::class)->except(['show']);
+        Route::get('document-traces', [AdminDocumentTraceController::class, 'index'])->name('document-traces.index');
+        Route::get('document-traces/{trace}', [AdminDocumentTraceController::class, 'show'])->name('document-traces.show');
+        Route::post('document-traces/{trace}/revoke', [AdminDocumentTraceController::class, 'revoke'])->name('document-traces.revoke');
 
         Route::prefix('upload')->name('upload.')->group(function () {
             Route::post('image',   [UploadController::class, 'uploadImage'])->name('image');

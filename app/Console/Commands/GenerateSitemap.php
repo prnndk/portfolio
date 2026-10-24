@@ -48,6 +48,10 @@ class GenerateSitemap extends Command
         $sitemap->add(Url::create('/tools/pdf-to-images')->setPriority(0.7)->setChangeFrequency(Url::CHANGE_FREQUENCY_MONTHLY));
         $sitemap->add(Url::create('/tools/pdf-compress')->setPriority(0.7)->setChangeFrequency(Url::CHANGE_FREQUENCY_MONTHLY));
         $sitemap->add(Url::create('/tools/pdf-rotate')->setPriority(0.7)->setChangeFrequency(Url::CHANGE_FREQUENCY_MONTHLY));
+        $sitemap->add(Url::create('/tools/watermark')->setPriority(0.7)->setChangeFrequency(Url::CHANGE_FREQUENCY_MONTHLY));
+        $sitemap->add(Url::create('/tools/image-watermark')->setPriority(0.7)->setChangeFrequency(Url::CHANGE_FREQUENCY_MONTHLY));
+        $sitemap->add(Url::create('/tools/pdf-sign')->setPriority(0.7)->setChangeFrequency(Url::CHANGE_FREQUENCY_MONTHLY));
+        $sitemap->add(Url::create('/tools/verify')->setPriority(0.7)->setChangeFrequency(Url::CHANGE_FREQUENCY_MONTHLY));
 
         // Projects
         Project::active()->each(function (Project $project) use ($sitemap) {

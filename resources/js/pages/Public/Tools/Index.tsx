@@ -75,6 +75,43 @@ const tools: Tool[] = [
         category: 'pdf',
         isNew: true,
     },
+    {
+        id: 'watermark',
+        name: 'Watermark & Trace',
+        description: 'Watermark a PDF with custom text, tilt and spacing, a different mark per page, and trace shared copies back to their source.',
+        icon: 'Stamp',
+        href: '/tools/watermark',
+        category: 'pdf',
+        isNew: true,
+        isFeatured: true,
+    },
+    {
+        id: 'image-watermark',
+        name: 'Image Watermark',
+        description: 'Watermark photos and scans, and hide an invisible code in the pixels so a leaked copy can be traced.',
+        icon: 'Stamp',
+        href: '/tools/image-watermark',
+        category: 'image',
+        isNew: true,
+    },
+    {
+        id: 'pdf-sign',
+        name: 'Sign PDF',
+        description: 'Place a PNG or hand-drawn signature anywhere on a PDF, with an optional integrity seal and QR.',
+        icon: 'PenLine',
+        href: '/tools/pdf-sign',
+        category: 'pdf',
+        isNew: true,
+    },
+    {
+        id: 'verify',
+        name: 'Verify Document',
+        description: 'Check whether a PDF or picture is an authentic registered copy, who it was prepared for, and whether it was altered.',
+        icon: 'FileSearch',
+        href: '/tools/verify',
+        category: 'utility',
+        isNew: true,
+    },
 ];
 
 const categoryColors: Record<string, string> = {

@@ -319,7 +319,7 @@ function CompressionSettings({
                 </div>
             </div>
 
-            <div className="grid gap-8 md:grid-cols-2">
+            <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
                 {/* Quality Slider - Minimalist shadcn style */}
                 <div className="space-y-4">
                     <div className="flex items-center justify-between">

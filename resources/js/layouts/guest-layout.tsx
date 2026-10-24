@@ -19,7 +19,7 @@ import { initializeTheme } from '@/hooks/use-appearance';
 import { cn } from '@/lib/utils';
 import { Link, router } from '@inertiajs/react';
 import { motion, useMotionValueEvent, useScroll } from 'framer-motion';
-import { ChevronDown, FileText, Github, Image, Instagram, Linkedin, Mail, Menu, Search, Wrench, X } from 'lucide-react';
+import { ChevronDown, FileSearch, FileText, Github, Image, Instagram, Linkedin, Mail, Menu, PenLine, Search, Stamp, Wrench, X } from 'lucide-react';
 import { type ReactNode, useEffect, useRef, useState } from 'react';
 
 interface GuestLayoutProps {
@@ -75,6 +75,34 @@ const toolItems = [
         href: '/tools/pdf-rotate',
         description: 'Rotate individual or all pages of a PDF document.',
         icon: FileText,
+        featured: false,
+    },
+    {
+        title: 'Watermark & Trace',
+        href: '/tools/watermark',
+        description: 'Per-page watermark, copyright footer and a hidden trace for shared PDFs.',
+        icon: Stamp,
+        featured: false,
+    },
+    {
+        title: 'Image Watermark',
+        href: '/tools/image-watermark',
+        description: 'Visible watermark plus an invisible code hidden in photos and scans.',
+        icon: Image,
+        featured: false,
+    },
+    {
+        title: 'Sign PDF',
+        href: '/tools/pdf-sign',
+        description: 'Place a PNG or drawn signature anywhere on a PDF.',
+        icon: PenLine,
+        featured: false,
+    },
+    {
+        title: 'Verify Document',
+        href: '/tools/verify',
+        description: 'Check where a PDF or picture came from and whether it was altered.',
+        icon: FileSearch,
         featured: false,
     },
 ];

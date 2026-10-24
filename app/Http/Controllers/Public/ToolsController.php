@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Public;
 
 use App\Http\Controllers\Controller;
+use App\Services\DocumentTrace\TraceService;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -46,5 +47,25 @@ class ToolsController extends Controller
     public function pdfRotate(): Response
     {
         return Inertia::render('Public/Tools/PdfRotate');
+    }
+
+    public function watermark(): Response
+    {
+        return Inertia::render('Public/Tools/Watermark');
+    }
+
+    public function imageWatermark(): Response
+    {
+        return Inertia::render('Public/Tools/ImageWatermark');
+    }
+
+    public function pdfSign(): Response
+    {
+        return Inertia::render('Public/Tools/PdfSign');
+    }
+
+    public function verify(TraceService $traces): Response
+    {
+        return Inertia::render('Public/Tools/Verify', ['initial' => null, 'publicKey' => $traces->publicKey()]);
     }
 }

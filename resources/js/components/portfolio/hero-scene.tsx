@@ -1,17 +1,18 @@
-import { Canvas, useFrame } from '@react-three/fiber';
+import { drawPal, type PalPose } from '@/components/pixel-pal/sprites';
+import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { type MutableRefObject, useEffect, useMemo, useRef, useState } from 'react';
 import * as THREE from 'three';
 
 const ORANGE = '#FF6A2B';
 const LILAC = '#C9C3FF';
 const MINT = '#7CFFB2';
-const SKIN = '#F2C9A5';
-const HAIR = '#141418';
-const SHIRT = '#1F1F24';
+const MONO = "600 54px 'JetBrains Mono', ui-monospace, monospace";
 
 const reduceMotion = typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-/** Pointer position in -1..1 across the whole window, so the head keeps looking at you outside the canvas too. */
+type Pointer = MutableRefObject<{ x: number; y: number }>;
+
+/** Pointer position in -1..1 across the whole window, so the character keeps facing you outside the canvas too. */
 function useWindowPointer() {
     const pointer = useRef({ x: 0, y: 0 });
     useEffect(() => {
@@ -25,172 +26,282 @@ function useWindowPointer() {
     return pointer;
 }
 
-/** Low-poly 3D take on the mascot, built from primitives. Turns toward the pointer; click to make it hop. */
-function MascotHead({ hop, pointer }: { hop: MutableRefObject<number>; pointer: MutableRefObject<{ x: number; y: number }> }) {
+// The part of the scene that must always be in shot. The camera backs off until this box fits the canvas,
+// so the character and its orbits are framed the same on a phone, a tablet and a wide desktop column.
+const FRAME = { cy: -0.3, halfW: 2.75, halfH: 2.25 };
+
+function FitCamera() {
+    const camera = useThree((s) => s.camera) as THREE.PerspectiveCamera;
+    const size = useThree((s) => s.size);
+    useEffect(() => {
+        const t = Math.tan(THREE.MathUtils.degToRad(camera.fov / 2));
+        const d = Math.max(FRAME.halfH / t, FRAME.halfW / (t * (size.width / size.height)));
+        // + margin: the near side of the orbits sits ~2 units in front of the frame plane
+        camera.position.set(0, FRAME.cy, d + 1);
+        camera.lookAt(0, FRAME.cy, 0);
+    }, [camera, size]);
+    return null;
+}
+
+// Sprite canvas in logical pixels; the character's feet sit on SPRITE_GROUND.
+const SPRITE = 32;
+const SPRITE_GROUND = 29;
+/** World units per sprite pixel. */
+const PIXEL = 0.15;
+
+/**
+ * The same pixel-art Gading that lives on the contact cards, drawn every frame onto a tiny canvas and
+ * shown on a flat plane in the middle of the orbits. Faces the pointer, waves now and then, cheers when clicked.
+ */
+function PixelPlayer({ cheer, pointer }: { cheer: MutableRefObject<number>; pointer: Pointer }) {
     const root = useRef<THREE.Group>(null);
-    const head = useRef<THREE.Group>(null);
+    const { canvas, ctx, texture } = useMemo(() => {
+        const canvas = document.createElement('canvas');
+        canvas.width = canvas.height = SPRITE;
+        const texture = new THREE.CanvasTexture(canvas);
+        texture.magFilter = texture.minFilter = THREE.NearestFilter;
+        texture.generateMipmaps = false;
+        texture.colorSpace = THREE.SRGBColorSpace;
+        return { canvas, ctx: canvas.getContext('2d')!, texture };
+    }, []);
+    const dir = useRef<1 | -1>(1);
+    const nextWave = useRef(4000);
+
+    useEffect(() => () => texture.dispose(), [texture]);
 
     useFrame((state, delta) => {
-        if (!root.current || !head.current) return;
-        const { x, y } = pointer.current;
-        head.current.rotation.y = THREE.MathUtils.damp(head.current.rotation.y, x * 0.6, 4, delta);
-        head.current.rotation.x = THREE.MathUtils.damp(head.current.rotation.x, -y * 0.35, 4, delta);
-        hop.current = Math.max(0, hop.current - delta * 2.2);
-        const bob = reduceMotion ? 0 : Math.sin(state.clock.elapsedTime * 1.6) * 0.05;
-        root.current.position.y = bob + Math.sin(hop.current * Math.PI) * 0.45;
+        const t = state.clock.elapsedTime * 1000;
+        if (Math.abs(pointer.current.x) > 0.08) dir.current = pointer.current.x > 0 ? 1 : -1;
+        cheer.current = Math.max(0, cheer.current - delta);
+
+        let pose: PalPose = 'stand';
+        if (cheer.current > 0) pose = 'cheer';
+        else if (!reduceMotion && t > nextWave.current) {
+            pose = 'wave';
+            if (t > nextWave.current + 1800) nextWave.current = t + 6000 + Math.random() * 6000;
+        }
+
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.fillStyle = 'rgba(0,0,0,0.2)'; // contact shadow
+        ctx.fillRect(SPRITE / 2 - 6, SPRITE_GROUND, 12, 1);
+        ctx.fillRect(SPRITE / 2 - 4, SPRITE_GROUND + 1, 8, 1);
+        drawPal(ctx, { x: SPRITE / 2, groundY: SPRITE_GROUND, dir: dir.current, pose, t: reduceMotion ? 0 : t });
+        texture.needsUpdate = true;
+
+        if (root.current) root.current.position.y = reduceMotion ? 0 : Math.round(Math.sin(t / 600) * 1.5) * PIXEL * 0.5;
     });
 
-    const skin = <meshStandardMaterial color={SKIN} flatShading roughness={0.8} />;
-    const hair = <meshStandardMaterial color={HAIR} flatShading roughness={0.6} />;
+    return (
+        <group ref={root}>
+            <mesh
+                // feet row lands at y = -2.2
+                position={[0, -2.2 + (SPRITE_GROUND - SPRITE / 2) * PIXEL, 0]}
+                onClick={() => (cheer.current = 1.4)}
+                onPointerOver={() => (document.body.style.cursor = 'pointer')}
+                onPointerOut={() => (document.body.style.cursor = '')}
+            >
+                <planeGeometry args={[SPRITE * PIXEL, SPRITE * PIXEL]} />
+                <meshBasicMaterial map={texture} transparent alphaTest={0.1} toneMapped={false} />
+            </mesh>
+        </group>
+    );
+}
+
+/** Rounded glyph tile drawn on a canvas, used as a sprite texture. */
+function glyphTexture(glyph: string, color: string) {
+    const c = document.createElement('canvas');
+    c.width = c.height = 128;
+    const ctx = c.getContext('2d')!;
+    ctx.fillStyle = 'rgba(16,16,20,0.88)';
+    ctx.strokeStyle = color;
+    ctx.lineWidth = 5;
+    ctx.beginPath();
+    ctx.roundRect(8, 8, 112, 112, 26);
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle = color;
+    ctx.font = MONO;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(glyph, 64, 68, 96);
+    const tex = new THREE.CanvasTexture(c);
+    tex.colorSpace = THREE.SRGBColorSpace;
+    tex.anisotropy = 4;
+    return tex;
+}
+
+const ICONS: [string, string][] = [
+    ['</>', ORANGE],
+    ['{ }', LILAC],
+    ['>_', MINT],
+    ['λ', ORANGE],
+    ['AI', LILAC],
+    ['git', MINT],
+    ['01', ORANGE],
+    ['#', LILAC],
+];
+
+/** Code glyph tiles on a tilted orbit around the head; hover one to enlarge it. */
+function IconOrbit({ fontsReady }: { fontsReady: boolean }) {
+    const group = useRef<THREE.Group>(null);
+    const sprites = useRef<(THREE.Sprite | null)[]>([]);
+    const [hovered, setHovered] = useState(-1);
+    const textures = useMemo(() => ICONS.map(([g, c]) => glyphTexture(g, c)), [fontsReady]); // eslint-disable-line react-hooks/exhaustive-deps
+
+    useEffect(() => () => textures.forEach((t) => t.dispose()), [textures]);
+
+    useFrame((state, delta) => {
+        const t = reduceMotion ? 0 : state.clock.elapsedTime * 0.25;
+        sprites.current.forEach((s, i) => {
+            if (!s) return;
+            const a = t + (i / ICONS.length) * Math.PI * 2;
+            s.position.set(Math.cos(a) * 2.3, Math.sin(a * 2 + i) * 0.08, Math.sin(a) * 2.3);
+            const k = THREE.MathUtils.damp(s.scale.x, hovered === i ? 0.68 : 0.42, 8, delta);
+            s.scale.setScalar(k);
+        });
+        if (group.current) group.current.rotation.z = Math.sin((reduceMotion ? 0 : state.clock.elapsedTime) * 0.3) * 0.05 - 0.14;
+    });
 
     return (
-        <group
-            ref={root}
-            onClick={() => (hop.current = 1)}
-            onPointerOver={() => (document.body.style.cursor = 'pointer')}
-            onPointerOut={() => (document.body.style.cursor = '')}
-        >
-            {/* Shirt */}
-            <mesh position={[0, -1.85, 0]} scale={[1.35, 1, 0.9]}>
-                <capsuleGeometry args={[0.75, 0.5, 6, 12]} />
-                <meshStandardMaterial color={SHIRT} flatShading roughness={0.9} />
-            </mesh>
-            <mesh position={[0, -1.02, 0.1]}>
-                <cylinderGeometry args={[0.24, 0.28, 0.4, 10]} />
-                {skin}
-            </mesh>
+        <group ref={group} position={[0, 0.45, 0]} rotation={[0.5, 0, -0.14]}>
+            {textures.map((map, i) => (
+                <sprite
+                    key={i}
+                    ref={(s) => {
+                        sprites.current[i] = s;
+                    }}
+                    scale={0.42}
+                    onPointerOver={() => setHovered(i)}
+                    onPointerOut={() => setHovered(-1)}
+                >
+                    <spriteMaterial map={map} transparent />
+                </sprite>
+            ))}
+        </group>
+    );
+}
 
-            <group ref={head}>
-                <mesh scale={[1, 1.08, 0.95]}>
-                    <icosahedronGeometry args={[1, 2]} />
-                    {skin}
-                </mesh>
-                {[-1, 1].map((s) => (
-                    <mesh key={s} position={[s * 0.98, -0.02, 0]} scale={[0.16, 0.24, 0.14]}>
-                        <icosahedronGeometry args={[1, 1]} />
-                        {skin}
-                    </mesh>
-                ))}
+/** Name band wrapped around the shoulders like a holographic ring. */
+function SignatureRing({ fontsReady }: { fontsReady: boolean }) {
+    const ring = useRef<THREE.Group>(null);
+    const texture = useMemo(() => {
+        const c = document.createElement('canvas');
+        c.width = 2048;
+        c.height = 96;
+        const ctx = c.getContext('2d')!;
+        ctx.fillStyle = ORANGE;
+        ctx.fillRect(0, 4, c.width, 3);
+        ctx.fillRect(0, c.height - 7, c.width, 3);
+        ctx.font = "700 46px 'JetBrains Mono', ui-monospace, monospace";
+        ctx.textBaseline = 'middle';
+        const text = 'ARYA GADING PRINANDIKA  ✦  SOFTWARE ENGINEER  ✦  CODE TO CLOUD  ✦  ';
+        const w = ctx.measureText(text).width;
+        // squeeze to fit the canvas exactly so the band repeats seamlessly
+        ctx.setTransform(c.width / w, 0, 0, 1, 0, 0);
+        ctx.fillText(text, 0, c.height / 2 + 2);
+        const tex = new THREE.CanvasTexture(c);
+        tex.colorSpace = THREE.SRGBColorSpace;
+        tex.wrapS = THREE.RepeatWrapping;
+        tex.repeat.x = 2;
+        tex.anisotropy = 8;
+        return tex;
+    }, [fontsReady]); // eslint-disable-line react-hooks/exhaustive-deps
 
-                {/* Hair cap, front swoop and the signature cowlick */}
-                <mesh rotation={[-0.35, 0, 0]} scale={[1.04, 1.1, 1]}>
-                    <sphereGeometry args={[1.05, 16, 10, 0, Math.PI * 2, 0, Math.PI * 0.42]} />
-                    {hair}
-                </mesh>
-                {[
-                    [-0.45, 0.82, 0.55, 0.32],
-                    [0.05, 0.92, 0.6, 0.36],
-                    [0.5, 0.8, 0.5, 0.3],
-                ].map(([x, y, z, r], i) => (
-                    <mesh key={i} position={[x, y, z]} scale={[1.2, 0.7, 0.9]}>
-                        <icosahedronGeometry args={[r, 0]} />
-                        {hair}
-                    </mesh>
-                ))}
-                <mesh position={[0.15, 1.2, 0.1]} rotation={[0.3, 0, -0.6]}>
-                    <coneGeometry args={[0.16, 0.5, 5]} />
-                    {hair}
-                </mesh>
+    useEffect(() => () => texture.dispose(), [texture]);
 
-                {/* Face */}
-                {[-1, 1].map((s) => (
-                    <group key={s}>
-                        <mesh position={[s * 0.33, 0.02, 0.9]}>
-                            <sphereGeometry args={[0.09, 12, 12]} />
-                            <meshStandardMaterial color={HAIR} roughness={0.2} />
-                        </mesh>
-                        <mesh position={[s * 0.33 + 0.03, 0.05, 0.98]}>
-                            <sphereGeometry args={[0.025, 8, 8]} />
-                            <meshBasicMaterial color="#ffffff" />
-                        </mesh>
-                        <mesh position={[s * 0.34, 0.25, 0.88]} rotation={[0, 0, s * -0.08]}>
-                            <boxGeometry args={[0.26, 0.05, 0.05]} />
-                            {hair}
-                        </mesh>
-                        <mesh position={[s * 0.55, -0.22, 0.8]}>
-                            <sphereGeometry args={[0.1, 10, 10]} />
-                            <meshStandardMaterial color="#F09A86" transparent opacity={0.55} />
-                        </mesh>
-                    </group>
-                ))}
-                <mesh position={[0, -0.3, 0.9]} rotation={[0.2, 0, Math.PI]}>
-                    <torusGeometry args={[0.2, 0.03, 8, 20, Math.PI]} />
-                    <meshStandardMaterial color="#7A3B2E" />
+    useFrame((_, delta) => {
+        if (ring.current && !reduceMotion) ring.current.rotation.y -= delta * 0.18;
+    });
+
+    return (
+        <group position={[0, -0.95, 0]} rotation={[0.22, 0, 0.1]}>
+            <group ref={ring}>
+                {/* front faces solid, inside faint so the far half reads as depth */}
+                <mesh>
+                    <cylinderGeometry args={[2.05, 2.05, 0.22, 128, 1, true]} />
+                    <meshBasicMaterial map={texture} transparent side={THREE.FrontSide} depthWrite={false} toneMapped={false} />
+                </mesh>
+                <mesh>
+                    <cylinderGeometry args={[2.05, 2.05, 0.22, 128, 1, true]} />
+                    <meshBasicMaterial map={texture} transparent opacity={0.22} side={THREE.BackSide} depthWrite={false} toneMapped={false} />
                 </mesh>
             </group>
         </group>
     );
 }
 
-type TokenProps = { radius: number; speed: number; phase: number; height: number; color: string; kind: number };
+/** A thin band of data dust following the signature ring, plus a sparse halo behind the head. */
+function DataDust() {
+    const ref = useRef<THREE.Points>(null);
+    const { positions, colors } = useMemo(() => {
+        const palette = [new THREE.Color(LILAC), new THREE.Color(ORANGE), new THREE.Color('#F2F0EA')];
+        const pos: number[] = [];
+        const col: number[] = [];
+        let seed = 3;
+        const rand = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+        for (let i = 0; i < 1800; i++) {
+            const a = rand() * Math.PI * 2;
+            if (i < 1300) {
+                const r = 1.75 + Math.pow(rand(), 1.6) * 1.2;
+                pos.push(Math.cos(a) * r, (rand() - 0.5) * 0.18, Math.sin(a) * r);
+            } else {
+                // halo shell kept behind / beside the face so it never covers it
+                const y = rand() * 2 - 1;
+                const r = 2.6 + rand() * 0.6;
+                const x = Math.cos(a) * Math.sqrt(1 - y * y) * r;
+                const z = -Math.abs(Math.sin(a) * Math.sqrt(1 - y * y) * r);
+                pos.push(x, y * r * 0.8 + 0.9, z);
+            }
+            const c = palette[i % 7 === 0 ? 1 : i % 5 === 0 ? 2 : 0];
+            col.push(c.r, c.g, c.b);
+        }
+        return { positions: new Float32Array(pos), colors: new Float32Array(col) };
+    }, []);
 
-/** Small shapes orbiting the mascot; hover to enlarge. */
-function Token({ radius, speed, phase, height, color, kind }: TokenProps) {
-    const ref = useRef<THREE.Mesh>(null);
-    const [hovered, setHovered] = useState(false);
-
-    useFrame((state, delta) => {
-        if (!ref.current) return;
-        const t = (reduceMotion ? 0 : state.clock.elapsedTime) * speed + phase;
-        ref.current.position.set(Math.cos(t) * radius, height + Math.sin(t * 1.3) * 0.2, Math.sin(t) * radius * 0.6);
-        ref.current.rotation.x += delta * 0.6;
-        ref.current.rotation.y += delta * 0.4;
-        const s = THREE.MathUtils.damp(ref.current.scale.x, hovered ? 1.6 : 1, 6, delta);
-        ref.current.scale.setScalar(s);
+    useFrame((_, delta) => {
+        if (ref.current && !reduceMotion) ref.current.rotation.y += delta * 0.05;
     });
 
-    const geometry = useMemo(() => {
-        switch (kind) {
-            case 0:
-                return <torusGeometry args={[0.16, 0.06, 8, 16]} />;
-            case 1:
-                return <octahedronGeometry args={[0.18]} />;
-            case 2:
-                return <boxGeometry args={[0.24, 0.24, 0.24]} />;
-            default:
-                return <icosahedronGeometry args={[0.18, 0]} />;
-        }
-    }, [kind]);
-
     return (
-        <mesh ref={ref} onPointerOver={() => setHovered(true)} onPointerOut={() => setHovered(false)}>
-            {geometry}
-            <meshStandardMaterial color={color} flatShading roughness={0.4} emissive={color} emissiveIntensity={hovered ? 0.6 : 0.15} />
-        </mesh>
+        <group position={[0, -0.95, 0]} rotation={[0.22, 0, 0.1]}>
+            <points ref={ref}>
+                <bufferGeometry>
+                    <bufferAttribute attach="attributes-position" args={[positions, 3]} />
+                    <bufferAttribute attach="attributes-color" args={[colors, 3]} />
+                </bufferGeometry>
+                <pointsMaterial size={0.028} vertexColors sizeAttenuation transparent opacity={0.85} depthWrite={false} />
+            </points>
+        </group>
     );
 }
 
-const TOKENS = [
-    { radius: 2.1, speed: 0.35, phase: 0, height: 0.6, color: ORANGE, kind: 0 },
-    { radius: 2.4, speed: 0.28, phase: 1.6, height: -0.4, color: LILAC, kind: 1 },
-    { radius: 1.9, speed: 0.42, phase: 3.1, height: 1.1, color: MINT, kind: 2 },
-    { radius: 2.6, speed: 0.22, phase: 4.4, height: -1.1, color: '#F2F0EA', kind: 3 },
-    { radius: 2.2, speed: 0.31, phase: 5.5, height: 0.1, color: ORANGE, kind: 3 },
-];
-
 export default function HeroScene() {
-    const hop = useRef(0);
+    const cheer = useRef(0);
     const pointer = useWindowPointer();
+    // canvas text needs the webfont loaded first, otherwise the tiles bake in the fallback font
+    const [fontsReady, setFontsReady] = useState(false);
+    useEffect(() => {
+        let alive = true;
+        document.fonts.load(MONO).finally(() => alive && setFontsReady(true));
+        return () => {
+            alive = false;
+        };
+    }, []);
 
     return (
         <Canvas
             dpr={[1, 2]}
-            camera={{ position: [0, 0, 8], fov: 35 }}
+            camera={{ position: [0, 0, 9], fov: 35 }}
             gl={{ antialias: true, alpha: true }}
-            // a click anywhere in the scene (not just on the head) makes the mascot hop
-            onClick={() => (hop.current = 1)}
+            // a click anywhere in the scene makes the character cheer
+            onClick={() => (cheer.current = 1.4)}
             aria-hidden="true"
         >
-            <ambientLight intensity={0.7} />
-            <directionalLight position={[3, 4, 5]} intensity={1.6} />
-            <pointLight position={[-3, 1, -2]} intensity={25} color={ORANGE} />
-            <pointLight position={[3, -2, -2]} intensity={15} color={LILAC} />
-            <group position={[0, 0.5, 0]} scale={0.9}>
-                <MascotHead hop={hop} pointer={pointer} />
-                {TOKENS.map((t, i) => (
-                    <Token key={i} {...t} />
-                ))}
-            </group>
+            <FitCamera />
+            <PixelPlayer cheer={cheer} pointer={pointer} />
+            <IconOrbit fontsReady={fontsReady} />
+            <SignatureRing fontsReady={fontsReady} />
+            <DataDust />
         </Canvas>
     );
 }

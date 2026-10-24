@@ -1,7 +1,7 @@
 import { Mascot, type MascotPose } from '@/components/portfolio/mascot';
 import { cn } from '@/lib/utils';
 import { Link } from '@inertiajs/react';
-import { motion, useMotionValue, useSpring } from 'framer-motion';
+import { motion, useInView, useMotionValue, useSpring } from 'framer-motion';
 import { ArrowUpRight } from 'lucide-react';
 import { type ComponentProps, type ReactNode, useEffect, useRef, useState } from 'react';
 
@@ -127,8 +127,11 @@ export function MagneticLink({ className, children, ...props }: ComponentProps<t
 /** Title that rises in letter by letter when scrolled into view. Screen readers get the plain text. */
 export function SplitText({ text, className }: { text: string; className?: string }) {
     let n = 0;
+    const ref = useRef<HTMLSpanElement>(null);
+    // One check on the whole title. Observing each letter fails: a letter parked below its clipped word box counts as off-screen, so it never rises.
+    const inView = useInView(ref, { once: true, margin: '0px 0px -60px 0px' });
     return (
-        <span className={className} aria-label={text}>
+        <span ref={ref} className={className} aria-label={text}>
             {text.split(' ').map((word, w) => (
                 <span key={w} aria-hidden="true" className="inline-block overflow-hidden pb-[0.12em] align-bottom">
                     {word.split('').map((char, c) => (
@@ -136,8 +139,7 @@ export function SplitText({ text, className }: { text: string; className?: strin
                             key={c}
                             className="inline-block"
                             initial={{ y: '110%', rotate: 6 }}
-                            whileInView={{ y: 0, rotate: 0 }}
-                            viewport={{ once: true, margin: '-60px' }}
+                            animate={inView ? { y: 0, rotate: 0 } : undefined}
                             transition={{ duration: 0.6, delay: n++ * 0.025, ease: [0.2, 0.8, 0.2, 1] }}
                         >
                             {char}
