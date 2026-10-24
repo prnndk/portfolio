@@ -41,7 +41,8 @@ class TechStackController extends Controller
             $validated['icon'] = $request->file('icon')->store('tech-stacks', 'public');
         }
 
-        TechStack::create($validated);
+        $techStack = TechStack::create($validated);
+        $this->cacheIcon($techStack, $request);
 
         return redirect()->route('admin.tech-stacks.index')
             ->with('success', 'Tech stack added successfully.');
@@ -75,6 +76,7 @@ class TechStackController extends Controller
         }
 
         $techStack->update($validated);
+        $this->cacheIcon($techStack, $request);
 
         return redirect()->route('admin.tech-stacks.index')
             ->with('success', 'Tech stack updated successfully.');
@@ -90,5 +92,13 @@ class TechStackController extends Controller
 
         return redirect()->route('admin.tech-stacks.index')
             ->with('success', 'Tech stack deleted successfully.');
+    }
+
+    /** Pull an external icon_url onto local storage unless an icon file was uploaded. */
+    private function cacheIcon(TechStack $techStack, Request $request): void
+    {
+        if ($techStack->icon_url && ! $request->hasFile('icon')) {
+            $techStack->cacheRemoteIcon();
+        }
     }
 }
