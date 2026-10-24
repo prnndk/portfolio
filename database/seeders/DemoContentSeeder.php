@@ -2,9 +2,7 @@
 
 namespace Database\Seeders;
 
-use App\Models\Activity;
 use App\Models\Favorite;
-use App\Models\Journey;
 use App\Models\Post;
 use App\Models\Project;
 use App\Models\Tag;
@@ -13,6 +11,7 @@ use Illuminate\Database\Seeder;
 
 /**
  * Placeholder content so every public page can be previewed with data.
+ * Experience (journeys/activities) comes from ExperienceSeeder instead.
  *
  *   php artisan db:seed --class=DemoContentSeeder
  *
@@ -65,19 +64,6 @@ class DemoContentSeeder extends Seeder
         ['demo-berharap-tak-berpisah', 'Berharap Tak Berpisah', 'music', 'Reza Artamevia', '2000', 'Pop', 8, 'Nostalgia in song form.'],
         ['demo-atomic-habits', 'Atomic Habits', 'book', 'James Clear', '2018', 'Self-improvement', 9, 'Small systems beat big motivation.'],
         ['demo-clean-code', 'Clean Code', 'book', 'Robert C. Martin', '2008', 'Programming', 8, 'Opinionated, useful, occasionally preachy.'],
-    ];
-
-    private const ACTIVITIES = [
-        ['Backend Developer Intern', 'Backend Developer', 'Sample Tech Studio', 'Built REST APIs, queue workers and the deployment pipeline for an internal booking platform.', '2025-06-01', '2025-09-30'],
-        ['Teaching Assistant, Web Programming', 'Teaching Assistant', 'University lab', 'Guided 60+ students through HTML, PHP and database fundamentals and graded weekly projects.', '2025-02-01', '2025-06-30'],
-        ['National Hackathon Finalist', 'Team Lead', 'Sample Hackathon', 'Led a team of four to ship a working flood-alert prototype in 36 hours.', '2024-10-12', '2024-10-14'],
-    ];
-
-    private const JOURNEYS = [
-        ['Software Engineer', 'Full-time', 'Sample Company', 'work', 'Own the web platform end to end, from API design to deploys.', ['Laravel', 'React', 'Docker'], '2025-10-01', null],
-        ['Backend Developer Intern', 'Internship', 'Sample Tech Studio', 'work', 'First production job: APIs, queues and a lot of code review.', ['PHP', 'MySQL', 'Redis'], '2025-06-01', '2025-09-30'],
-        ['B.Sc. Informatics', 'Undergraduate', 'Sample University', 'education', 'Software engineering, databases and distributed systems.', ['Algorithms', 'Databases', 'Networks'], '2022-08-01', null],
-        ['National Hackathon Finalist', 'Achievement', 'Sample Hackathon', 'achievement', 'Top 5 of 120 teams.', ['Go', 'Flutter'], '2024-10-12', '2024-10-14'],
     ];
 
     public function run(): void
@@ -138,33 +124,6 @@ class DemoContentSeeder extends Seeder
             ]);
         }
 
-        foreach (self::ACTIVITIES as $i => [$title, $role, $org, $description, $start, $end]) {
-            Activity::updateOrCreate(['title' => $title], [
-                'role' => $role,
-                'organization' => $org,
-                'description' => $description,
-                'start_date' => $start,
-                'end_date' => $end,
-                'gallery_urls' => collect(range(1, 3))->map(fn ($n) => 'https://picsum.photos/seed/'.str($title)->slug()."-{$n}/1200/750")->all(),
-                'sort_order' => $i,
-                'is_active' => true,
-            ]);
-        }
-
-        foreach (self::JOURNEYS as $i => [$title, $subtitle, $org, $type, $description, $skills, $start, $end]) {
-            Journey::updateOrCreate(['title' => $title], [
-                'subtitle' => $subtitle,
-                'organization' => $org,
-                'type' => $type,
-                'description' => $description,
-                'skills' => $skills,
-                'gallery_urls' => $i === 0 ? collect(range(1, 5))->map(fn ($n) => "https://picsum.photos/seed/journey-{$n}/1200/750")->all() : null,
-                'start_date' => $start,
-                'end_date' => $end,
-                'sort_order' => $i,
-                'is_active' => true,
-            ]);
-        }
     }
 
     /** Remove everything this seeder created. */
@@ -177,8 +136,6 @@ class DemoContentSeeder extends Seeder
             $post->delete();
         });
         Favorite::whereIn('slug', array_column(self::FAVORITES, 0))->delete();
-        Activity::whereIn('title', array_column(self::ACTIVITIES, 0))->delete();
-        Journey::whereIn('title', array_column(self::JOURNEYS, 0))->delete();
     }
 
     private function markdown(string $title, string $excerpt): string
