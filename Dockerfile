@@ -121,6 +121,12 @@ RUN mkdir -p /var/www/storage/framework/{sessions,views,cache} \
                     -type d \
        | xargs chmod 0750 2>/dev/null || true
 
+# nginx (other uid) must reach storage/app/public: traverse-only parents, readable public/
+RUN mkdir -p /var/www/storage/app/public \
+    && chown www-data:www-data /var/www/storage/app/public \
+    && chmod 0711 /var/www/storage /var/www/storage/app \
+    && chmod 0755 /var/www/storage/app/public
+
 USER www-data
 
 EXPOSE 9000

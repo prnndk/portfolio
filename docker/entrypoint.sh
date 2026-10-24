@@ -3,6 +3,9 @@
 # Runs as www-data (non-root). Handles bootstrap, then exec's php-fpm.
 set -euo pipefail
 
+# Uploads must be readable by nginx (other uid), so never inherit a restrictive umask.
+umask 022
+
 echo "🔧 Running Laravel entrypoint setup..."
 
 # ─── Validate .env ────────────────────────────────────────────────────────────
@@ -38,14 +41,19 @@ echo "🔒  Enforcing storage permissions..."
 mkdir -p /var/www/storage/framework/{sessions,views,cache} \
          /var/www/storage/logs \
          /var/www/bootstrap/cache
-chmod 750 /var/www/storage \
-          /var/www/storage/framework \
+chmod 750 /var/www/storage/framework \
           /var/www/storage/framework/sessions \
           /var/www/storage/framework/views \
           /var/www/storage/framework/cache \
           /var/www/storage/logs \
-          /var/www/storage/app \
           /var/www/bootstrap/cache 2>/dev/null || true
+
+# nginx runs as a different uid and serves /storage/ straight from this volume.
+# Parents are traverse-only (--x, no listing); only app/public is world-readable.
+mkdir -p /var/www/storage/app/public
+chmod 711 /var/www/storage /var/www/storage/app 2>/dev/null || true
+find /var/www/storage/app/public -type d -exec chmod 755 {} + 2>/dev/null || true
+find /var/www/storage/app/public -type f -exec chmod 644 {} + 2>/dev/null || true
 
 # ─── Migrations ───────────────────────────────────────────────────────────────
 echo "🗄️   Running migrations..."
