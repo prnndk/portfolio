@@ -13,7 +13,7 @@ services:
       - portofolio-network
 
   db:
-    image: mysql:8.0@sha256:7dcddc01f13bab2f15cde676d44d01f61fc9f99fe7785e86196dfc07d358ae2b
+    image: mysql:26.10@sha256:7b16ec7caa94ca7e92f4c5ec287de69d2e8738db056ceb629022951a6f6d910b
     container_name: portofolio-db
     restart: unless-stopped
     environment:
