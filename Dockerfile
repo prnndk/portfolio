@@ -18,7 +18,7 @@ RUN npm run build
 # ─────────────────────────────────────────────────────────────────────────────
 # Stage 2 — PHP: production image
 # ─────────────────────────────────────────────────────────────────────────────
-FROM php:8.4-fpm@sha256:cc7cdfe4da7d46f6e69ac653e3d3396590bf51d6d6731854d01449d0b32b704c
+FROM php:8.5-fpm@sha256:baf3ea13a8207fa18e1011bad1016e8b5e59fc974c6966d0efa6f36a16f875f0
 
 # Install ONLY the runtime libraries needed — no shells or dev tools
 # removed: git curl (unnecessary attack surface in production runtime)
